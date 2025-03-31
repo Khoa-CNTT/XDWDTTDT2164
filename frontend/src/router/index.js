@@ -1,13 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Dashboard from "@/views/admin/dashboard/index_2.vue"; // Trang chứa layout chính
 
 const routes = [
   {
     //Login
-    // path: "/login-signup",
-    // component: ()=> import("@/views/common/Login.vue"),
-
-
+    path: "/login",
+    component: () => import("@/views/common/Login.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //Register
+    path: "/register",
+    component: () => import("@/views/common/Sign_up.vue"),
+    meta: { layout: "auth" },
+  },
+  {
     path: "/admin-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
@@ -16,13 +22,14 @@ const routes = [
         redirect: "admin-dashboard", // Chuyển hướng sang trang con mặc định
       },
       {
-        path: "user-management", 
+        path: "user-management",
         component: () => import("@/views/admin/dashboard/User-management.vue"),
       },
-      
+
       {
         path: "company-management",
-        component: () => import("@/views/admin/dashboard/Company-management.vue"),
+        component: () =>
+          import("@/views/admin/dashboard/Company-management.vue"),
       },
       {
         path: "post-management",
