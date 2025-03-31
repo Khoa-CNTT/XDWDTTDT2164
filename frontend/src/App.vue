@@ -1,18 +1,19 @@
 <template>
-  <component :is="layout">
+  <div>
+    <nav>
+      <router-link to="/">Trang Chủ</router-link>
+      <router-link to="/about">Giới Thiệu</router-link>
+    </nav>
+
     <router-view />
-  </component>
+    <!-- Nơi hiển thị nội dung trang -->
+  </div>
 </template>
 
-<script>
-const default_layout = "default";
-export default {
-  computed: {
-    layout() {
-      return (this.$route.meta.layout || default_layout) + "-layout";
-    },
-  },
+<style scoped>
+nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
-</script>
-
-<style></style>
+</style>
