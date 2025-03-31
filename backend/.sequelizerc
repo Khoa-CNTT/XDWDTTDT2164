@@ -1,0 +1,8 @@
+const path = require("path");
+
+module.exports = {
+  config: path.resolve("src/config", "sequelize.config.js"), // File cấu hình database
+  "models-path": path.resolve("src", "models"), // Thư mục chứa model
+  "migrations-path": path.resolve("src", "migrations"), // Thư mục chứa migration
+  "seeders-path": path.resolve("src", "seeders"), // Thư mục chứa seed (nếu có)
+};
