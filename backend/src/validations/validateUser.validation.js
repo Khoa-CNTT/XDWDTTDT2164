@@ -57,6 +57,7 @@ const validateCreateCandidateProfile = [
     .notEmpty()
     .withMessage("Kinh nghiệm làm việc không được để trống"),
   body("salary").notEmpty().withMessage("Mức lương không được để trống"),
+  body("skillIds").notEmpty().withMessage("Skill không được để trống"),
 ];
 
 module.exports = {

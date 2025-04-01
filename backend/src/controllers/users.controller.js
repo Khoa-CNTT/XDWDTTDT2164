@@ -284,7 +284,8 @@ class UserController {
     try {
       console.log(req.file);
       const { id } = req.user;
-      const { gender, dateOfBirth, address, workExperience, salary } = req.body;
+      const { gender, dateOfBirth, address, workExperience, salary, skillIds } =
+        req.body;
 
       if (!req.file || !req.file.filename) {
         throw new ApiError(StatusCode.BAD_REQUEST, "Không tìm thấy file CV");
@@ -300,6 +301,7 @@ class UserController {
         cvUrl,
         workExperience,
         salary,
+        skillIds,
       };
 
       const result = await userService.createCandidateProfile(
