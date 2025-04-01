@@ -14,6 +14,27 @@ const routes = [
     meta: { layout: "auth" },
   },
   {
+    //Quên mật khẩu
+    path: "/forgot-password",
+    component: () => import("@/views/common/Forgot_password.vue"),
+    meta: { layout: "auth" },
+
+  },
+  {
+    //Tạo mật khẩu mới
+    path: "/reset-password",
+    component: () => import("@/views/common/Reset_password.vue"),
+    meta: { layout: "auth" },
+
+  },
+  {
+    //OTP
+    path: "/confirm-otp",
+    component: () => import("@/views/common/Otp.vue"),
+    meta: { layout: "auth" },
+
+  },
+  {
     path: "/admin-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
