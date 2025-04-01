@@ -303,8 +303,6 @@ $ docker compose exec app npx sequelize-cli db:migrate:all
    + Nguyễn Bảo Lưu
    + Nguyễn Gia Khánh
    + Phan Minh Khánh
-Email: [thaiquangqt2003@gmail.com]
-GitHub: [https://github.com/thaiquangdev]
 
 ### 💖 Cảm ơn
 
