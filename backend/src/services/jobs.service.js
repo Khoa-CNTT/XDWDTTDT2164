@@ -14,51 +14,72 @@ class JobsService {
    * @returns {Promise<Object>} Bài đăng công việc được tạo
    */
   async createJob(jobData) {
-    const jobSlug = slugify(jobData.jobTitle, { lower: true });
+    const transaction = await db.sequelize.transaction();
+    try {
+      const jobSlug = slugify(jobData.jobTitle, { lower: true });
 
-    // Kiểmt tra xem bài đăng công việc đã tồn tại chưa
-    const job = await this.findJobBySlug(jobSlug, jobData.employerId);
+      // Kiểm tra xem bài đăng công việc đã tồn tại chưa
+      const job = await this.findJobBySlug(jobSlug, jobData.employerId);
 
-    if (job) {
-      throw new ApiError(
-        StatusCode.BAD_REQUEST,
-        "Bài đăng công việc đã tồn tại."
+      if (job) {
+        throw new ApiError(
+          StatusCode.BAD_REQUEST,
+          "Bài đăng công việc đã tồn tại."
+        );
+      }
+
+      // Tạo mới bài đăng công việc
+      const newJob = await db.Jobs.create(
+        {
+          jobName: jobData.jobTitle,
+          jobSlug,
+          description: jobData.description,
+          categoryId: jobData.categoryId,
+          jobTypeId: jobData.jobTypeId,
+          salaryId: jobData.salaryId,
+          experienceId: jobData.experienceId,
+          employerId: jobData.employerId,
+          numberOfRecruits: jobData.numberOfRecruits,
+          rank: jobData.rank,
+          address: jobData.address,
+        },
+        { transaction }
       );
+
+      // Tạo skill job trong bảng skilljobs
+      await db.JobSkills.bulkCreate(
+        jobData.skillIds.map((skillId) => ({
+          skillId,
+          jobId: newJob.id,
+        })),
+        { transaction }
+      );
+
+      // Xóa cache cũ
+      const keys = await redisClient.keys("jobs:*");
+      if (keys.length > 0) {
+        await redisClient.del(keys);
+      }
+
+      // Lấy danh sách admin để tạo notification
+      const admins = await this.getAdminList();
+
+      // Gửi thông báo đến admin
+      const notifications = admins.map((admin) => ({
+        userId: admin.id,
+        message: `Bài đăng công việc ${newJob.jobName} đã được tạo.`,
+        type: "job",
+        isRead: false,
+      }));
+
+      await db.Notifications.bulkCreate(notifications, { transaction });
+
+      await transaction.commit();
+      return newJob;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    // Tạo mới bài đăng công việc
-    const newJob = await db.Jobs.create({
-      jobName: jobData.jobTitle,
-      jobSlug,
-      description: jobData.description,
-      categoryId: jobData.categoryId,
-      jobTypeId: jobData.jobTypeId,
-      salaryId: jobData.salaryId,
-      experienceId: jobData.experienceId,
-      employerId: jobData.employerId,
-      numberOfRecruits: jobData.numberOfRecruits,
-      rank: jobData.rank,
-      address: jobData.address,
-    });
-
-    // Xóa cache cũ
-    const keys = await redisClient.keys("jobs:*"); // Lấy tất cả cache liên quan đến jobs
-    await redisClient.del(keys);
-
-    // Lấy danh sách admin để tạo notification
-    const admins = await this.getAdminList();
-
-    // Gửi thông báo đến admin
-    const notifications = admins.map((admin) => ({
-      userId: admin.id,
-      message: `Bài đăng công việc ${job.jobName} đã được ${status}.`,
-      type: "job",
-      isRead: false,
-    }));
-
-    await db.Notifications.bulkCreate(notifications);
-
-    return newJob;
   }
 
   /**

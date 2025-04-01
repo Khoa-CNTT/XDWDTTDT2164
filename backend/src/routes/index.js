@@ -8,9 +8,10 @@ const categoryRoutes = require("./categories.router");
 const skillRoutes = require("./skills.router");
 const salaryRoutes = require("./salaries.router");
 const experienceRoutes = require("./experiences.router");
-const jobTypeRoutes = require("./jobType.router");
+const jobTypeRoutes = require("./jobTypes.router");
 const jobsRoutes = require("./jobs.router");
 const saveJobsRoutes = require("./saveJobs.router");
+const rankRoutes = require("./ranks.router");
 
 /**
  * Khởi tạo các tuyến đường chính cho ứng dụng
@@ -43,6 +44,9 @@ const initialRoutes = (app) => {
 
   // Định tuyến cho lưu job vào danh sách
   app.use("/api/save-job", saveJobsRoutes);
+
+  //Định tuyến cho cấp bậc
+  app.use("/api/ranks", rankRoutes);
 
   // Middleware xử lý khi không tìm thấy route
   app.use(notFound);
