@@ -296,7 +296,13 @@ $ docker compose exec app npx sequelize-cli db:migrate:all
 
 ### Liên hệ
 
-Tác giả: [thaiquangdev] - Nhóm STT80 - Trường Đại Học Duy Tân
+ - Trường Đại Học Duy Tân
+ - Nhóm STT80
+   + Thái Mai Quang - Trưởng nhóm
+   + Hoàng Văn Ngọc Quý
+   + Nguyễn Bảo Lưu
+   + Nguyễn Gia Khánh
+   + Phan Minh Khánh
 Email: [thaiquangqt2003@gmail.com]
 GitHub: [https://github.com/thaiquangdev]
 
