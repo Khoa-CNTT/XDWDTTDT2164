@@ -174,15 +174,15 @@ class AuthService {
       userExists.id,
       userExists.email,
       userExists.role,
-      userExists.employerRoles.employerRole,
-      userExists.employerRoles.employerId
+      userExists?.EmployerRoles?.employerRole,
+      userExists?.EmployerRoles?.employerId
     );
     const refreshToken = generateRefreshToken(
       userExists.id,
       userExists.email,
       userExists.role,
-      userExists.employerRoles.employerRole,
-      userExists.employerRoles.employerId
+      userExists?.EmployerRoles?.employerRole,
+      userExists?.EmployerRoles?.employerId
     );
 
     // Lưu refreshToken vào db và redis
@@ -253,8 +253,8 @@ class AuthService {
         decoded.id,
         decoded.email,
         decoded.role,
-        userExists.employerRoles.employerRole,
-        userExists.employerRoles.employerId
+        userExists.EmployerRoles.employerRole,
+        userExists.EmployerRoles.employerId
       );
 
       return { accessToken };
@@ -271,7 +271,7 @@ class AuthService {
   async findByEmail(email) {
     return await db.Users.findOne({
       where: { email },
-      include: [{ model: EmployerUsers }],
+      include: [{ model: db.EmployerUsers, as: "EmployerUsers" }],
     });
   }
 
