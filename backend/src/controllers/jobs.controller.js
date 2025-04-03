@@ -13,7 +13,8 @@ class JobsController {
    */
   async createJob(req, res) {
     try {
-      const job = await jobsService.createJob(req.body);
+      const { employerId, id } = req.user;
+      const job = await jobsService.createJob(req.body, employerId, id);
       return res.status(StatusCode.CREATED).json({
         statusCode: StatusCode.CREATED,
         status: ResponseStatus.SUCCESS,

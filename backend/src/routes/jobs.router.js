@@ -18,7 +18,6 @@ const router = express.Router();
  * @access Private
  * @middleware protectedRoute: Kiểm tra xác thực người dùng
  * @middleware authorizedRoute("employer"): Kiểm tra quyền truy cập nhà tuyển dụng
- * @middleware authorizedEmployer("owner", "recruiter"): Kiểm tra quyền truy cập công ty và hr
  * @middleware validateCreateJob: Validate request tạo bài đăng công việc
  * @middleware handleValidationErrors: Xử lý lỗi validation nếu có
  * @controller JobsController.createJob: Tạo mới bài đăng công việc
@@ -27,7 +26,6 @@ router.post(
   "/",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner", "recruiter"),
   validateCreateJob,
   handleValidationErrors,
   jobsController.createJob

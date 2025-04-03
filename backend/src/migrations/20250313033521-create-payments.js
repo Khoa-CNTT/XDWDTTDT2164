@@ -60,13 +60,9 @@ module.exports = {
         type: Sequelize.STRING(100),
         allowNull: false,
       },
-      startDay: {
+      paymentDate: {
         type: Sequelize.DATE,
-        allowNull: false,
-      },
-      endDay: {
-        type: Sequelize.DATE,
-        allowNull: false,
+        field: "payment_date",
       },
       deleted: {
         type: Sequelize.BOOLEAN,

@@ -58,6 +58,19 @@ class JoTypesService {
       );
     }
 
+    // Kiêm tra tên hình thức làm việc có bị trùng không
+    if (jobTypeName) {
+      const existingJobtype = await db.JobTypes.findOne({
+        where: { jobTypeName },
+      });
+      if (existingJobtype && existingJobtype.id !== id) {
+        throw new ApiError(
+          StatusCode.CONFLICT,
+          "Tên hình thức làm việc đã tồn tại"
+        );
+      }
+    }
+
     // Tạo slug mới nếu tên hình thức làm việc thay đổi
     let jobTypeSlug = jobType.jobTypeSlug;
     if (jobTypeName !== jobType.jobTypeName) {
@@ -82,6 +95,15 @@ class JoTypesService {
       throw new ApiError(
         StatusCode.NOT_FOUND,
         "Hình thức làm việc không tồn tại"
+      );
+    }
+
+    // Kiểm tra đã có job chưa
+    const hasJobs = await db.Jobs.count({ where: { jobTypeId: id } });
+    if (hasJobs) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Không thể xóa hình thức làm việc vì có công việc liên quan"
       );
     }
 

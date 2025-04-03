@@ -54,6 +54,16 @@ class RanksService {
       throw new ApiError(StatusCode.NOT_FOUND, "Cấp bậc không tồn tại");
     }
 
+    // Kiểm tra tên cấp bậc có bị trùng không
+    if (rankName) {
+      const existingName = await db.Ranks.findOne({
+        where: { rankName },
+      });
+      if (existingName && existingName.id !== id) {
+        throw new ApiError(StatusCode.CONFLICT, "Tên cấp bậc đã tồn tại");
+      }
+    }
+
     // Tạo slug mới
     let rankSlug = rank.rankSlug;
     if (rankName) {
@@ -75,6 +85,15 @@ class RanksService {
     const rank = await this.checkRankExistById(id);
     if (!rank) {
       throw new ApiError(StatusCode.NOT_FOUND, "Cấp bậc không tồn tại");
+    }
+
+    // Kiểm tra đã có job chưa
+    const hasJobs = await db.Jobs.count({ where: { rankId: id } });
+    if (hasJobs) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Không thể xóa cấp bậc vì có công việc liên quan"
+      );
     }
 
     await rank.update({ deleted: true });
