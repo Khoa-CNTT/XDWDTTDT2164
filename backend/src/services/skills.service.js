@@ -34,7 +34,7 @@ class SkillsService {
   }
 
   /**
-   * Lấy danh sách skill
+   * Lấy danh sách skill theo categoryId
    * @returns {Promise<Object>} - Danh sách skill
    */
   async getSkills(categoryId) {
@@ -57,6 +57,16 @@ class SkillsService {
 
     if (!skill) {
       throw new ApiError(StatusCode.NOT_FOUND, "Skill không tồn tại");
+    }
+
+    // Kiểm tra tên skill có bị trùng không
+    if (skillData.skillName) {
+      const existingSkill = await db.Skills.findOne({
+        where: { skillName: skillData.skillName },
+      });
+      if (existingSkill && existingSkill.id !== id) {
+        throw new ApiError(StatusCode.CONFLICT, "Tên kỹ năng đã tồn tại");
+      }
     }
 
     // Tạo slug mới
@@ -86,6 +96,15 @@ class SkillsService {
     // Kiểm tra skill có tồn tại không
     if (!skill) {
       throw new ApiError(StatusCode.NOT_FOUND, "Skill không tồn tại");
+    }
+
+    // Kiểm tra đã có job chưa
+    const hasJobs = await db.Jobs.count({ where: { skillId: id } });
+    if (hasJobs) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Không thể xóa khoản lương vì có công việc liên quan"
+      );
     }
 
     // Xóa skill
