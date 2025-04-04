@@ -53,8 +53,18 @@ class CategoryService {
       throw new ApiError(StatusCode.NOT_FOUND, "Danh mục không tồn tại");
     }
 
+    // Kiểm tra tên danh mục có bị trùng không (nếu có thay đổi tên)
+    if (categoryData.categoryName) {
+      const existingCategory = await db.Categories.findOne({
+        where: { categoryName: categoryData.categoryName },
+      });
+      if (existingCategory && existingCategory.id !== id) {
+        throw new ApiError(StatusCode.CONFLICT, "Danh mục đã tồn tại");
+      }
+    }
+
     // Nếu có ảnh thì xóa ảnh ở cloudinary
-    if (categoryData.image) {
+    if (categoryData.image && category.categoryImage) {
       await cloudinary.uploader.destroy(category.categoryImage);
     }
 
@@ -81,6 +91,15 @@ class CategoryService {
     const category = await this.findCategoryById(id);
     if (!category) {
       throw new ApiError(StatusCode.NOT_FOUND, "Danh mục không tồn tại");
+    }
+
+    // Kiểm tra đã có job chưa
+    const hasJobs = await db.Jobs.count({ where: { categoryId: id } });
+    if (hasJobs) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Không thể xóa danh mục vì có công việc liên quan"
+      );
     }
 
     await category.update({ deleted: true });

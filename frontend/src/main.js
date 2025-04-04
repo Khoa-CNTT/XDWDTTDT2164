@@ -1,7 +1,9 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
+
 import Default from "./views/employer/index.vue";
+
 import PrimeVue from "primevue/config";
 
 import "./style.css";

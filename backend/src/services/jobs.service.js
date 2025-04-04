@@ -13,13 +13,13 @@ class JobsService {
    * @param {Object} jobData - Dữ liệu bài đăng công việc
    * @returns {Promise<Object>} Bài đăng công việc được tạo
    */
-  async createJob(jobData) {
+  async createJob(jobData, employerId, userId) {
     const transaction = await db.sequelize.transaction();
     try {
-      const jobSlug = slugify(jobData.jobTitle, { lower: true });
+      const jobSlug = slugify(jobData.jobName, { lower: true });
 
       // Kiểm tra xem bài đăng công việc đã tồn tại chưa
-      const job = await this.findJobBySlug(jobSlug, jobData.employerId);
+      const job = await this.findJobBySlug(jobSlug, employerId);
 
       if (job) {
         throw new ApiError(
@@ -31,17 +31,19 @@ class JobsService {
       // Tạo mới bài đăng công việc
       const newJob = await db.Jobs.create(
         {
-          jobName: jobData.jobTitle,
+          jobName: jobData.jobName,
           jobSlug,
           description: jobData.description,
           categoryId: jobData.categoryId,
           jobTypeId: jobData.jobTypeId,
           salaryId: jobData.salaryId,
           experienceId: jobData.experienceId,
-          employerId: jobData.employerId,
+          employerId: employerId,
+          userId: userId,
           numberOfRecruits: jobData.numberOfRecruits,
-          rank: jobData.rank,
+          rankId: jobData.rankId,
           address: jobData.address,
+          expire: jobData.expire,
         },
         { transaction }
       );
@@ -69,7 +71,6 @@ class JobsService {
         userId: admin.id,
         message: `Bài đăng công việc ${newJob.jobName} đã được tạo.`,
         type: "job",
-        isRead: false,
       }));
 
       await db.Notifications.bulkCreate(notifications, { transaction });
@@ -140,15 +141,20 @@ class JobsService {
     }
 
     const jobs = await db.Jobs.findAndCountAll({
-      where: { ...whereClause, status: "Đã kiểm duyệt", deleted: false },
+      where: {
+        ...whereClause,
+        status: "Đã kiểm duyệt",
+        isVisible: true,
+        deleted: false,
+      },
       offset,
       limit,
       order: [["createdAt", "DESC"]],
       include: [
         {
           model: db.Employers,
-          as: "employer",
-          attributes: ["employerName", "employerSlug", "logo"],
+          as: "Employers",
+          attributes: ["companyName", "companySlug", "companyLogo"],
         },
       ],
     });

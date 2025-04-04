@@ -14,9 +14,12 @@ const routes = [
     meta: { layout: "auth" },
   },
   
-  //Employer
+
+
+
+  // Candidate 
   {
-    path: "/employer-dashboard",
+    path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
       {
@@ -30,6 +33,23 @@ const routes = [
       {
         path: "employer-info",
         component: () => import("../views/employer/employer-info.vue"),
+        redirect: "candidate-dashboard", // Chuyển hướng sang trang con mặc định
+      },
+      {
+        path: "candidate-test",
+        component: () => import("@/views/candidate/candidate-test.vue"),
+      },
+      {
+        path: "candidate-jobs",
+        component: () => import("@/views/candidate/candidate-jobs.vue"),
+      },
+      {
+        path: "candidate-apply",
+        component: () => import("@/views/candidate/candidate-apply.vue"),
+      },
+      {
+        path: "candidate-password",
+        component: () => import("@/views/candidate/candidate-password.vue"),
       },
     ],
   },

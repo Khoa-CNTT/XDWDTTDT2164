@@ -52,6 +52,16 @@ class SalariesService {
       throw new ApiError(StatusCode.NOT_FOUND, "Mức lương không tồn tại");
     }
 
+    // Kiểm tra tên khoản lương có bị trùng không
+    if (salaryName) {
+      const existingSalary = await db.Salaries.findOne({
+        where: { salaryName },
+      });
+      if (existingSalary && existingSalary.id !== id) {
+        throw new ApiError(StatusCode.CONFLICT, "Tên khoản lương đã tồn tại");
+      }
+    }
+
     // Tạo slug mới
     let salarySlug = salary.salarySlug;
     if (salaryName) {
@@ -73,6 +83,15 @@ class SalariesService {
     const salary = await this.checkSalaryById(id);
     if (!salary) {
       throw new ApiError(StatusCode.NOT_FOUND, "Mức lương không tồn tại");
+    }
+
+    // Kiểm tra đã có job chưa
+    const hasJobs = await db.Jobs.count({ where: { salaryId: id } });
+    if (hasJobs) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Không thể xóa khoản lương vì có công việc liên quan"
+      );
     }
 
     await salary.update({ deleted: true });

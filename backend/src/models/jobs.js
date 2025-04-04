@@ -51,6 +51,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
 
+      Jobs.belongsTo(models.Users, {
+        foreignKey: "userId",
+        targetKey: "id",
+        as: "Users",
+        onDelete: "SET NULL",
+      });
+
       Jobs.hasMany(models.JobSkills, {
         sourceKey: "id",
         foreignKey: "jobId",
@@ -108,6 +115,10 @@ module.exports = (sequelize, DataTypes) => {
       employerId: {
         type: DataTypes.UUID,
         field: "employer_id",
+      },
+      userId: {
+        type: DataTypes.UUID,
+        field: "user_id",
       },
       numberOfRecruits: {
         type: DataTypes.INTEGER,
