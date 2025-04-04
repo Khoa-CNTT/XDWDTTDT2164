@@ -13,6 +13,48 @@ const routes = [
     component: () => import("@/views/common/Sign_up.vue"),
     meta: { layout: "auth" },
   },
+  
+
+
+
+  // Candidate 
+  {
+    path: "/candidate-dashboard",
+    // component: Dashboard, // Luôn hiển thị Dashboard.vue
+    children: [
+      {
+        path: "", // Mặc định khi vào /admin-dashboard
+        redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
+      },
+      {
+        path: "employer-newjob",
+        component: () => import("../views/employer/employer-newjob.vue"),
+      },
+      {
+        path: "employer-info",
+        component: () => import("../views/employer/employer-info.vue"),
+        redirect: "candidate-dashboard", // Chuyển hướng sang trang con mặc định
+      },
+      {
+        path: "candidate-test",
+        component: () => import("@/views/candidate/candidate-test.vue"),
+      },
+      {
+        path: "candidate-jobs",
+        component: () => import("@/views/candidate/candidate-jobs.vue"),
+      },
+      {
+        path: "candidate-apply",
+        component: () => import("@/views/candidate/candidate-apply.vue"),
+      },
+      {
+        path: "candidate-password",
+        component: () => import("@/views/candidate/candidate-password.vue"),
+      },
+    ],
+  },
+
+  //Admin
   // {
   //   path: "/admin-dashboard",
   //   // component: Dashboard, // Luôn hiển thị Dashboard.vue
@@ -45,35 +87,6 @@ const routes = [
   //     },
   //   ],
   // },
-
-
-  // Candidate 
-  {
-    path: "/candidate-dashboard",
-    // component: Dashboard, // Luôn hiển thị Dashboard.vue
-    children: [
-      {
-        path: "", // Mặc định khi vào /admin-dashboard
-        redirect: "candidate-dashboard", // Chuyển hướng sang trang con mặc định
-      },
-      {
-        path: "candidate-test",
-        component: () => import("@/views/candidate/candidate-test.vue"),
-      },
-      {
-        path: "candidate-jobs",
-        component: () => import("@/views/candidate/candidate-jobs.vue"),
-      },
-      {
-        path: "candidate-apply",
-        component: () => import("@/views/candidate/candidate-apply.vue"),
-      },
-      {
-        path: "candidate-password",
-        component: () => import("@/views/candidate/candidate-password.vue"),
-      },
-    ],
-  },
 ];
 
 // Khởi tạo router
