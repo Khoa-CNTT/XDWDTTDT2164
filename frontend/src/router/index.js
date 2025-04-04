@@ -13,35 +13,64 @@ const routes = [
     component: () => import("@/views/common/Sign_up.vue"),
     meta: { layout: "auth" },
   },
+  // {
+  //   path: "/admin-dashboard",
+  //   // component: Dashboard, // Luôn hiển thị Dashboard.vue
+  //   children: [
+  //     {
+  //       path: "", // Mặc định khi vào /admin-dashboard
+  //       redirect: "admin-dashboard", // Chuyển hướng sang trang con mặc định
+  //     },
+  //     {
+  //       path: "user-management",
+  //       component: () => import("@/views/admin/dashboard/User-management.vue"),
+  //     },
+
+  //     {
+  //       path: "company-management",
+  //       component: () =>
+  //         import("@/views/admin/dashboard/Company-management.vue"),
+  //     },
+  //     {
+  //       path: "post-management",
+  //       component: () => import("@/views/admin/dashboard/Post-management.vue"),
+  //     },
+  //     {
+  //       path: "list-jobtype",
+  //       component: () => import("../views/admin/dashboard/List-jobtype.vue"),
+  //     },
+  //     {
+  //       path: "list-skills",
+  //       component: () => import("../views/admin/dashboard/List-skills.vue"),
+  //     },
+  //   ],
+  // },
+
+
+  // Candidate 
   {
-    path: "/admin-dashboard",
+    path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
       {
         path: "", // Mặc định khi vào /admin-dashboard
-        redirect: "admin-dashboard", // Chuyển hướng sang trang con mặc định
+        redirect: "candidate-dashboard", // Chuyển hướng sang trang con mặc định
       },
       {
-        path: "user-management",
-        component: () => import("@/views/admin/dashboard/User-management.vue"),
-      },
-
-      {
-        path: "company-management",
-        component: () =>
-          import("@/views/admin/dashboard/Company-management.vue"),
+        path: "candidate-test",
+        component: () => import("@/views/candidate/candidate-test.vue"),
       },
       {
-        path: "post-management",
-        component: () => import("@/views/admin/dashboard/Post-management.vue"),
+        path: "candidate-jobs",
+        component: () => import("@/views/candidate/candidate-jobs.vue"),
       },
       {
-        path: "list-jobtype",
-        component: () => import("../views/admin/dashboard/List-jobtype.vue"),
+        path: "candidate-apply",
+        component: () => import("@/views/candidate/candidate-apply.vue"),
       },
       {
-        path: "list-skills",
-        component: () => import("../views/admin/dashboard/List-skills.vue"),
+        path: "candidate-password",
+        component: () => import("@/views/candidate/candidate-password.vue"),
       },
     ],
   },
