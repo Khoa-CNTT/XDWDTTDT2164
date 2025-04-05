@@ -38,9 +38,14 @@ const routes = [
     path: "/admin-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
+      
       {
         path: "", // Mặc định khi vào /admin-dashboard
         redirect: "admin-dashboard", // Chuyển hướng sang trang con mặc định
+      },
+      {
+        path: "admin-starter",
+        component: () => import("../views/admin/dashboard/Starter-admin.vue")
       },
       {
         path: "user-management",
@@ -63,6 +68,30 @@ const routes = [
       {
         path: "list-skills",
         component: () => import("../views/admin/dashboard/List-skills.vue"),
+      },
+      {
+        path: "hierarchy-management",
+        component: () => import("../views/admin/dashboard/Hierarchy-management.vue"),
+      },
+      {
+        path: "formofwork-list",
+        component: () => import("../views/admin/dashboard/FormofWork-list.vue"),
+      },
+      {
+        path: "expjob-list",
+        component: () => import("../views/admin/dashboard/Expjob-list.vue"),
+      },
+      {
+        path: "salary-management",
+        component: () => import("../views/admin/dashboard/Salary-management.vue"),
+      },
+      {
+        path: "description-job",
+        component: () => import("../views/admin/dashboard/Description-job.vue"),
+      },
+      {
+        path: "transaction-management",
+        component: () => import("../views/admin/dashboard/Transaction-management.vue"),
       },
     ],
   },
