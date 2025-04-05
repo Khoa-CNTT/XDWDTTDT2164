@@ -6,10 +6,10 @@
     </header>
 
     <!-- Sidebar -->
-    <!-- <aside class="">
-        
-      </aside> -->
-    <SidebarEmployer></SidebarEmployer>
+    <aside class="dashboard-sidebar">
+      <candidate-profile />
+    </aside>
+
     <!-- Main Content Area -->
     <main class="dashboard-main" style="background-color: #edf1fc">
       <router-view></router-view>
@@ -29,14 +29,14 @@ import "@/style.css";
 
 import TopSuperio from "@/components/admin/TopSuperio.vue";
 import BotSuperio from "@/components/admin/BotSuperio.vue";
-import SidebarEmployer from "../../components/employer/SidebarEmployer.vue";
+import CandidateProfile from "@/components/candidate/SidebarCandidate.vue";
 
 export default {
   name: "Dashboard",
   components: {
     TopSuperio,
-    SidebarEmployer,
     BotSuperio,
+    CandidateProfile,
   },
   mounted() {
     import("bootstrap/dist/js/bootstrap.bundle.min.js")

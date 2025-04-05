@@ -7,8 +7,8 @@
 
     <!-- Sidebar -->
     <!-- <aside class="">
-        
-      </aside> -->
+          
+        </aside> -->
     <SidebarEmployer></SidebarEmployer>
     <!-- Main Content Area -->
     <main class="dashboard-main" style="background-color: #edf1fc">
@@ -29,7 +29,7 @@ import "@/style.css";
 
 import TopSuperio from "@/components/admin/TopSuperio.vue";
 import BotSuperio from "@/components/admin/BotSuperio.vue";
-import SidebarEmployer from "../../components/employer/SidebarEmployer.vue";
+import SidebarEmployer from "@/components/employer/SidebarEmployer.vue";
 
 export default {
   name: "Dashboard",
