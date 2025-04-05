@@ -53,6 +53,18 @@ const routes = [
         path: "employer-info",
         component: () => import("../views/employer/employer-info.vue"),
       },
+      {
+        path: "employer-workmanagement",
+        component: () => import("../views/employer/employer-workmanagement.vue"),
+      },
+      {
+        path: "employer-candidates",
+        component: () => import("../views/employer/employer-candidates.vue"),
+      },
+      {
+        path: "employer-password",
+        component: () => import("../views/employer/employer-password.vue"),
+      },
     ],
   },
 
