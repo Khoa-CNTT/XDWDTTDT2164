@@ -128,6 +128,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         field: "rank_id",
       },
+      price: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
       expire: {
         type: DataTypes.DATE,
       },

@@ -99,6 +99,10 @@ module.exports = {
           type: Sequelize.DATE,
           allowNull: false,
         },
+        price: {
+          type: Sequelize.DECIMAL,
+          allowNull: false,
+        },
         address: {
           type: Sequelize.STRING(255),
           allowNull: false,
