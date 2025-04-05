@@ -43,47 +43,60 @@
 
     <!-- Modal cập nhật -->
     <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="exampleModalLabel">Cập nhật người dùng</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div>
-                        <label>Tên người dùng</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <label>Tên người dùng</label>
+                            <input class="form-control" type="text">
+                        </div>
+                        <div class="col-6">
+                            <label>Số điện thoại</label>
+                            <input class="form-control" type="text">
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label>Địa chỉ</label>
                         <input class="form-control" type="text">
                     </div>
-                    <div class="mt-2">
-                        <label>Số điện thoại</label>
-                        <input class="form-control" type="text">
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <label for="gioi_tinh" class="form-label">Giới tính</label>
+                            <select class="form-select" id="gioi_tinh" name="gioi_tinh"
+                                aria-placeholder="Chọn giới tính...">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label>Ngày sinh</label>
+                            <input class="form-control" type="date">
+                        </div>
                     </div>
-                    <div class="mt-2">
-                        <label for="gioi_tinh" class="form-label">Giới tính</label>
-                        <select class="form-select" id="gioi_tinh" name="gioi_tinh" aria-placeholder="Chọn giới tính...">
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác</option>
-                        </select>
-                    </div>
-                    <div class="mt-2">
-                        <label>Ngày sinh</label>
-                        <input class="form-control" type="date">
-                    </div>
-                    <div class="mt-2">
-                        <label for="gioi_tinh" class="form-label">Quyền</label>
-                        <select class="form-select" id="gioi_tinh" name="gioi_tinh" aria-placeholder="Chọn quyền truy cập">
-                            <option value="Nam">admin</option>
-                            <option value="Nữ">Ứng viên</option>
-                            <option value="Khác">Công ty</option>
-                        </select>
-                    </div>
-                    <div class="mt-2">
-                        <label for="gioi_tinh" class="form-label">Trạng thái</label>
-                        <select class="form-select" id="gioi_tinh" name="gioi_tinh" aria-placeholder="Chọn trạng thái...">
-                            <option value="Nam">Kích hoạt</option>
-                            <option value="Nữ">Dừng hoạt động</option>
-                        </select>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <label for="gioi_tinh" class="form-label">Quyền</label>
+                            <select class="form-select" id="gioi_tinh" name="gioi_tinh"
+                                aria-placeholder="Chọn quyền truy cập">
+                                <option value="Nam">admin</option>
+                                <option value="Nữ">Ứng viên</option>
+                                <option value="Khác">Công ty</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="gioi_tinh" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="gioi_tinh" name="gioi_tinh"
+                                aria-placeholder="Chọn trạng thái...">
+                                <option value="Nam">Kích hoạt</option>
+                                <option value="Nữ">Dừng hoạt động</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -75,6 +75,16 @@ module.exports = {
             key: "id",
           },
         },
+        userId: {
+          type: Sequelize.UUID,
+          field: "user_id",
+          allowNull: true,
+          onDelete: "SET NULL",
+          references: {
+            model: "users",
+            key: "id",
+          },
+        },
         rankId: {
           type: Sequelize.UUID,
           allowNull: true,
@@ -87,6 +97,10 @@ module.exports = {
         },
         expire: {
           type: Sequelize.DATE,
+          allowNull: false,
+        },
+        price: {
+          type: Sequelize.DECIMAL,
           allowNull: false,
         },
         address: {
@@ -104,8 +118,12 @@ module.exports = {
         },
         isVisible: {
           type: Sequelize.BOOLEAN,
-          defaultValue: true,
+          defaultValue: false,
           field: "is_visible",
+        },
+        numberOfRecruits: {
+          type: Sequelize.INTEGER,
+          field: "number_of_recruits",
         },
         deleted: {
           type: Sequelize.BOOLEAN,
@@ -125,8 +143,6 @@ module.exports = {
       {
         indexes: [
           { fields: ["job_name"] },
-          { fields: ["user_id"] },
-          { fields: ["category_id"] },
           { fields: ["job_slug"], unique: true },
         ],
       }

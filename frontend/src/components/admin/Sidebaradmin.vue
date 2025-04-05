@@ -5,14 +5,14 @@
                 <ul class="sidebar-list">
                     <!-- Trang Chủ -->
                     <li class="sidebar-item header">
-                        <router-link to="/admin-dashboard">
+                        <router-link to="/admin-dashboard/admin-starter" class="text-dark">
                             <i class="fa-solid fa-house"></i>
                             <span>Trang Chủ</span>
                         </router-link>
                     </li>
                     <!-- Nhóm quản lý người đùng -->
                     <li class="sidebar-item header">
-                        <router-link to="/admin-dashboard/user-management">
+                        <router-link to="/admin-dashboard/user-management" class="text-dark">
                             <i class="fa-regular fa-user"></i>
                             QUẢN LÝ NGƯỜI DÙNG
                         </router-link>
@@ -20,39 +20,43 @@
 
                     <!-- Nhóm danh mục -->
                     <li class="sidebar-item header">
-                        <i class="fa-solid fa-folder-open"></i>
-                        DANH MỤC
-                    </li>
-                    <li class="sidebar-item sub-item">
-                        <router-link to="/admin-dashboard/list-jobtype">
+                        <router-link to="/admin-dashboard/list-jobtype" class="text-dark">
                             <i class="fa-solid fa-briefcase"></i>
                             Quản lý loại công việc
                         </router-link>
                     </li>
-                    <li class="sidebar-item sub-item">
-                        <router-link to="/admin-dashboard/list-skills">
+                    <li class="sidebar-item header">
+                        <router-link to="/admin-dashboard/list-skills" class="text-dark">
                             <i class="fa-solid fa-lightbulb"></i>
                             Quản lý kỹ năng
                         </router-link>
                     </li>
-                    <li class="sidebar-item sub-item">
-                        <i class="fa-solid fa-ranking-star"></i>
-                        Quản lý cấp bậc
+                    <li class="sidebar-item header">
+                        <router-link to="/admin-dashboard/hierarchy-management" class="text-dark">
+                            <i class="fa-solid fa-ranking-star"></i>
+                            Quản lý cấp bậc
+                        </router-link>
                     </li>
-                    <li class="sidebar-item sub-item">
-                        <i class="fa-solid fa-clock"></i>
-                        Quản lý hình thức làm việc
+                    <li class="sidebar-item header">
+                        <router-link to="/admin-dashboard/formofwork-list" class="text-dark">
+                            <i class="fa-solid fa-clock"></i>
+                            Quản lý hình thức làm việc
+                        </router-link>
                     </li>
-                    <li class="sidebar-item sub-item">
-                        <i class="fa-solid fa-chart-line"></i>
-                        Quản lý kinh nghiệm làm việc
+                    <li class="sidebar-item header">
+                        <router-link to="/admin-dashboard/expjob-list" class="text-dark">
+                            <i class="fa-solid fa-chart-line"></i>
+                            Quản lý kinh nghiệm làm việc
+                        </router-link>
                     </li>
-                    <li class="sidebar-item sub-item">
-                        <i class="fa-solid fa-coins"></i>
-                        Quản lý khoản lương
+                    <li class="sidebar-item header">
+                        <router-link to="/admin-dashboard/salary-management" class="text-dark">
+                            <i class="fa-solid fa-coins"></i>
+                            Quản lý khoản lương
+                        </router-link>
                     </li>
-                    <li class="sidebar-item sub-item">
-                        <router-link to="/admin-dashboard/company-management">
+                    <li class="sidebar-item header">
+                        <router-link to="/admin-dashboard/company-management" class="text-dark">
                             <i class="fa-solid fa-building"></i>
                             Quản lý công ty
                         </router-link>
@@ -61,14 +65,16 @@
 
                     <!-- Nhóm quản lý bài đăng -->
                     <li class="sidebar-item header">
-                        <router-link to="/admin-dashboard/post-management">
+                        <router-link to="/admin-dashboard/post-management" class="text-dark">
                             <i class="fa-solid fa-newspaper"></i>
                             QUẢN LÝ BÀI ĐĂNG
                         </router-link>
                     </li>
                     <li class="sidebar-item header">
-                        <i class="fa-solid fa-box-open"></i>
-                        Quản lý giao dịch
+                        <router-link to="/admin-dashboard/transaction-management" class="text-dark">
+                            <i class="fa-solid fa-box-open"></i>
+                            Quản lý giao dịch
+                        </router-link>
                     </li>
 
                     <!-- Đăng xuất -->
@@ -89,6 +95,10 @@ export default {
 </script>
 
 <style scoped>
+.menu {
+    list-style: none;
+}
+
 a {
     text-decoration: none !important;
     /* Tắt dấu gạch dưới của router-link */
@@ -104,8 +114,8 @@ a {
     color: black;
     width: 280px;
     height: 100vh;
-    padding: 20px 0;
-}
+    padding: 20px 10px;
+} 
 
 .sidebar-list {
     list-style: none;

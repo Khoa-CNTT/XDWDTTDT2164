@@ -21,12 +21,12 @@ const validateCreateJob = [
   body("experienceId")
     .notEmpty()
     .withMessage("Kinh nghiệm không được để trống"),
-  body("employerId").notEmpty().withMessage("Công ty không được để trống"),
   body("numberOfRecruits")
     .notEmpty()
     .withMessage("Số lượng tuyển dụng không được để trống"),
-  body("rank").notEmpty().withMessage("Cấp bậc không được để trống"),
+  body("rankId").notEmpty().withMessage("Cấp bậc không được để trống"),
   body("address").notEmpty().withMessage("Địa chỉ không được để trống"),
+  body("expire").notEmpty().withMessage("Ngày hết hạn không được để trống"),
 ];
 
 module.exports = { validateCreateJob };

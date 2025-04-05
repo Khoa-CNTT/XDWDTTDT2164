@@ -13,9 +13,9 @@
                     <thead>
                         <tr class="text-center align-middle">
                             <th>STT</th>
-                            <th>Tên công việc</th>
-                            <th>Slug công việc</th>
-                            <th>Hình ảnh</th>
+                            <th>Tên kỹ năng</th>
+                            <th>Mã code</th>
+                            <th>Danh mục</th>
                             <th>Trạng thái</th>
                             <th>Action</th>
                         </tr>
@@ -24,18 +24,17 @@
                         <tr>
                             <td>1</td>
                             <td>
-                                Công nghệ thông tin
+                                ReactJS
                             </td>
-                            <td>cong-nghe-thong-tin</td>
-                            <td><img class="img-logo"
-                                    src="https://alumninetwork.rmit.edu.vn/wp-content/uploads/formidable/3/image-20221220115751-1.png"
-                                    alt="logo-company"></td>
+                            <td>reactjs</td>
+                            <td>Công nghệ thông tin</td>
                             <td><span class="badge bg-success">Hoạt động</span></td>
                             <td>
                                 <button class="btn btn-success me-2" data-bs-toggle="modal"
-                                    data-bs-target="#update-modal"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    data-bs-target="#update-modal">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
                                 <button class="btn btn-danger me-2">
-
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </td>
@@ -48,41 +47,25 @@
 
     <!-- Modal thêm mới -->
     <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Thêm mới loại công việc</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Thêm mới kỹ năng</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <label>Tên công việc</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="col-6">
-                            <label>Slug công việc</label>
-                            <input type="text" class="form-control">
-                        </div>
+                    <div>
+                        <label>Tên kỹ năng</label>
+                        <input type="text" class="form-control">
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-6">
-                            <label>Hình ảnh</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="col-6 ">
-                            <label>Trạng thái</label>
-                            <select class="form-select" name="trang-thai" id="trang-thai"
-                                aria-placeholder="Chọn trạng thái...">
-                                <option value="hoat-dong">Hoạt động</option>
-                                <option value="ngung-hoat-dong">Ngừng hoạt động</option>
-                            </select>
-                        </div>
+                    <div class="mt-3">
+                        <label>Danh mục công việc</label>
+                        <input type="text" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Thêm mới</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Lưu</button>
                 </div>
             </div>
         </div>
@@ -90,41 +73,30 @@
 
     <!-- Modal cập nhật -->
     <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Cập nhật loại công việc</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Cập nhật kỹ năng</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <label>Tên công việc</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="col-6">
-                            <label>Slug công việc</label>
-                            <input type="text" class="form-control">
-                        </div>
+                    <div>
+                        <label class="mb-2">Tên kỹ năng</label>
+                        <input type="text" class="form-control">
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-6">
-                            <label>Hình ảnh</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="col-6 ">
-                            <label>Trạng thái</label>
-                            <select class="form-select" name="trang-thai" id="trang-thai"
-                                aria-placeholder="Chọn trạng thái...">
-                                <option value="hoat-dong">Hoạt động</option>
-                                <option value="ngung-hoat-dong">Ngừng hoạt động</option>
-                            </select>
-                        </div>
+                    <div class="mt-2">
+                        <label class="mb-2">Danh mục công việc</label>
+                        <select name="danh_muc_cong_viec" class="form-select" aria-placeholder="Chọn danh mục công việc">
+                            <option value="1">Công nghệ thông tin</option>
+                            <option value="1">An ninh mạng</option>
+                            <option value="1">FrontEnd ReactJS</option>
+                            <option value="1">BackEnd ReactJS</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cập nhật</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Lưu</button>
                 </div>
             </div>
         </div>

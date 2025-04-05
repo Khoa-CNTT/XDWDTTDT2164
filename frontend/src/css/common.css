@@ -1,3 +1,4 @@
+
 .login-container {
   position: relative;
   height: 100vh;
@@ -164,7 +165,6 @@
   grid-area: main;
   padding: 20px;
   overflow-y: auto;
-  height: calc(100vh - var(--header-height) - var(--footer-height));
 }
 
 .dashboard-footer {
@@ -173,3 +173,4 @@
   padding: 10px 0;
   text-align: center;
 }
+

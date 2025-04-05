@@ -26,7 +26,7 @@
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
-                    <router-link to="">
+                    <router-link to="/login">
                         <a class="btn btn-outline-primary" href="login_form.html" type="button">Đăng nhập / Đăng ký</a>
                     </router-link>
                 </form>

@@ -20,11 +20,11 @@ module.exports = {
         },
       },
       balance: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.DECIMAL,
         allowNull: false,
       },
       currently: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(3),
         allowNull: false,
       },
       deleted: {

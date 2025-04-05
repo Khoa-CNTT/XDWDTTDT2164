@@ -53,6 +53,19 @@ class ExperiencesService {
       throw new ApiError(StatusCode.NOT_FOUND, "Kinh nghiệm không tồn tại");
     }
 
+    // Kiểm tra tên kinh nghiệm làm việc có bị trùng không
+    if (experienceName) {
+      const existingExperience = await db.Experiences.findOne({
+        where: { experienceName },
+      });
+      if (existingExperience && existingExperience.id !== id) {
+        throw new ApiError(
+          StatusCode.CONFLICT,
+          "Tên kinh nghiệm làm việc đã tồn tại"
+        );
+      }
+    }
+
     let experienceSlug = experience.experienceSlug;
     if (experienceName !== experience.experienceName) {
       experienceSlug = slugify(experienceName, { lower: true });
@@ -77,6 +90,15 @@ class ExperiencesService {
     const experience = await this.checkExperienceById(id);
     if (!experience) {
       throw new ApiError(StatusCode.NOT_FOUND, "Kinh nghiệm không tồn tại");
+    }
+
+    // Kiểm tra đã có job chưa
+    const hasJobs = await db.Jobs.count({ where: { experienceId: id } });
+    if (hasJobs) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Không thể xóa kinh nghiệm làm việc vì có công việc liên quan"
+      );
     }
 
     // Xóa kinh nghiệm
