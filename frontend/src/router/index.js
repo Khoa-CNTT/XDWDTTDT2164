@@ -22,20 +22,7 @@ const routes = [
     path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
-      {
-        path: "", // Mặc định khi vào /admin-dashboard
-        redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
-      },
-      {
-        path: "employer-newjob",
-        component: () => import("../views/employer/employer-newjob.vue"),
-      },
-      {
-        path: "employer-info",
-        component: () => import("../views/employer/employer-info.vue"),
-        redirect: "candidate-dashboard", // Chuyển hướng sang trang con mặc định
-      },
-      {
+{
         path: "candidate-test",
         component: () => import("@/views/candidate/candidate-test.vue"),
       },
@@ -53,7 +40,48 @@ const routes = [
       },
     ],
   },
+{
+  path: "/employer-dashboard",
+  children:[
+      {
+        path: "", // Mặc định khi vào /admin-dashboard
+        redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
+      },
+      {
+        path: "employer-newjob",
+        component: () => import("../views/employer/employer-newjob.vue"),
+      },
+      {
+        path: "employer-info",
+        component: () => import("../views/employer/employer-info.vue"),
+      },
+      {
+        path: "employer-list",
+        component: () => import("../views/employer/employer-list.vue"),
+      },
+      {
+        path: "employer-recharge",
+        component: () => import("../views/employer/employer-recharge.vue"),
+      },
+      {
+        path: "employer-depositinformation",
+        component: () => import("../views/employer/employer-depositinformation.vue"),
+      },
+      {
+        path: "employer-paymentpost",
+        component: () => import("../views/employer/employer-paymentpost.vue"),
+      },
+      {
+        path: "employer-paymenthistory",
+        component: () => import("../views/employer/employer-paymenthistory.vue"),
+      },
+      {
+        path: "employer-deposithistory",
+        component: () => import("../views/employer/employer-deposithistory.vue"),
+      },
 
+  ]
+}
   //Admin
   // {
   //   path: "/admin-dashboard",
