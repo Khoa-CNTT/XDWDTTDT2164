@@ -17,7 +17,7 @@ const routes = [
   // Candidate
   {
     path: "/candidate-dashboard",
-    // component: Dashboard, // Luôn hiển thị Dashboard.vue
+    meta: { layout: "candidate" },
     children: [
       {
         path: "candidate-test",
@@ -41,6 +41,7 @@ const routes = [
   // Employer
   {
     path: "/employer-dashboard",
+    meta: { layout: "employer" },
     children: [
       {
         path: "", // Mặc định khi vào /admin-dashboard
@@ -64,7 +65,8 @@ const routes = [
       },
       {
         path: "employer-depositinformation",
-        component: () => import("../views/employer/employer-depositinformation.vue"),
+        component: () =>
+          import("../views/employer/employer-depositinformation.vue"),
       },
       {
         path: "employer-paymentpost",
@@ -72,14 +74,18 @@ const routes = [
       },
       {
         path: "employer-paymenthistory",
-        component: () => import("../views/employer/employer-paymenthistory.vue"),
+        component: () =>
+          import("../views/employer/employer-paymenthistory.vue"),
       },
       {
         path: "employer-deposithistory",
-        component: () => import("../views/employer/employer-deposithistory.vue"),
+        component: () =>
+          import("../views/employer/employer-deposithistory.vue"),
       },
+      {
         path: "employer-workmanagement",
-        component: () => import("../views/employer/employer-workmanagement.vue"),
+        component: () =>
+          import("../views/employer/employer-workmanagement.vue"),
       },
       {
         path: "employer-candidates",
@@ -91,7 +97,8 @@ const routes = [
       },
       {
         path: "hierarchy-management",
-        component: () => import("../views/admin/dashboard/Hierarchy-management.vue"),
+        component: () =>
+          import("../views/admin/dashboard/Hierarchy-management.vue"),
       },
       {
         path: "formofwork-list",
@@ -103,7 +110,8 @@ const routes = [
       },
       {
         path: "salary-management",
-        component: () => import("../views/admin/dashboard/Salary-management.vue"),
+        component: () =>
+          import("../views/admin/dashboard/Salary-management.vue"),
       },
       {
         path: "description-job",
@@ -111,44 +119,74 @@ const routes = [
       },
       {
         path: "transaction-management",
-        component: () => import("../views/admin/dashboard/Transaction-management.vue"),
+        component: () =>
+          import("../views/admin/dashboard/Transaction-management.vue"),
       },
-
-  ]
-}
-  //Admin
-  // {
-  //   path: "/admin-dashboard",
-  //   // component: Dashboard, // Luôn hiển thị Dashboard.vue
-  //   children: [
-  //     {
-  //       path: "", // Mặc định khi vào /admin-dashboard
-  //       redirect: "admin-dashboard", // Chuyển hướng sang trang con mặc định
-  //     },
-  //     {
-  //       path: "user-management",
-  //       component: () => import("@/views/admin/dashboard/User-management.vue"),
-  //     },
-
-  //     {
-  //       path: "company-management",
-  //       component: () =>
-  //         import("@/views/admin/dashboard/Company-management.vue"),
-  //     },
-  //     {
-  //       path: "post-management",
-  //       component: () => import("@/views/admin/dashboard/Post-management.vue"),
-  //     },
-  //     {
-  //       path: "list-jobtype",
-  //       component: () => import("../views/admin/dashboard/List-jobtype.vue"),
-  //     },
-  //     {
-  //       path: "list-skills",
-  //       component: () => import("../views/admin/dashboard/List-skills.vue"),
-  //     },
-  //   ],
-  // },
+    ],
+  },
+  // Admin routes
+  {
+    path: "/admin-dashboard",
+    meta: { layout: "admin" },
+    children: [
+      {
+        path: "",
+        redirect: "admin-starter",
+      },
+      {
+        path: "admin-starter",
+        component: () => import("@/views/admin/dashboard/Starter-admin.vue"),
+      },
+      {
+        path: "user-management",
+        component: () => import("@/views/admin/dashboard/User-management.vue"),
+      },
+      {
+        path: "company-management",
+        component: () =>
+          import("@/views/admin/dashboard/Company-management.vue"),
+      },
+      {
+        path: "post-management",
+        component: () => import("@/views/admin/dashboard/Post-management.vue"),
+      },
+      {
+        path: "list-jobtype",
+        component: () => import("@/views/admin/dashboard/List-jobtype.vue"),
+      },
+      {
+        path: "list-skills",
+        component: () => import("@/views/admin/dashboard/List-skills.vue"),
+      },
+      {
+        path: "hierarchy-management",
+        component: () =>
+          import("@/views/admin/dashboard/Hierarchy-management.vue"),
+      },
+      {
+        path: "formofwork-list",
+        component: () => import("@/views/admin/dashboard/FormofWork-list.vue"),
+      },
+      {
+        path: "expjob-list",
+        component: () => import("@/views/admin/dashboard/Expjob-list.vue"),
+      },
+      {
+        path: "salary-management",
+        component: () =>
+          import("@/views/admin/dashboard/Salary-management.vue"),
+      },
+      {
+        path: "description-job",
+        component: () => import("@/views/admin/dashboard/Description-job.vue"),
+      },
+      {
+        path: "transaction-management",
+        component: () =>
+          import("@/views/admin/dashboard/Transaction-management.vue"),
+      },
+    ],
+  },
 ];
 
 // Khởi tạo router
