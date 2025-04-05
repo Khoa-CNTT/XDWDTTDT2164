@@ -275,7 +275,10 @@ class UserService {
       // Tạo mới nhân viên
       const user = await db.Users.create(
         {
-          ...employeeData,
+          email: employeeData.email,
+          fullName: employeeData.fullName,
+          phoneNumber: employeeData.phoneNumber,
+          address: employeeData.address,
           role: "employer",
           password: hashedPassword,
         },
@@ -287,7 +290,7 @@ class UserService {
         {
           employerId,
           userId: user.id,
-          employerRole: "recruiter",
+          employerRole: employeeData.employerRole,
         },
         { transaction }
       );
@@ -322,6 +325,11 @@ class UserService {
           as: "Users",
           attributes: ["id", "fullName", "email", "phoneNumber"],
         },
+        {
+          model: db.EmployerUsers,
+          as: "EmployerUsers",
+          attributes: ["employerRole"],
+        },
       ],
     });
 
@@ -333,7 +341,7 @@ class UserService {
    * @param {Object} candidateData - Dữ liệu ứng viên
    * @returns {Promise<Object>} - Thông tin ứng viên
    */
-  async createCandidateProfile(candidateData, userId, filePath) {
+  async createCandidateProfile(candidateData, userId) {
     const transaction = await db.sequelize.transaction();
 
     try {
@@ -350,9 +358,29 @@ class UserService {
         );
       }
 
-      const candidate = await db.Candidates.create(candidateData, {
-        transaction,
-      });
+      const candidate = await db.Candidates.create(
+        {
+          gender: candidateData.gender,
+          dateOfBirth: candidateData.dateOfBirth,
+          address: candidateData.address,
+          workExperience: candidateData.workExperience,
+          salary: candidateData.salary,
+          userId,
+          cvUrl: candidateData.cvUrl,
+        },
+        {
+          transaction,
+        }
+      );
+
+      // Tạo mới candidate skill
+      await db.CandidateSkills.bulkCreate(
+        candidateData.skillIds.map((skillId) => ({
+          candidateId: candidate.id,
+          skillId,
+        })),
+        { transaction }
+      );
 
       await transaction.commit();
 

@@ -169,20 +169,23 @@ class AuthService {
       );
     }
 
+    const { employerRole = null, employerId = null } =
+      userExists.EmployerUsers[0] || {};
+
     // Tạo accessToken và refreshToken
     const accessToken = generateAccessToken(
       userExists.id,
       userExists.email,
       userExists.role,
-      userExists.employerRoles.employerRole,
-      userExists.employerRoles.employerId
+      employerRole,
+      employerId
     );
     const refreshToken = generateRefreshToken(
       userExists.id,
       userExists.email,
       userExists.role,
-      userExists.employerRoles.employerRole,
-      userExists.employerRoles.employerId
+      userExists?.EmployerUsers?.employerRole || null,
+      userExists?.EmployerUsers?.id || null
     );
 
     // Lưu refreshToken vào db và redis
@@ -253,8 +256,8 @@ class AuthService {
         decoded.id,
         decoded.email,
         decoded.role,
-        userExists.employerRoles.employerRole,
-        userExists.employerRoles.employerId
+        userExists.EmployerUsers.employerRole || null,
+        userExists.EmployerUsers.employerId || null
       );
 
       return { accessToken };
@@ -271,7 +274,7 @@ class AuthService {
   async findByEmail(email) {
     return await db.Users.findOne({
       where: { email },
-      include: [{ model: EmployerUsers }],
+      include: [{ model: db.EmployerUsers, as: "EmployerUsers" }],
     });
   }
 

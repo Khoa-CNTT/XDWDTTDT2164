@@ -1,0 +1,176 @@
+
+.login-container {
+  position: relative;
+  height: 100vh;
+}
+
+.image-container {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.logo-overlay {
+  position: absolute;
+  top: 30px;
+  left: 40px;
+  z-index: 10;
+}
+
+.form-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+@media (max-width: 992px) {
+  .login-image {
+    height: 300px;
+    width: 100%;
+  }
+
+  .logo-overlay {
+    top: 20px;
+    left: 20px;
+    width: 120px;
+  }
+
+  .form-center {
+    padding: 4rem 1rem;
+    min-height: auto;
+  }
+}
+
+.google-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #444;
+  transition: all 0.3s;
+}
+
+.form-content {
+  width: 100%;
+  max-width: 500px;
+}
+
+.password-toggle {
+  position: relative;
+}
+
+.password-toggle i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6c757d;
+  z-index: 10;
+}
+
+.password-toggle input {
+  padding-right: 40px !important;
+}
+
+.btn-theme {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  transition: all 0.3s;
+}
+/* 
+.welcome-section {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #34495e;
+    margin-bottom: 15px;
+}
+
+.welcome-text {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 18px;
+} */
+
+/* .back-link {
+    color: #95a5a6;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-link:hover {
+    color: #ecf0f1;
+} */
+
+.menu {
+  list-style: none;
+}
+
+
+/* Footer */
+.page-footer {
+  background: #ffffff;
+  left: 0px;
+  right: 0;
+  bottom: 0;
+  /* position: fixed; */
+  text-align: center;
+  padding: 7px;
+  font-size: 14px;
+  border-top: 1px solid #e4e4e4;
+  z-index: 3;
+}
+
+/* dashboard*/
+.dashboard-container {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  grid-template-columns: 250px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.dashboard-sidebar {
+  grid-area: sidebar;
+  background-color: #f8f9fa;
+  height: calc(100vh - var(--header-height) - var(--footer-height));
+  position: sticky;
+  top: var(--header-height);
+  overflow-y: auto;
+
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE và Edge */
+}
+
+.dashboard-main {
+  grid-area: main;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.dashboard-footer {
+  grid-area: footer;
+  background-color: #f8f9fa;
+  padding: 10px 0;
+  text-align: center;
+}
+
