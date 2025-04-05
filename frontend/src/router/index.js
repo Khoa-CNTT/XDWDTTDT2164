@@ -19,13 +19,11 @@ const routes = [
     path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
-      
       {
         path: "candidate-test",
         component: () => import("@/views/candidate/candidate-test.vue"),
       },
       {
-
         path: "candidate-jobs",
         component: () => import("@/views/candidate/candidate-jobs.vue"),
       },
@@ -57,6 +55,29 @@ const routes = [
         component: () => import("../views/employer/employer-info.vue"),
       },
       {
+        path: "employer-list",
+        component: () => import("../views/employer/employer-list.vue"),
+      },
+      {
+        path: "employer-recharge",
+        component: () => import("../views/employer/employer-recharge.vue"),
+      },
+      {
+        path: "employer-depositinformation",
+        component: () => import("../views/employer/employer-depositinformation.vue"),
+      },
+      {
+        path: "employer-paymentpost",
+        component: () => import("../views/employer/employer-paymentpost.vue"),
+      },
+      {
+        path: "employer-paymenthistory",
+        component: () => import("../views/employer/employer-paymenthistory.vue"),
+      },
+      {
+        path: "employer-deposithistory",
+        component: () => import("../views/employer/employer-deposithistory.vue"),
+      },
         path: "employer-workmanagement",
         component: () => import("../views/employer/employer-workmanagement.vue"),
       },
@@ -92,9 +113,9 @@ const routes = [
         path: "transaction-management",
         component: () => import("../views/admin/dashboard/Transaction-management.vue"),
       },
-    ],
-  },
 
+  ]
+}
   //Admin
   // {
   //   path: "/admin-dashboard",
