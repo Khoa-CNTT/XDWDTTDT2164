@@ -13,16 +13,13 @@ const routes = [
     component: () => import("@/views/common/Sign_up.vue"),
     meta: { layout: "auth" },
   },
-  
 
-
-
-  // Candidate 
+  // Candidate
   {
     path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
-{
+      {
         path: "candidate-test",
         component: () => import("@/views/candidate/candidate-test.vue"),
       },
@@ -40,9 +37,11 @@ const routes = [
       },
     ],
   },
-{
-  path: "/employer-dashboard",
-  children:[
+
+  // Employer
+  {
+    path: "/employer-dashboard",
+    children: [
       {
         path: "", // Mặc định khi vào /admin-dashboard
         redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
@@ -78,6 +77,41 @@ const routes = [
       {
         path: "employer-deposithistory",
         component: () => import("../views/employer/employer-deposithistory.vue"),
+      },
+        path: "employer-workmanagement",
+        component: () => import("../views/employer/employer-workmanagement.vue"),
+      },
+      {
+        path: "employer-candidates",
+        component: () => import("../views/employer/employer-candidates.vue"),
+      },
+      {
+        path: "employer-password",
+        component: () => import("../views/employer/employer-password.vue"),
+      },
+      {
+        path: "hierarchy-management",
+        component: () => import("../views/admin/dashboard/Hierarchy-management.vue"),
+      },
+      {
+        path: "formofwork-list",
+        component: () => import("../views/admin/dashboard/FormofWork-list.vue"),
+      },
+      {
+        path: "expjob-list",
+        component: () => import("../views/admin/dashboard/Expjob-list.vue"),
+      },
+      {
+        path: "salary-management",
+        component: () => import("../views/admin/dashboard/Salary-management.vue"),
+      },
+      {
+        path: "description-job",
+        component: () => import("../views/admin/dashboard/Description-job.vue"),
+      },
+      {
+        path: "transaction-management",
+        component: () => import("../views/admin/dashboard/Transaction-management.vue"),
       },
 
   ]
