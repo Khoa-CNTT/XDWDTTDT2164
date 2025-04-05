@@ -44,6 +44,7 @@ const validateAddEmployeeToEmployer = [
     .notEmpty()
     .withMessage("Số điện thoại không được để trống"),
   body("address").notEmpty().withMessage("Địa chỉ không được để trống"),
+  body("employerRole").notEmpty().withMessage("Vai trò không được để trống"),
 ];
 
 /**

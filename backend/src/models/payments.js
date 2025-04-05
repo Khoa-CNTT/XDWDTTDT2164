@@ -45,12 +45,15 @@ module.exports = (sequelize, DataTypes) => {
       },
       balanceBefore: {
         type: DataTypes.DECIMAL,
+        field: "balance_before",
       },
       balanceAfter: {
         type: DataTypes.DECIMAL,
+        field: "balance_after",
       },
-      isDeposit: {
-        type: DataTypes.BOOLEAN,
+      promotionAmount: {
+        type: DataTypes.DECIMAL,
+        field: "promotion_amount",
       },
       currency: {
         type: DataTypes.STRING,
@@ -65,6 +68,14 @@ module.exports = (sequelize, DataTypes) => {
       transactionId: {
         type: DataTypes.STRING,
         field: "transaction_id",
+      },
+      transactionType: {
+        type: DataTypes.ENUM("Nạp tiền", "Hoàn tiền", "Thanh toán"),
+        field: "transaction_type",
+      },
+      note: {
+        type: DataTypes.STRING,
+        field: "note",
       },
       paymentDate: {
         type: DataTypes.DATE,

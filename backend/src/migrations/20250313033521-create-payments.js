@@ -36,36 +36,54 @@ module.exports = {
       balanceBefore: {
         type: Sequelize.DECIMAL,
         allowNull: true,
+        field: "balance_before",
       },
       balanceAfter: {
         type: Sequelize.DECIMAL,
         allowNull: true,
+        field: "balance_after",
       },
-      isDeposit: {
-        type: Sequelize.BOOLEAN,
+      transactionType: {
+        type: DataTypes.ENUM("Nạp tiền", "Hoàn tiền", "Thanh toán"),
+        field: "transaction_type",
       },
       currency: {
-        type: Sequelize.STRING(10),
+        type: Sequelize.STRING(3),
         allowNull: false,
       },
       paymentMethod: {
         type: Sequelize.STRING(50),
-        allowNull: false,
+        allowNull: true,
+        field: "payment_method",
       },
       status: {
-        type: Sequelize.ENUM("Đang chờ", "Thành công", "Thấy bại"),
+        type: Sequelize.ENUM("Đang chờ", "Thành công", "Thất bại"),
         defaultValue: "Đang chờ",
+        allowNull: true,
       },
       transactionId: {
         type: Sequelize.STRING(100),
-        allowNull: false,
+        allowNull: true,
+        field: "transaction_id",
+      },
+      promotionAmount: {
+        type: Sequelize.DECIMAL,
+        allowNull: true,
+        field: "promotion_amount",
+        defaultValue: 0,
       },
       paymentDate: {
         type: Sequelize.DATE,
         field: "payment_date",
       },
+      note: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+        field: "note",
+      },
       deleted: {
         type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,
@@ -75,7 +93,7 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        field: "created_at",
+        field: "updated_at",
       },
     });
   },

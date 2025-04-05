@@ -275,7 +275,10 @@ class UserService {
       // Tạo mới nhân viên
       const user = await db.Users.create(
         {
-          ...employeeData,
+          email: employeeData.email,
+          fullName: employeeData.fullName,
+          phoneNumber: employeeData.phoneNumber,
+          address: employeeData.address,
           role: "employer",
           password: hashedPassword,
         },
@@ -287,7 +290,7 @@ class UserService {
         {
           employerId,
           userId: user.id,
-          employerRole: "recruiter",
+          employerRole: employeeData.employerRole,
         },
         { transaction }
       );
@@ -321,6 +324,11 @@ class UserService {
           model: db.Users,
           as: "Users",
           attributes: ["id", "fullName", "email", "phoneNumber"],
+        },
+        {
+          model: db.EmployerUsers,
+          as: "EmployerUsers",
+          attributes: ["employerRole"],
         },
       ],
     });
