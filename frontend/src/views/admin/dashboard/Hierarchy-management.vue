@@ -1,10 +1,10 @@
 <template>
-    <div class="list-skills">
-        <h2>Danh Sách Kỹ Năng</h2>
+    <div class="hierarchy-management">
+        <h2>Quản Lý Cấp Bậc</h2>
         <a href="blank">Quay trở lại trang chủ?</a>
         <div class="card mt-5">
             <div class="card-header d-flex justify-content-between">
-                <h5 class="title-header mt-2">Danh Sách Kỹ Năng</h5>
+                <h5 class="title-header mt-2">Quản Lý Cấp Bậc</h5>
                 <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
                     style="width: 150px; height: 40px;">Thêm mới</button>
             </div>
@@ -13,9 +13,8 @@
                     <thead>
                         <tr class="text-center align-middle">
                             <th>STT</th>
-                            <th>Tên kỹ năng</th>
+                            <th>Tên cấp bậc</th>
                             <th>Mã code</th>
-                            <th>Danh mục</th>
                             <th>Trạng thái</th>
                             <th>Action</th>
                         </tr>
@@ -27,7 +26,6 @@
                                 ReactJS
                             </td>
                             <td>reactjs</td>
-                            <td>Công nghệ thông tin</td>
                             <td><span class="badge bg-success">Hoạt động</span></td>
                             <td>
                                 <button class="btn btn-success me-2" data-bs-toggle="modal"
@@ -50,16 +48,12 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Thêm mới kỹ năng</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Thêm mới cấp bậc</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div>
-                        <label>Tên kỹ năng</label>
-                        <input type="text" class="form-control">
-                    </div>
-                    <div class="mt-3">
-                        <label>Danh mục công việc</label>
+                        <label>Tên cấp bậc</label>
                         <input type="text" class="form-control">
                     </div>
                 </div>
@@ -76,22 +70,13 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Cập nhật kỹ năng</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Cập nhật cấp bậc</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div>
-                        <label class="mb-2">Tên kỹ năng</label>
+                        <label class="mb-2">Tên cấp bậc</label>
                         <input type="text" class="form-control">
-                    </div>
-                    <div class="mt-2">
-                        <label class="mb-2">Danh mục công việc</label>
-                        <select name="danh_muc_cong_viec" class="form-select" aria-placeholder="Chọn danh mục công việc">
-                            <option value="1">Công nghệ thông tin</option>
-                            <option value="1">An ninh mạng</option>
-                            <option value="1">FrontEnd ReactJS</option>
-                            <option value="1">BackEnd ReactJS</option>
-                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">

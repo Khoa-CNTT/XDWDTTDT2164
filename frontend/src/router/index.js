@@ -19,11 +19,13 @@ const routes = [
     path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
+      
       {
         path: "candidate-test",
         component: () => import("@/views/candidate/candidate-test.vue"),
       },
       {
+
         path: "candidate-jobs",
         component: () => import("@/views/candidate/candidate-jobs.vue"),
       },
@@ -38,6 +40,7 @@ const routes = [
     ],
   },
 
+  // Employer
   {
     path: "/employer-dashboard",
     children: [
@@ -64,6 +67,30 @@ const routes = [
       {
         path: "employer-password",
         component: () => import("../views/employer/employer-password.vue"),
+      },
+      {
+        path: "hierarchy-management",
+        component: () => import("../views/admin/dashboard/Hierarchy-management.vue"),
+      },
+      {
+        path: "formofwork-list",
+        component: () => import("../views/admin/dashboard/FormofWork-list.vue"),
+      },
+      {
+        path: "expjob-list",
+        component: () => import("../views/admin/dashboard/Expjob-list.vue"),
+      },
+      {
+        path: "salary-management",
+        component: () => import("../views/admin/dashboard/Salary-management.vue"),
+      },
+      {
+        path: "description-job",
+        component: () => import("../views/admin/dashboard/Description-job.vue"),
+      },
+      {
+        path: "transaction-management",
+        component: () => import("../views/admin/dashboard/Transaction-management.vue"),
       },
     ],
   },
