@@ -29,48 +29,43 @@
             </nav>
         </header> -->
         <!-- Sidebar -->
-        <nav data-v-834df96f="" class="sidebar">
-            <div data-v-834df96f="" class="menu">
-                <div data-v-834df96f="" class="menu-section">
-                    <ul data-v-834df96f="" class="sidebar-list">
+        <nav class="sidebar">
+            <div class="menu">
+                <div class="menu-section">
+                    <ul class="sidebar-list">
                         <!-- Trang Chủ -->
                         <router-link to="/candidate-dashboard">
-                            <li data-v-834df96f="" class="sidebar-item header"><a data-v-834df96f=""
-                                    href="/admin-dashboard" class=""><i data-v-834df96f=""
-                                        class="fa-solid fa-house"></i><span data-v-834df96f="">
+                            <li class="sidebar-item header"><a href="/admin-dashboard" class=""><i
+                                        class="fa-solid fa-house"></i><span>
                                         Dashboard</span></a></li>
                         </router-link>
                         <!-- Coppy cái này là mẫu để làm mấy cái trong sidebar -->
                         <!-- Nhóm quản lý người đùng -->
-                        <li data-v-834df96f="" class="sidebar-item header">
+                        <li class="sidebar-item header">
                             <!-- để đường dẫn /cadidate-dashboard/(cái đường dẫn mới tạo bên kia) -->
                             <router-link to="/candidate-dashboard/candidate-test">
-                                <a data-v-834df96f="" href="" class=""><i data-v-834df96f=""
-                                        class="fa-solid fa-user"></i>Hồ sơ cá nhân </a>
+                                <a href="" class=""><i class="fa-solid fa-user"></i>Hồ sơ cá nhân </a>
                             </router-link>
                         </li>
-                        <li data-v-834df96f="" class="sidebar-item header">
+                        <li class="sidebar-item header">
                             <router-link to="/candidate-dashboard/candidate-jobs">
-                                <a data-v-834df96f="" href="" class=""><i data-v-834df96f=""
-                                        class="fa-solid fa-bookmark"></i>Đã lưu </a>
+                                <a href="" class=""><i class="fa-solid fa-bookmark"></i>Đã lưu </a>
                             </router-link>
                         </li>
-                        <li data-v-834df96f="" class="sidebar-item header">
+                        <li class="sidebar-item header">
                             <router-link to="/candidate-dashboard/candidate-apply">
-                                <a data-v-834df96f="" href="" class=""><i data-v-834df96f=""
-                                        class="fa-solid fa-calendar"></i>Ứng viên công việc</a>
+                                <a href="" class=""><i class="fa-solid fa-calendar"></i>Ứng viên công việc</a>
                             </router-link>
                         </li>
-                        <li data-v-834df96f="" class="sidebar-item header">
+                        <li class="sidebar-item header">
                             <router-link to="/candidate-dashboard/candidate-password">
-                                <a data-v-834df96f="" href="" class=""><i data-v-834df96f=""
-                                        class="fa-solid fa-lock"></i>Đổi mật khẩu</a>
+                                <a href="" class=""><i class="fa-solid fa-lock"></i>Đổi mật khẩu</a>
                             </router-link>
                         </li>
                         <!-- Bỏ hết mấy cái dưới này  -->
                         <!-- Đăng xuất -->
-                        <li data-v-834df96f="" class="sidebar-item logout"><i data-v-834df96f=""
-                                class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất </li>
+                        <li class="sidebar-item logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -118,9 +113,9 @@ a {
 }
 
 .sidebar-item.header {
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
-    font-size: 0.9em;
+    font-size: 0.7em;
     color: #7f8c8d;
     margin-top: 5px;
 }
