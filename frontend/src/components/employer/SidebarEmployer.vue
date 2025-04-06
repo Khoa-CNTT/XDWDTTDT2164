@@ -61,7 +61,7 @@
               Thay Đổi Mật Khẩu
             </router-link>
           </li>
-          <li class="sidebar-item header">
+          <li class="sidebar-item logout">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             Đăng xuất
           </li>
@@ -113,9 +113,9 @@ a {
 }
 
 .sidebar-item.header {
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  font-size: 0.9em;
+  font-size: 0.7em;
   margin-top: 5px;
 }
 

@@ -5,7 +5,7 @@
                 <ul class="sidebar-list">
                     <!-- Trang Chủ -->
                     <li class="sidebar-item header">
-                        <router-link to="/admin-dashboard/admin-starter" class="text-dark">
+                        <router-link to="/admin-dashboard" class="text-dark">
                             <i class="fa-solid fa-house"></i>
                             <span>Trang Chủ</span>
                         </router-link>
@@ -114,7 +114,7 @@ a {
     color: black;
     width: 280px;
     height: 100vh;
-    padding: 20px 10px;
+    padding: 20px 0px;
 } 
 
 .sidebar-list {
@@ -133,9 +133,9 @@ a {
 }
 
 .sidebar-item.header {
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
-    font-size: 0.9em;
+    font-size: 0.7em;
     color: #7f8c8d;
     margin-top: 5px;
 }

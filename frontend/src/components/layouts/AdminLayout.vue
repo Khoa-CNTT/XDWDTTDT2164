@@ -28,15 +28,15 @@ import "@/css/common.css";
 import "@/style.css";
 
 import TopSuperio from "@/components/admin/TopSuperio.vue";
-import BotSuperio from "@/components/admin/BotSuperio.vue";
 import Sidebaradmin from "@/components/admin/Sidebaradmin.vue";
+import BotSuperio from "@/components/admin/BotSuperio.vue";
 
 export default {
   name: "Dashboard",
   components: {
     TopSuperio,
-    Sidebaradmin,
     BotSuperio,
+    Sidebaradmin,
   },
   mounted() {
     import("bootstrap/dist/js/bootstrap.bundle.min.js")

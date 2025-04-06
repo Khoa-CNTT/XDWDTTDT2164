@@ -131,10 +131,6 @@ const routes = [
     children: [
       {
         path: "",
-        redirect: "admin-starter",
-      },
-      {
-        path: "admin-starter",
         component: () => import("@/views/admin/dashboard/Starter-admin.vue"),
       },
       {
