@@ -13,6 +13,25 @@ const routes = [
     component: () => import("@/views/common/Sign_up.vue"),
     meta: { layout: "auth" },
   },
+  {
+    //Forgot password
+    path: "/forgot-password",
+    component: () => import("@/views/common/Forgot_password.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //Reset password
+    path: "/reset-password",
+    component: () => import("@/views/common/Reset_password.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //OTP
+    path: "/otp",
+    component: () => import("@/views/common/OTP.vue"),
+    meta: { layout: "auth" },
+  },
+
 
   // Candidate
   {
@@ -183,6 +202,18 @@ const routes = [
       },
     ],
   },
+
+  // Guest
+  {
+    path: "/guest-dashboard",
+    meta: { layout: "guest" },
+    children: [
+      {
+        path: "",
+        component: () => import("@/views/guest/index.vue"),
+      },
+    ],
+  }
 ];
 
 // Khởi tạo router
