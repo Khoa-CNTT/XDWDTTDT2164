@@ -1,33 +1,5 @@
 <template>
     <div>
-        <!-- Header -->
-        <!-- <header class="dashboard-header">
-            <nav class="navbar navbar-expand-lg bg-body-tertiary p-0">
-                <div class="container-fluid"
-                    style="padding: 20px 50px; background-color: white; border-bottom: 2px solid rgb(222, 226, 230);">
-                    <a class="logo me-3" href="#"><img src="/src/assets/logo/logo.svg" alt="Superio" width="150"
-                            height=""></a><button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation"><span
-                            class="navbar-toggler-icon"></span></button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link active text-primary" aria-current="page"
-                                    href="#">Trang chủ</a></li>
-                            <li class="nav-item"><a class="nav-link active text-primary" aria-current="page"
-                                    href="#">Việc làm</a></li>
-                            <li class="nav-item"><a class="nav-link active text-primary" aria-current="page"
-                                    href="#">Công Ty</a></li>
-                            <li class="nav-item"><a class="nav-link active text-primary" aria-current="page"
-                                    href="#">Giới Thiệu</a></li>
-                        </ul>
-                        <form class="d-flex" role="search"><a href="/skills" class=""><a class="btn btn-outline-primary"
-                                    href="login_form.html" type="button">Đăng nhập /
-                                    Đăng ký</a></a></form>
-                    </div>
-                </div>
-            </nav>
-        </header> -->
         <!-- Sidebar -->
         <nav class="sidebar">
             <div class="menu">
@@ -39,10 +11,8 @@
                                         class="fa-solid fa-house"></i><span>
                                         Dashboard</span></a></li>
                         </router-link>
-                        <!-- Coppy cái này là mẫu để làm mấy cái trong sidebar -->
                         <!-- Nhóm quản lý người đùng -->
                         <li class="sidebar-item header">
-                            <!-- để đường dẫn /cadidate-dashboard/(cái đường dẫn mới tạo bên kia) -->
                             <router-link to="/candidate-dashboard/candidate-test">
                                 <a href="" class=""><i class="fa-solid fa-user"></i>Hồ sơ cá nhân </a>
                             </router-link>
@@ -62,7 +32,6 @@
                                 <a href="" class=""><i class="fa-solid fa-lock"></i>Đổi mật khẩu</a>
                             </router-link>
                         </li>
-                        <!-- Bỏ hết mấy cái dưới này  -->
                         <!-- Đăng xuất -->
                         <li class="sidebar-item logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
                         </li>

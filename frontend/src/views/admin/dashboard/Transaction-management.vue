@@ -158,6 +158,7 @@
 </template>
 
 <script>
+
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Chart, registerables } from "chart.js";
 import { BarController, PieController } from "chart.js";
