@@ -20,20 +20,26 @@
             </router-link>
           </li>
           <li class="sidebar-item header">
-            <router-link
-              to="/employer-dashboard/employer-info"
-              class="text-dark"
-            >
+            <router-link to="/employer-dashboard/employer-info" class="text-dark">
               <i class="fa-solid fa-user"></i>
               Hồ Sơ Công Ty
             </router-link>
           </li>
           <li class="sidebar-item header">
-            <router-link
-              to="/employer-dashboard/employer-newjob"
-              class="text-dark"
-            >
-              <i class="fa-solid fa-circle-chevron-right"></i>
+            <router-link to="/employer-dashboard/employer-info" class="text-dark">
+              <i class="fa-solid fa-play"></i>
+              Quản Lí nhân viên
+            </router-link>
+          </li>
+          <li class="sidebar-item header">
+            <router-link to="/employer-dashboard/employer-info" class="text-dark">
+              <i class="fa-solid fa-play"></i>
+              Quản Lí Giao Dịch
+            </router-link>
+          </li>
+          <li class="sidebar-item header">
+            <router-link to="/employer-dashboard/employer-newjob" class="text-dark">
+              <i class="fa-solid fa-play"></i>
               Đăng Một Công Việc Mới
             </router-link>
           </li>
@@ -44,26 +50,22 @@
             </router-link>
           </li>
           <li class="sidebar-item header">
-            <router-link
-              to="/employer-dashboard/employer-recharge"
-              class="text-dark"
-            >
+            <router-link to="/employer-dashboard/employer-recharge" class="text-dark">
               <i class="fa-solid fa-table"></i>
               Tất Cả Các Ứng Viên
             </router-link>
           </li>
           <li class="sidebar-item header">
-            <router-link
-              to="/admin-dashboard/post-management"
-              class="text-dark"
-            >
+            <router-link to="/admin-dashboard/post-management" class="text-dark">
               <i class="fa-solid fa-lock"></i>
               Thay Đổi Mật Khẩu
             </router-link>
           </li>
-          <li class="sidebar-item logout">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            Đăng xuất
+          <li class="sidebar-item header">
+            <router-link to="/admin-dashboard/post-management" class="text-dark">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              Đăng xuất
+            </router-link>
           </li>
         </ul>
       </div>
