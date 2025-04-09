@@ -17,7 +17,7 @@
                     <p>Superio@gmail.com</p>
                 </div>
 
-                <!-- Các cột khác giữ nguyên -->
+                <!-- Ứng Cử viên -->
                 <div class="col-6 col-md-6 col-lg-2 text-start">
                     <h4 class="h5 mb-3">Ứng cử viên</h4>
                     <ul class="list-unstyled">

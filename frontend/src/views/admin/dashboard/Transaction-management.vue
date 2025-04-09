@@ -123,11 +123,118 @@
 </template>
 
 <script>
+import { Chart, registerables } from "chart.js";
+
+Chart.register(...registerables);
 
 export default {
-    name: "UserManagement",
+    data() {
+        return {
+            revenueChartInstance: null,    // Đổi tên biến chart
+            pieChartInstance: null,
+            selectedRevenueFilter: "month", // Mặc định hiển thị theo tháng
+            selectedPieFilter: "day",
+            // Data cho biểu đồ đường
+            revenueData: {
+                day: {
+                    labels: ["1", "2", "3", "4", "5", "6", "7"],
+                    data: [50000, 75000, 120000, 90000, 150000, 200000, 180000]
+                },
+                month: {
+                    labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                    data: [700000, 500000, 200000, 100000, 50000, 10000, 150000, 200000, 300000, 250000, 400000, 600000]
+                },
+                year: {
+                    labels: ["2020", "2021", "2022", "2023", "2024"],
+                    data: [1200000, 1500000, 1800000, 2100000, 2500000]
+                }
+            },
+            // Data cho biểu đồ tròn
+            pieData: {
+                day: {
+                    labels: ["Thành công", "Đang xử lý", "Thất bại"],
+                    data: [85, 10, 5]
+                },
+                month: {
+                    labels: ["Thành công", "Đang xử lý", "Thất bại"],
+                    data: [90, 7, 3]
+                },
+                year: {
+                    labels: ["Thành công", "Đang xử lý", "Thất bại"],
+                    data: [88, 8, 4]
+                }
+            }
+        };
+    },
+    mounted() {
+        this.renderPostChart();
+        this.renderCandidateChart();
+    },
+    methods: {
+    renderRevenueChart() {
+        const ctx = this.$refs.revenueChartCanvas.getContext("2d");
+        const { labels, data } = this.revenueData[this.selectedRevenueFilter];
 
+        this.revenueChartInstance = new Chart(ctx, {
+            type: "line", // Đổi thành line chart
+            data: {
+                labels,
+                datasets: [{
+                    label: "Doanh thu (VNĐ)",
+                    data,
+                    borderColor: "#36a2eb",
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => `${value / 1000}k`
+                        }
+                    }
+                }
+            }
+        });
+    },
+    renderPieChart() {
+        const ctx = this.$refs.pieChartCanvas.getContext("2d");
+        const { labels, data } = this.pieData[this.selectedPieFilter];
+
+        this.pieChartInstance = new Chart(ctx, {
+            type: "doughnut", // Biểu đồ doughnut
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: ["#4BC0C0", "#FFCE56", "#FF6384"],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    },
+    updateRevenueChart() {
+        if (this.revenueChartInstance) this.revenueChartInstance.destroy();
+        this.renderRevenueChart();
+    },
+    updatePieChart() {
+        if (this.pieChartInstance) this.pieChartInstance.destroy();
+        this.renderPieChart();
+    }
+},
+mounted() {
+    this.renderRevenueChart();
 }
+};
 </script>
 
 <style scoped>
