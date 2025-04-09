@@ -67,7 +67,13 @@
             <i class="fa-solid fa-wallet"></i>
             Lịch sử thanh toán
           </router-link>
-
+          <router-link
+            to="/employer-dashboard/employer-newjob"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-play"></i>
+            Đăng Một Công Việc Mới
+          </router-link>
           <router-link
             to="/employer-dashboard/employer-workmanagement"
             class="sidebar-item header text-dark"
