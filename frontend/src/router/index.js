@@ -45,6 +45,26 @@ const routes = [
       },
     ],
   },
+
+  
+  {
+    //Conditions
+    path: "/conditions",
+    component: () => import("../views/common/Conditions.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //about
+    path: "/Abouts",
+    component: () => import("../views/common/Abouts.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //sc013
+    path: "/Pagenotfull",
+    component: () => import("../views/common/Pagenotfull.vue"),
+    meta: { layout: "auth" },
+  },
 ];
 
 // Khởi tạo router
