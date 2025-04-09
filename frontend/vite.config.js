@@ -12,4 +12,10 @@ export default defineConfig({
       "@config": path.resolve(__dirname, "./src/config"), // Alias cho config
     },
   },
+
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+  },
 });

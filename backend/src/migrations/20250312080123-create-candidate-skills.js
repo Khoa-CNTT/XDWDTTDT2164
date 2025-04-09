@@ -27,10 +27,6 @@ module.exports = {
           key: "id",
         },
       },
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
       categoryId: {
         type: Sequelize.UUID,
         field: "category_id",

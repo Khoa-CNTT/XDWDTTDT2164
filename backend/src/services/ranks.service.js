@@ -36,7 +36,7 @@ class RanksService {
    */
   async getRanks() {
     const ranks = await db.Ranks.findAll({
-      where: { deleted: false },
+      where: { deletedAt: null },
     });
     return ranks;
   }
@@ -96,7 +96,7 @@ class RanksService {
       );
     }
 
-    await rank.update({ deleted: true });
+    await rank.update({ deletedAt: null });
     return {
       message: "Cấp bậc đã được xóa thành công",
     };
@@ -106,7 +106,7 @@ class RanksService {
    * Hàm kiểm tra cấp bậc có tồn tại không theo slug
    */
   async checkRankExistBySlug(rankSlug) {
-    return await db.Ranks.findOne({ where: { rankSlug } });
+    return await db.Ranks.findOne({ where: { rankSlug, deletedAt: null } });
   }
 
   /**
@@ -114,7 +114,7 @@ class RanksService {
    */
   async checkRankExistById(id) {
     return await db.Ranks.findOne({
-      where: { id, deleted: false },
+      where: { id, deletedAt: null },
     });
   }
 }

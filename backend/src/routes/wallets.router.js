@@ -40,4 +40,32 @@ router.post(
  * @controller walletsController.callbackZalopay: xử lý callback khi thanh toán thành công zalopay
  */
 router.post("/callback-zalopay", walletsController.callbackZalopay);
+
+/**
+ * @route POST /deposit-momo
+ * @desc Nạp tiền vào tài khoản với MoMo
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute: Kiểm tra quyền truy cập
+ * @middleware authorizedEmployer: Kiểm tra quyền truy cập
+ * @controller walletsController.depositToWalletWithMoMo: xử lý nạp tiền vào tài khoản với MoMo
+ */
+router.post(
+  "/deposit-momo",
+  protectedRoute,
+  authorizedRoute("employer"),
+  authorizedEmployer("owner"),
+  validateDepositToWallet,
+  handleValidationErrors,
+  walletsController.depositToWalletWithMoMo
+);
+
+/**
+ * @route POST /callback-momo
+ * @desc Callback khi thanh toán thành công MoMo
+ * @access Public
+ * @controller walletsController.callbackMoMo: xử lý callback khi thanh toán thành công MoMo
+ */
+router.post("/callback-momo", walletsController.callbackMoMo);
+
 module.exports = router;

@@ -46,9 +46,10 @@ module.exports = {
         defaultValue: false,
         field: "is_approved",
       },
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        allowNull: true,
+        type: Sequelize.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         allowNull: false,

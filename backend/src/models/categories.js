@@ -42,9 +42,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         field: "category_image",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         type: DataTypes.DATE,

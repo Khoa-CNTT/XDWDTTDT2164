@@ -21,9 +21,10 @@ module.exports = {
           allowNull: false,
           field: "skill_slug",
         },
-        deleted: {
-          type: Sequelize.BOOLEAN,
-          defaultValue: false,
+        deletedAt: {
+          allowNull: true,
+          type: Sequelize.DATE,
+          field: "deleted_at",
         },
         categoryId: {
           type: Sequelize.UUID,

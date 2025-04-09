@@ -61,9 +61,9 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: false,
         field: "is_approved",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         type: DataTypes.DATE,
