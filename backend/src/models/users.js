@@ -92,7 +92,10 @@ module.exports = (sequelize, DataTypes) => {
         field: "password_reset_expire",
       },
       role: DataTypes.ENUM("admin", "candidate", "employer"),
-      deleted: DataTypes.BOOLEAN,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
+      },
       createdAt: {
         type: DataTypes.DATE,
         field: "created_at",

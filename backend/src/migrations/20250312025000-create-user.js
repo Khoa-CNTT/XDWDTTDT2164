@@ -63,9 +63,10 @@ module.exports = {
           allowNull: true,
           type: Sequelize.ENUM("admin", "candidate", "employer"),
         },
-        deleted: {
-          type: Sequelize.BOOLEAN,
-          defaultValue: false,
+        deletedAt: {
+          allowNull: true,
+          type: Sequelize.DATE,
+          field: "deleted_at",
         },
         createdAt: {
           allowNull: false,

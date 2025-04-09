@@ -52,9 +52,10 @@ module.exports = {
         type: Sequelize.TEXT,
         field: "cover_letter",
       },
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        allowNull: true,
+        type: Sequelize.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         allowNull: false,

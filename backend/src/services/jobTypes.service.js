@@ -38,7 +38,7 @@ class JoTypesService {
    * @returns {Promise<Object>} Danh sách hình thức làm việc
    */
   async getJobTypes() {
-    const jobTypes = await db.JobTypes.findAll({ where: { deleted: false } });
+    const jobTypes = await db.JobTypes.findAll({ where: { deletedAt: null } });
     return jobTypes;
   }
 
@@ -108,7 +108,7 @@ class JoTypesService {
     }
 
     // Xóa hình thức làm việc
-    await jobType.update({ deleted: true });
+    await jobType.update({ deletedAt: null });
 
     return jobType;
   }
@@ -119,7 +119,9 @@ class JoTypesService {
    * @returns {Promise<Object>} Hình thức làm việc đã được tạo
    */
   async checkJobTypeBySlug(jobTypeSlug) {
-    const jobType = await db.JobTypes.findOne({ where: { jobTypeSlug } });
+    const jobType = await db.JobTypes.findOne({
+      where: { jobTypeSlug, deletedAt: null },
+    });
     return jobType;
   }
 
@@ -129,7 +131,12 @@ class JoTypesService {
    * @returns {Promise<Object>} Hình thức làm việc đã được tạo
    */
   async checkJobTypeById(id) {
-    const jobType = await db.JobTypes.findByPk(id);
+    const jobType = await db.JobTypes.findOne({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
     return jobType;
   }
 }

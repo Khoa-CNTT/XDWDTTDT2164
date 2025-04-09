@@ -16,7 +16,7 @@ class CategoryService {
   async createCategory(categoryData) {
     const categorySlug = slugify(categoryData.categoryName, { lower: true });
     const category = await db.Categories.findOne({
-      where: { categorySlug: categorySlug },
+      where: { categorySlug: categorySlug, deletedAt: null },
     });
     if (category) {
       throw new ApiError(StatusCode.BAD_REQUEST, "Tên danh mục đã tồn tại");
@@ -37,7 +37,7 @@ class CategoryService {
    */
   async getCategories() {
     const categories = await db.Categories.findAll({
-      where: { deleted: false },
+      where: { deletedAt: null },
     });
     return categories;
   }
@@ -102,7 +102,7 @@ class CategoryService {
       );
     }
 
-    await category.update({ deleted: true });
+    await category.update({ deletedAt: new Date() });
     return category;
   }
 
@@ -112,7 +112,12 @@ class CategoryService {
    * @returns {Promise<Object>} - Category đã được tìm kiếm
    */
   async findCategoryById(id) {
-    const category = await db.Categories.findByPk(id);
+    const category = await db.Categories.findOne({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
     return category;
   }
 }

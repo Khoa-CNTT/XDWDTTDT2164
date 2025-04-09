@@ -33,9 +33,10 @@ module.exports = {
         field: "work_experience",
       },
       salary: Sequelize.STRING(100),
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        allowNull: true,
+        type: Sequelize.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         allowNull: false,
