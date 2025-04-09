@@ -37,9 +37,11 @@ const routes = [
       },
     ],
   },
-{
-  path: "/employer-dashboard",
-  children:[
+
+  // Employer
+  {
+    path: "/employer-dashboard",
+    children: [
       {
         path: "", // Mặc định khi vào /admin-dashboard
         redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
@@ -89,6 +91,7 @@ const routes = [
         component: () => import("../views/employer/employer-deposithistory.vue"),   
         // Lịch sử nạp tiền
       },
+<<<<<<< HEAD
 
   ]
 },
@@ -105,6 +108,8 @@ const routes = [
         component: () => import("../views/employer/employer-info.vue"),
       },
       {
+=======
+>>>>>>> 8b2f66a90004ab6a7a9f33d042aff242d380e98d
         path: "employer-workmanagement",
         component: () => import("../views/employer/employer-workmanagement.vue"),
       },
@@ -116,10 +121,37 @@ const routes = [
         path: "employer-password",
         component: () => import("../views/employer/employer-password.vue"),
       },
-    ],
-  },
+      {
+        path: "hierarchy-management",
+        component: () => import("../views/admin/dashboard/Hierarchy-management.vue"),
+      },
+      {
+        path: "formofwork-list",
+        component: () => import("../views/admin/dashboard/FormofWork-list.vue"),
+      },
+      {
+        path: "expjob-list",
+        component: () => import("../views/admin/dashboard/Expjob-list.vue"),
+      },
+      {
+        path: "salary-management",
+        component: () => import("../views/admin/dashboard/Salary-management.vue"),
+      },
+      {
+        path: "description-job",
+        component: () => import("../views/admin/dashboard/Description-job.vue"),
+      },
+      {
+        path: "transaction-management",
+        component: () => import("../views/admin/dashboard/Transaction-management.vue"),
+      },
 
+<<<<<<< HEAD
 
+=======
+  ]
+}
+>>>>>>> 8b2f66a90004ab6a7a9f33d042aff242d380e98d
   //Admin
   // {
   //   path: "/admin-dashboard",

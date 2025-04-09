@@ -23,8 +23,10 @@
                         <tr>
                             <td>1</td>
                             <td>
-                                Tuyển FullStack ReactJS 
-                                <button class="badge bg-info ms-2">Chi tiêt</button>
+                                Tuyển FullStack ReactJS
+                                <router-link to="/admin-dashboard/description-job">
+                                    <button class="badge bg-info ms-2">Chi tiết</button>
+                                </router-link>
                             </td>
                             <td>Công ty TNHH Superio</td>
                             <td>Holy Nam</td>
