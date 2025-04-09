@@ -31,6 +31,31 @@ class JobsController {
   }
 
   /**
+   * Thanh toán bài đăng công việc
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Trả về thông báo bài đăng đã thanh toán
+   */
+  async payJob(req, res) {
+    try {
+      const { id } = req.user;
+      const { jobId, amount } = req.body;
+      const result = await jobsService.payJob(jobId, amount, id);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data: result,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Lấy danh sách bài đăng công việc
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -43,6 +68,30 @@ class JobsController {
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
         message: "Lấy danh sách bài đăng công việc thành công",
+        data: jobs,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy danh sách bài đăng công việc theo nhà tuyển dụng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Danh sách bài đăng công việc
+   */
+  async getJobsForEmployer(req, res) {
+    try {
+      const { id } = req.param;
+      const jobs = await jobsService.getJobsForEmployer(id);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
         data: jobs,
       });
     } catch (error) {

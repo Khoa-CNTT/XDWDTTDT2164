@@ -59,12 +59,11 @@ class SaveJobsService {
       );
     }
 
-    // Xóa job trong danh sách (xóa ảo)
-    saveJobExists.deleted = true;
+    await saveJobExists.destroy();
 
-    await saveJobExists.save();
-
-    return saveJobExists;
+    return {
+      message: "Xóa bài đăng đã lưu thành công",
+    };
   }
 
   /**

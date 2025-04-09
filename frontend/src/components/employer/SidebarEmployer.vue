@@ -12,56 +12,93 @@
     <div class="menu mt-4">
       <div class="menu-section">
         <ul class="sidebar-list">
-          <!-- Trang Chủ -->
-          <li class="sidebar-item header">
-            <router-link to="/employer-dashboard" class="text-dark">
-              <i class="fa-solid fa-house"></i>
-              <span>Dashboard</span>
-            </router-link>
-          </li>
-          <li class="sidebar-item header">
-            <router-link
-              to="/employer-dashboard/employer-info"
-              class="text-dark"
-            >
-              <i class="fa-solid fa-user"></i>
-              Hồ Sơ Công Ty
-            </router-link>
-          </li>
-          <li class="sidebar-item header">
-            <router-link
-              to="/employer-dashboard/employer-newjob"
-              class="text-dark"
-            >
-              <i class="fa-solid fa-circle-chevron-right"></i>
-              Đăng Một Công Việc Mới
-            </router-link>
-          </li>
-          <li class="sidebar-item header">
-            <router-link to="#" class="text-dark">
-              <i class="fa-solid fa-bag-shopping"></i>
-              Quản Lý Công Việc
-            </router-link>
-          </li>
-          <li class="sidebar-item header">
-            <router-link
-              to="/employer-dashboard/employer-recharge"
-              class="text-dark"
-            >
-              <i class="fa-solid fa-table"></i>
-              Tất Cả Các Ứng Viên
-            </router-link>
-          </li>
-          <li class="sidebar-item header">
-            <router-link
-              to="/admin-dashboard/post-management"
-              class="text-dark"
-            >
-              <i class="fa-solid fa-lock"></i>
-              Thay Đổi Mật Khẩu
-            </router-link>
-          </li>
-          <li class="sidebar-item logout">
+          <router-link
+            to="/employer-dashboard"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-info"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-user"></i>
+            Hồ Sơ Công Ty
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-list"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-bookmark"></i>
+            Quản lý nhân viên
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-newjob"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-play"></i>
+            Thêm mới nhân viên
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-recharge"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-wallet"></i>
+            Nạp tiền tài khoản
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-deposithistory"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-wallet"></i>
+            Lịch sử nạp tiền
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-paymenthistory"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-wallet"></i>
+            Lịch sử thanh toán
+          </router-link>
+          <router-link
+            to="/employer-dashboard/employer-newjob"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-play"></i>
+            Đăng Một Công Việc Mới
+          </router-link>
+          <router-link
+            to="/employer-dashboard/employer-workmanagement"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-bag-shopping"></i>
+            Quản Lý Công Việc
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-candidates"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-table"></i>
+            Tất Cả Các Ứng Viên
+          </router-link>
+
+          <router-link
+            to="/employer-dashboard/employer-password"
+            class="sidebar-item header text-dark"
+          >
+            <i class="fa-solid fa-lock"></i>
+            Thay Đổi Mật Khẩu
+          </router-link>
+
+          <li class="sidebar-item header logout">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             Đăng xuất
           </li>

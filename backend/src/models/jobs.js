@@ -128,10 +128,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         field: "rank_id",
       },
-      price: {
-        type: DataTypes.DECIMAL,
-        allowNull: false,
-      },
       expire: {
         type: DataTypes.DATE,
       },
@@ -149,9 +145,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         field: "is_visible",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         type: DataTypes.DATE,

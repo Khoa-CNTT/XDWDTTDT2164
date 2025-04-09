@@ -68,19 +68,19 @@ const routes = [
       },
       {
         path: "employer-newjob",
-        component: () => import("../views/employer/employer-newjob.vue"),
+        component: () => import("@/views/employer/employer-newjob.vue"),
       },
       {
         path: "employer-info",
-        component: () => import("../views/employer/employer-info.vue"),
+        component: () => import("@/views/employer/employer-info.vue"),
       },
       {
         path: "employer-list",
-        component: () => import("../views/employer/employer-list.vue"),
+        component: () => import("@/views/employer/employer-list.vue"),
       },
       {
         path: "employer-recharge",
-        component: () => import("../views/employer/employer-recharge.vue"),
+        component: () => import("@/views/employer/employer-recharge.vue"),
       },
       {
         path: "employer-depositinformation",
@@ -108,38 +108,11 @@ const routes = [
       },
       {
         path: "employer-candidates",
-        component: () => import("../views/employer/employer-candidates.vue"),
+        component: () => import("@/views/employer/employer-candidates.vue"),
       },
       {
         path: "employer-password",
-        component: () => import("../views/employer/employer-password.vue"),
-      },
-      {
-        path: "hierarchy-management",
-        component: () =>
-          import("../views/admin/dashboard/Hierarchy-management.vue"),
-      },
-      {
-        path: "formofwork-list",
-        component: () => import("../views/admin/dashboard/FormofWork-list.vue"),
-      },
-      {
-        path: "expjob-list",
-        component: () => import("../views/admin/dashboard/Expjob-list.vue"),
-      },
-      {
-        path: "salary-management",
-        component: () =>
-          import("../views/admin/dashboard/Salary-management.vue"),
-      },
-      {
-        path: "description-job",
-        component: () => import("../views/admin/dashboard/Description-job.vue"),
-      },
-      {
-        path: "transaction-management",
-        component: () =>
-          import("../views/admin/dashboard/Transaction-management.vue"),
+        component: () => import("@/views/employer/employer-password.vue"),
       },
     ],
   },
@@ -200,9 +173,35 @@ const routes = [
         component: () =>
           import("@/views/admin/dashboard/Transaction-management.vue"),
       },
+      {
+        path: "hierarchy-management",
+        component: () =>
+          import("@/views/admin/dashboard/Hierarchy-management.vue"),
+      },
+      {
+        path: "formofwork-list",
+        component: () => import("@/views/admin/dashboard/FormofWork-list.vue"),
+      },
+      {
+        path: "expjob-list",
+        component: () => import("@/views/admin/dashboard/Expjob-list.vue"),
+      },
+      {
+        path: "salary-management",
+        component: () =>
+          import("@/views/admin/dashboard/Salary-management.vue"),
+      },
+      {
+        path: "description-job",
+        component: () => import("@/views/admin/dashboard/Description-job.vue"),
+      },
+      {
+        path: "transaction-management",
+        component: () =>
+          import("@/views/admin/dashboard/Transaction-management.vue"),
+      },
     ],
   },
-
   // Guest
   {
     path: "/guest-dashboard",
@@ -213,7 +212,25 @@ const routes = [
         component: () => import("@/views/guest/index.vue"),
       },
     ],
-  }
+  },
+  {
+    //Conditions
+    path: "/conditions",
+    component: () => import("../views/common/Conditions.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //about
+    path: "/Abouts",
+    component: () => import("../views/common/Abouts.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //sc013
+    path: "/Pagenotfull",
+    component: () => import("../views/common/Pagenotfull.vue"),
+    meta: { layout: "auth" },
+  },
 ];
 
 // Khởi tạo router

@@ -35,7 +35,7 @@ class ExperiencesService {
    */
   async getExperiences() {
     const experiences = await db.Experiences.findAll({
-      where: { deleted: false },
+      where: { deletedAt: null },
     });
     return experiences;
   }
@@ -102,7 +102,7 @@ class ExperiencesService {
     }
 
     // Xóa kinh nghiệm
-    await experience.update({ deleted: true });
+    await experience.update({ deletedAt: new Date() });
 
     return experience;
   }
@@ -114,7 +114,7 @@ class ExperiencesService {
    */
   async checkExperienceBySlug(experienceSlug) {
     const experience = await db.Experiences.findOne({
-      where: { experienceSlug },
+      where: { experienceSlug, deletedAt: null },
     });
     return experience;
   }
@@ -125,7 +125,12 @@ class ExperiencesService {
    * @returns {Promise<boolean>} true nếu kinh nghiệm tồn tại, false nếu không tồn tại
    */
   async checkExperienceById(id) {
-    const experience = await db.Experiences.findByPk(id);
+    const experience = await db.Experiences.findOne({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
     return experience;
   }
 }
