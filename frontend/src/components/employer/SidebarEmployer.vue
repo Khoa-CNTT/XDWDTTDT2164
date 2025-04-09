@@ -26,6 +26,24 @@
                         </router-link>
                     </li>
                     <li class="sidebar-item header">
+                        <router-link to="/employer-dashboard/employer-list " class="text-dark">
+                            <i class="fa-solid fa-bookmark"></i>
+                            Quản lý nhân viên
+                        </router-link>
+                    </li>
+                    <li class="sidebar-item header">
+                        <router-link to="/employer-dashboard/employer-newjob " class="text-dark">
+                            <i class="fa-solid fa-play"></i>
+                            Thêm mới nhân viên
+                        </router-link>
+                    </li>
+                    <li class="sidebar-item header">
+                        <router-link to="/employer-dashboard/employer-newjob " class="text-dark">
+                            <i class="fa-solid fa-wallet"></i>
+                            Danh sách nhân viên
+                        </router-link>
+                    </li>
+                    <li class="sidebar-item header">
                         <router-link to="/employer-dashboard/employer-newjob " class="text-dark">
                             <i class="fa-solid fa-circle-chevron-right"></i>
                             Đăng Một Công Việc Mới

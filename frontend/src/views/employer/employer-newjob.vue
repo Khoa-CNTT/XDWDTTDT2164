@@ -1,211 +1,51 @@
 <template>
-    <div>
-        <h1 class="title">Thêm một công việc mới!</h1>
-        <a>Trở lại trang chủ?</a>
-        <!-- Progress Steps -->
-       
-        <!-- Job Form -->
-         
-        <div class="job-form">
-            <div class="progress-steps">
-            <div class="step active d-flex gap-2 align-items-center">
-                <span class="icon"><i class="fa-solid fa-briefcase"></i></span>
-                <span>Chi Tiết Công Việc</span>
-            </div>
-            <div class="step active d-flex gap-2 align-items-center">
-                <span class="icon"><i class="fa-solid fa-money-bill-wave"></i></span>
-                <span>Thanh toán</span>
-            </div>
+    <div class="min-h-screen bg-blue-50 p-6">
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Cập nhật thông tin - Nguyễn Văn A</h2>
+            <a href="#" class="text-blue-500 text-sm mb-6 inline-block">Trở lại trang chủ?</a>
         </div>
-            <div class="form-group mt-3">
-                <label for="job-title"><b>Tiêu đề công việc</b></label>
-                <input type="text" id="job-title" placeholder="Tiêu đề" />
-            </div>
-
-            <div class="form-group">
-                <label for="job-description"><b>Mô tả</b></label>
-                <textarea id="job-description" rows="5" placeholder="Mô tả công việc"></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="job-category">Danh mục việc làm</label>
-                    <select id="job-category">
-                        <option>Chọn danh mục</option>
-                    </select>
+        <div class="max-w-4xl mx-auto bg-white shadow-md rounded-xl p-8">
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div>
+                            <label class="block text-gray-700 mt-3 ms-3">Tên nhân viên</label>
+                            <input type="text" class="form-control mt-1 px-4 py-2 border rounded-lg bg-gray-100 mt-3 ms-3" placeholder="Hoàng Văn Ngọc Quý" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mt-3 ms-3">Số điện thoại</label>
+                            <input type="text" class="form-control mt-1 px-4 py-2 border rounded-lg bg-gray-100 mt-3 ms-3" placeholder="0123 456 789" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mt-3 ms-3">Quyền</label>
+                            <input type="text" class="form-control mt-1 px-4 py-2 border rounded-lg bg-gray-100 mt-3 ms-3" placeholder="Công ty" />
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div>
+                            <label class="block text-gray-700 mt-3 ms-3">Địa chỉ email</label>
+                            <input type="email" class="form-control mt-1 px-4 py-2 border rounded-lg bg-gray-100 mt-3 ms-3" placeholder="info@gmail.com" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mt-3 ms-3">Địa chỉ</label>
+                            <input type="text" class="form-control mt-1 px-4 py-2 border rounded-lg bg-gray-100 mt-3 ms-3" placeholder="256 Nguyen Van Linh"/>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="job-type">Hình thức làm việc</label>
-                    <input type="text" id="job-type" placeholder="Full time" />
+                <div class="md:col-span-2">
+                    <button type="submit" class="bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow mt-4 mb-5 ms-3">
+                        Lưu
+                    </button>
                 </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="salary">Mức lương</label>
-                    <input type="text" id="salary" placeholder="34 - 40 Triệu" />
-                </div>
-                <div class="form-group">
-                    <label for="vacancies">Số lượng người tuyển</label>
-                    <input type="text" id="vacancies" placeholder="Chọn chuyên môn" />
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="skills">Kỹ năng</label>
-                    <input type="text" id="skills" placeholder="React, NestJS, NodeJS" />
-                </div>
-                <div class="form-group">
-                    <label for="experience">Kinh nghiệm</label>
-                    <input type="text" id="experience" placeholder="1 năm" />
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="level">Cấp bậc</label>
-                    <input type="text" id="level" placeholder="Fresher, Intern" />
-                </div>
-                <div class="form-group">
-                    <label for="deadline">Ngày hết hạn ứng tuyển</label>
-                    <input type="text" id="deadline" placeholder="13.03.2025" />
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="address">Địa chỉ</label>
-                <input type="text" id="address" placeholder="239 Tố Hữu, Phường Khuê Trung, Quận Cẩm Lệ, TP Đà Nẵng" />
-            </div>
+            </form>
         </div>
-        <button class="btn btn-primary mt-4 w-30 px-5">Tiếp tục</button>
     </div>
-    
-
 </template>
 
-<script>
-export default {
-    name: "EmployerNewJob",
-};
+<script setup>
+// Không cần logic gì thêm vì đây là giao diện tĩnh
 </script>
 
-<style scoped>
-.new-job-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f8faff;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.back-link {
-    font-size: 14px;
-    color: #007bff;
-    text-decoration: none;
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-.progress-steps {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: px;
-}
-
-.step {
-    text-align: center;
-    flex: 1;
-}
-
-.step .icon {
-    padding: 15px;
-    border-radius: 50%;
-    background: #dee8f9;
-}
-
-.step i {
-    font-size: 24px;
-    color: #ccc;
-}
-
-.step span {
-    display: block;
-    margin-top: 5px;
-    font-size: 14px;
-    color: #666;
-}
-
-.step.active i {
-    color: #007bff;
-}
-
-.step.active span {
-    color: #007bff;
-}
-
-.job-form {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.form-row {
-    display: flex;
-    gap: 20px;
-}
-
-.form-row .form-group {
-    flex: 1;
-}
-
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 14px;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-}
-
-.btn-primary {
-    background-color: #007bff;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-}
+<style>
+/* Nếu cần thêm CSS tuỳ chỉnh ngoài Tailwind */
 </style>

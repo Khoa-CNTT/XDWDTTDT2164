@@ -13,16 +13,13 @@ const routes = [
     component: () => import("@/views/common/Sign_up.vue"),
     meta: { layout: "auth" },
   },
-  
 
-
-
-  // Candidate 
+  // Candidate
   {
     path: "/candidate-dashboard",
     // component: Dashboard, // Luôn hiển thị Dashboard.vue
     children: [
-{
+      {
         path: "candidate-test",
         component: () => import("@/views/candidate/candidate-test.vue"),
       },
@@ -48,40 +45,81 @@ const routes = [
         redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
       },
       {
+        path: "employer-morestaff",
+        component: () => import("../views/employer/employer-morestaff.vue"),
+        //Thêm mới nhân viên
+      },
+      {
         path: "employer-newjob",
         component: () => import("../views/employer/employer-newjob.vue"),
+        // Cập nhật thông tin 
+      },
+      {
+        path: "employer-info",
+        component: () => import("../views/employer/employer-info.vue"),
+        // Hồ sơ công ty
+      },
+      {
+        path: "employer-list",
+        component: () => import("../views/employer/employer-list.vue"),
+        // Danh sách nhân viên 
+      },
+      {
+        path: "employer-recharge",
+        component: () => import("../views/employer/employer-recharge.vue"),
+        // Nạp tiền vào tài khoản
+      },
+      {
+        path: "employer-depositinformation",
+        component: () => import("../views/employer/employer-depositinformation.vue"),
+        // Thông tin nạp tiền
+      },
+      {
+        path: "employer-paymentpost",
+        component: () => import("../views/employer/employer-paymentpost.vue"),
+        // Thanh toán bài đăng
+      },
+      {
+        path: "employer-paymenthistory",
+        component: () => import("../views/employer/employer-paymenthistory.vue"),
+        // Lịch sử thanh toán
+      },
+      {
+        path: "employer-deposithistory",
+        component: () => import("../views/employer/employer-deposithistory.vue"),   
+        // Lịch sử nạp tiền
+      },
+
+  ]
+},
+
+  {
+    path: "/employer-dashboard",
+    children: [
+      {
+        path: "", // Mặc định khi vào /admin-dashboard
+        redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
       },
       {
         path: "employer-info",
         component: () => import("../views/employer/employer-info.vue"),
       },
       {
-        path: "employer-list",
-        component: () => import("../views/employer/employer-list.vue"),
+        path: "employer-workmanagement",
+        component: () => import("../views/employer/employer-workmanagement.vue"),
       },
       {
-        path: "employer-recharge",
-        component: () => import("../views/employer/employer-recharge.vue"),
+        path: "employer-candidates",
+        component: () => import("../views/employer/employer-candidates.vue"),
       },
       {
-        path: "employer-depositinformation",
-        component: () => import("../views/employer/employer-depositinformation.vue"),
+        path: "employer-password",
+        component: () => import("../views/employer/employer-password.vue"),
       },
-      {
-        path: "employer-paymentpost",
-        component: () => import("../views/employer/employer-paymentpost.vue"),
-      },
-      {
-        path: "employer-paymenthistory",
-        component: () => import("../views/employer/employer-paymenthistory.vue"),
-      },
-      {
-        path: "employer-deposithistory",
-        component: () => import("../views/employer/employer-deposithistory.vue"),
-      },
+    ],
+  },
 
-  ]
-}
+
   //Admin
   // {
   //   path: "/admin-dashboard",
