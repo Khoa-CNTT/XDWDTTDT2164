@@ -19,9 +19,10 @@ module.exports = {
         allowNull: false,
         field: "experience_slug",
       },
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        allowNull: true,
+        type: Sequelize.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         allowNull: false,

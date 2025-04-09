@@ -39,7 +39,7 @@ class SkillsService {
    */
   async getSkills(categoryId) {
     const skills = await db.Skills.findAll({
-      where: { categoryId, deleted: false },
+      where: { categoryId, deletedAt: null },
     });
     return skills;
   }
@@ -108,7 +108,7 @@ class SkillsService {
     }
 
     // Xóa skill
-    await db.Skills.update({ deleted: true }, { where: { id } });
+    await db.Skills.update({ deletedAt: null }, { where: { id } });
 
     return {
       message: "Skill đã được xóa thành công",
@@ -119,7 +119,9 @@ class SkillsService {
    * Hàm kiểm tra skill đã tồn chưa
    */
   async checkSkillExists(skillName) {
-    return await db.Skills.findOne({ where: { skillName: skillName } });
+    return await db.Skills.findOne({
+      where: { skillName: skillName, deletedAt: null },
+    });
   }
 
   /**
@@ -128,7 +130,7 @@ class SkillsService {
    * @returns {Promise<Object>} - Skill đã được kiểm tra
    */
   async checkSkillById(skillId) {
-    return await db.Skills.findByPk(skillId, { where: { deleted: false } });
+    return await db.Skills.findByPk(skillId, { where: { deletedAt: null } });
   }
 }
 

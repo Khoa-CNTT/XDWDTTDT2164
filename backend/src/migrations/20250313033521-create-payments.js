@@ -44,7 +44,7 @@ module.exports = {
         field: "balance_after",
       },
       transactionType: {
-        type: DataTypes.ENUM("Nạp tiền", "Hoàn tiền", "Thanh toán"),
+        type: Sequelize.ENUM("Nạp tiền", "Hoàn tiền", "Thanh toán"),
         field: "transaction_type",
       },
       currency: {
@@ -81,9 +81,10 @@ module.exports = {
         allowNull: true,
         field: "note",
       },
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      deletedAt: {
+        allowNull: true,
+        type: Sequelize.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         allowNull: false,

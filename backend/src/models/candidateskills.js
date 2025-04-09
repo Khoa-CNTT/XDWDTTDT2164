@@ -36,10 +36,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         field: "skill_id",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
       candidateId: {
         type: DataTypes.UUID,
         field: "candidate_id",

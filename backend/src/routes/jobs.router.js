@@ -32,12 +32,42 @@ router.post(
 );
 
 /**
+ * @route POST/jobs/pay-job
+ * @desc Thanh toán bài đăng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute("employer"): Kiểm tra quyền truy cập nhà tuyển dụng
+ * @controller JobsController.payJob: Thanh toán bài đăng công việc
+ */
+router.post(
+  "/pay-job",
+  protectedRoute,
+  authorizedRoute("employer"),
+  jobsController.payJob
+);
+
+/**
  * @route GET/jobs
  * @desc Lấy danh sách bài đăng công việc
  * @access Public
  * @controller JobsController.getJobs: Lấy danh sách bài đăng công việc
  */
 router.get("/", jobsController.getJobs);
+
+/**
+ * @route GET jobs//jobs-employer/:id
+ * @desc Lấy danh sách bài đăng công việc theo nhà tuyển dụng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute("employer"): Kiểm tra quyền truy cập nhà tuyển dụng
+ * @controller JobsController.getJobsForEmployer: Lấy danh sách bài đăng công việc theo nhà tuyển dụng
+ */
+router.get(
+  "/jobs-employer/:id",
+  protectedRoute,
+  authorizedRoute("employer"),
+  jobsController.getJobsForEmployer
+);
 
 /**
  * @route GET/jobs/:slug

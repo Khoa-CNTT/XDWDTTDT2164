@@ -1,5 +1,6 @@
 const axios = require("axios").default;
 const CryptoJS = require("crypto-js");
+const crypto = require("crypto");
 const moment = require("moment");
 const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
@@ -74,23 +75,11 @@ class WalletsService {
         );
       }
 
-      const paymentExist = await db.Payments.findOne({
-        where: {
-          userId,
-        },
-      });
-      const balanceAfter = paymentExist
-        ? paymentExist.balanceAfter + amount
-        : amount;
-      const balanceBefore = paymentExist ? paymentExist.balanceBefore : 0;
-
       // Tạo mới payment - type là nạp tiền
       const payment = await db.Payments.create({
         userId,
         amount: amount + promotionAmount,
         promotionAmount,
-        balanceBefore,
-        balanceAfter,
         transactionType: "Nạp tiền",
         currency: "VND",
         paymentMethod: "ZALOPAY",
@@ -238,6 +227,203 @@ class WalletsService {
   //     console.log(error.message);
   //   }
   // }
+
+  /**
+   * Nạp tiền vào tài khoản với MoMo
+   * @param {number} amount - Số tiền cần nạp
+   * @param {string} userId - Id của người dùng
+   */
+  async depositToWalletWithMoMo(amount, userId) {
+    // Tính số tiền khuyến mãi
+    const promotionAmount = caculatePromotionAmount(amount);
+    const totalAmount = amount + promotionAmount;
+
+    var partnerCode = "MOMO";
+    var accessKey = "F8BBA842ECF85";
+    var secretkey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+    var requestId = partnerCode + new Date().getTime();
+    var orderId = requestId;
+    var orderInfo = "Nạp tiền vào tài khoản";
+    var redirectUrl = "https://momo.vn/return";
+    var ipnUrl =
+      "https://a06b-116-110-240-94.ngrok-free.app/api/wallets/callback-momo";
+    var requestType = "payWithMethod";
+    var extraData = ""; //pass empty value if your merchant does not have stores
+
+    //before sign HMAC SHA256 with format
+    var rawSignature =
+      "accessKey=" +
+      accessKey +
+      "&amount=" +
+      totalAmount +
+      "&extraData=" +
+      extraData +
+      "&ipnUrl=" +
+      ipnUrl +
+      "&orderId=" +
+      orderId +
+      "&orderInfo=" +
+      orderInfo +
+      "&partnerCode=" +
+      partnerCode +
+      "&redirectUrl=" +
+      redirectUrl +
+      "&requestId=" +
+      requestId +
+      "&requestType=" +
+      requestType;
+
+    console.log("--------------------RAW SIGNATURE----------------");
+    console.log(rawSignature);
+
+    //signature
+    var signature = crypto
+      .createHmac("sha256", secretkey)
+      .update(rawSignature)
+      .digest("hex");
+
+    console.log("--------------------SIGNATURE----------------");
+    console.log(signature);
+
+    //json object send to MoMo endpoint
+    const requestBody = JSON.stringify({
+      partnerCode: partnerCode,
+      accessKey: accessKey,
+      requestId: requestId,
+      amount: totalAmount,
+      orderId: orderId,
+      orderInfo: orderInfo,
+      redirectUrl: redirectUrl,
+      ipnUrl: ipnUrl,
+      extraData: extraData,
+      requestType: requestType,
+      signature: signature,
+      lang: "vi",
+    });
+
+    const options = {
+      method: "POST",
+      url: "https://test-payment.momo.vn/v2/gateway/api/create",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(requestBody),
+      },
+      data: requestBody,
+    };
+
+    try {
+      const response = await axios(options);
+      let result = response.data;
+      console.log(result);
+      if (result.resultCode !== 0) {
+        throw new ApiError(
+          StatusCode.BAD_REQUEST,
+          result.message || "Lỗi kết nối MoMo"
+        );
+      }
+
+      // Tạo mới payment - type là nạp tiền
+      const payment = await db.Payments.create({
+        userId,
+        amount: amount + promotionAmount,
+        promotionAmount,
+        transactionType: "Nạp tiền",
+        currency: "VND",
+        paymentMethod: "MOMO",
+        status: "Đang chờ",
+        transactionId: result.orderId,
+        paymentDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+      });
+      return result;
+    } catch (error) {
+      console.log(error.message);
+      // Consider adding more detailed error logging
+      console.log(error.response?.data || "No detailed error data");
+      throw error; // Re-throw the error to handle it at a higher level
+    }
+  }
+
+  /**
+   * Callback khi thanh toán thành công MoMo
+   * @param {string} data - Dữ liệu callback
+   * @param {string} mac - Mã MAC
+   * @returns {Promise<void>} - Trả về dữ liệu callback
+   */
+  async callbackMoMo(callBackData) {
+    const transaction = await db.sequelize.transaction();
+    try {
+      const { orderId, amount, resultCode, message } = callBackData;
+
+      // Kiểm tra kết quả từ MoMo
+      if (resultCode !== 0) {
+        throw new ApiError(
+          StatusCode.BAD_REQUEST,
+          message || "Giao dịch không thành công"
+        );
+      }
+
+      // Tìm payment
+      const payment = await db.Payments.findOne({
+        where: { transactionId: orderId },
+        transaction,
+      });
+
+      if (!payment) {
+        throw new ApiError(StatusCode.BAD_REQUEST, "Không tìm thấy giao dịch");
+      }
+
+      // Kiểm tra trạng thái và số tiền
+      if (payment.status === "Thành công") {
+        console.log(`Payment ${payment.id} already processed successfully`);
+        await transaction.commit();
+        return { return_code: 1, return_message: "success" };
+      }
+
+      const paymentAmount = parseFloat(payment.amount);
+      const callbackAmount = parseFloat(amount);
+      if (paymentAmount !== callbackAmount) {
+        throw new ApiError(StatusCode.BAD_REQUEST, "Số tiền không khớp");
+      }
+
+      // Cập nhật trạng thái payment
+      payment.status = "Thành công";
+      await payment.save({ transaction });
+      console.log(`Updated payment ${payment.id} status to: Thành công`);
+
+      // Tìm hoặc tạo wallet
+      const wallet = await db.Wallets.findOne({
+        where: { userId: payment.userId },
+        transaction,
+      });
+
+      if (wallet) {
+        wallet.balance = parseFloat(wallet.balance) + paymentAmount;
+        await wallet.save({ transaction });
+        console.log(
+          `Updated wallet ${wallet.id} balance to: ${wallet.balance}`
+        );
+      } else {
+        const newWallet = await db.Wallets.create(
+          {
+            userId: payment.userId,
+            balance: paymentAmount,
+            currently: "VND",
+          },
+          { transaction }
+        );
+        console.log(
+          `Created new wallet ${newWallet.id} with balance: ${newWallet.balance}`
+        );
+      }
+
+      await transaction.commit();
+      return { return_code: 1, return_message: "success" };
+    } catch (error) {
+      await transaction.rollback();
+      console.error("Error in callbackMoMo:", error);
+      throw error;
+    }
+  }
 
   /**
    * Lịch sử nạp tiền

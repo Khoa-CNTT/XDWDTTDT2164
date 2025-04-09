@@ -37,10 +37,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         type: DataTypes.DATE,

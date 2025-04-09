@@ -15,6 +15,33 @@ const { hashPassword } = require("../libs/hashPassword");
  */
 class UserService {
   /**
+   * Lây thông tin cá nhân
+   * @param {string} id - Id người dùng
+   * @returns {Promise<Object>} - Trả về thông tin chi tiết người dùng
+   */
+  async getInfo(id) {
+    return db.Users.findOne({
+      where: { id },
+      include: [
+        {
+          model: db.Candidates,
+          as: "candidates",
+        },
+        {
+          model: db.EmployerUsers,
+          as: "EmployerUsers",
+          include: [
+            {
+              model: db.Employers,
+              as: "employer",
+            },
+          ],
+        },
+      ],
+    });
+  }
+
+  /**
    * Quên mật khẩu
    * @param {string} email - Email của người dùng
    * @returns {Promise<Object>} - Thông tin user đã lưu vào DB (ẩn mật khẩu)
