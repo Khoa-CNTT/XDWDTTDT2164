@@ -7,6 +7,30 @@ const ApiError = require("../libs/apiError");
  */
 class UserController {
   /**
+   * Lấy ra thông tin cá nhân
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getInfo(req, res) {
+    try {
+      const { id } = req.user;
+      const result = await userService.getInfo(id);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data: result,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Quên mật khẩu
    * @param {Object} req - Request object
    * @param {Object} res - Response object

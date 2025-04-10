@@ -25,7 +25,7 @@ class UserService {
       include: [
         {
           model: db.Candidates,
-          as: "candidates",
+          as: "Candidates",
         },
         {
           model: db.EmployerUsers,
@@ -33,11 +33,21 @@ class UserService {
           include: [
             {
               model: db.Employers,
-              as: "employer",
+              as: "Employers",
             },
           ],
         },
       ],
+      attributes: {
+        exclude: [
+          "password",
+          "refreshToken",
+          "otp",
+          "otpExpire",
+          "passwordResetToken",
+          "passwordResetExpire",
+        ],
+      },
     });
   }
 
