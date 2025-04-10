@@ -14,15 +14,15 @@ const {
 const router = express.Router();
 
 /**
- * @route   GET /categories
- * @desc    Lấy danh sách danh mục
+ * @route   POST /categories
+ * @desc    Tạo danh mục mới
  * @access  Private
  * @middleware protectedRoute: Kiểm tra xác thực người dùng
  * @middleware authorizedRoute: Kiểm tra quyền truy cập
  * @middleware upload.single("image"): Upload ảnh
  * @middleware validateCreateCategory: Validate request tạo danh mục
  * @middleware handleValidationErrors: Xử lý lỗi validation nếu có
- * @controller CategoryController.getCategories: Xử lý lấy danh sách danh mục
+ * @controller CategoryController.createCategory: Xử lý tạo danh mục mới
  */
 router.post(
   "/",

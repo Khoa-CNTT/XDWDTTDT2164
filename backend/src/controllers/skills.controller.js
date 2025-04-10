@@ -36,6 +36,32 @@ class SkillsController {
   }
 
   /**
+   * Lấy danh sách skill theo category
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} - Danh sách skill
+   */
+  async getSkillsByCategory(req, res) {
+    try {
+      const { categoryId } = req.params;
+
+      const skills = await skillsService.getSkillsByCategory(categoryId);
+
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data: skills,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Lấy danh sách skill
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -43,10 +69,8 @@ class SkillsController {
    */
   async getSkills(req, res) {
     try {
-      const { categoryId } = req.params;
-
-      const skills = await skillsService.getSkills(categoryId);
-
+      const { page, limit } = req.query;
+      const skills = await skillsService.getSkills(page, limit);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
