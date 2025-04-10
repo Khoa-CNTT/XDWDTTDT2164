@@ -36,10 +36,6 @@ module.exports = {
         defaultValue: true,
         field: "is_active",
       },
-      deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

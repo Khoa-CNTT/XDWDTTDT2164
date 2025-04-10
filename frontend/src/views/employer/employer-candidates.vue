@@ -34,7 +34,8 @@
                   </td>
                   <td>Đã xem</td>
                   <td>
-                    <button class="btn btn-link text-decoration-none p-0">Xem CV</button>   
+                    <button class="btn btn-link text-decoration-none p-0 me-4">Xem CV</button>
+                    <button class="btn btn-link text-decoration-none p-0">Đánh Giá</button>
                   </td>
                 </tr>
               </tbody>

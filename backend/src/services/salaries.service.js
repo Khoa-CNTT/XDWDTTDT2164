@@ -34,8 +34,22 @@ class SalariesService {
    * Lấy danh sách mức lương
    * @returns {Promise<Object>} - Danh sách mức lương
    */
-  async getSalaries() {
-    const salaries = await db.Salaries.findAll({ where: { deleted: false } });
+  async getSalaries(pageParam, limitParam) {
+    if (!pageParam || !limitParam) {
+      const salaries = await db.Salaries.findAll({
+        where: { deletedAt: null },
+      });
+      return salaries;
+    }
+
+    const page = parseInt(pageParam) || 1;
+    const limit = parseInt(limitParam) || 8;
+    const skip = (page - 1) * limit;
+    const salaries = await db.Salaries.findAll({
+      where: { deletedAt: null },
+      skip,
+      limit,
+    });
     return salaries;
   }
 
@@ -94,7 +108,7 @@ class SalariesService {
       );
     }
 
-    await salary.update({ deleted: true });
+    await salary.update({ deletedAt: new Date() });
     return {
       message: "Mức lương đã được xóa thành công",
     };
@@ -105,7 +119,7 @@ class SalariesService {
    */
   async checkSalaryExists(salarySlug) {
     return await db.Salaries.findOne({
-      where: { salarySlug },
+      where: { salarySlug, deletedAt: null },
     });
   }
 
@@ -114,7 +128,7 @@ class SalariesService {
    */
   async checkSalaryById(id) {
     return await db.Salaries.findOne({
-      where: { id, deleted: false },
+      where: { id, deletedAt: null },
     });
   }
 }

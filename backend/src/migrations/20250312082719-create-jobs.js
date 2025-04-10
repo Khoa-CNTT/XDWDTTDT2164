@@ -99,10 +99,6 @@ module.exports = {
           type: Sequelize.DATE,
           allowNull: false,
         },
-        price: {
-          type: Sequelize.DECIMAL,
-          allowNull: false,
-        },
         address: {
           type: Sequelize.STRING(255),
           allowNull: false,
@@ -125,9 +121,10 @@ module.exports = {
           type: Sequelize.INTEGER,
           field: "number_of_recruits",
         },
-        deleted: {
-          type: Sequelize.BOOLEAN,
-          defaultValue: false,
+        deletedAt: {
+          allowNull: true,
+          type: Sequelize.DATE,
+          field: "deleted_at",
         },
         createdAt: {
           allowNull: false,

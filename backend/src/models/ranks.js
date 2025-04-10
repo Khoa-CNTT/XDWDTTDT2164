@@ -32,8 +32,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         field: "rank_slug",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         type: DataTypes.DATE,

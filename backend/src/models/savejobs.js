@@ -40,9 +40,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         field: "job_id",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-      },
       createdAt: {
         type: DataTypes.DATE,
         field: "created_at",

@@ -81,8 +81,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         field: "payment_date",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
+      deletedAt: {
+        type: DataTypes.DATE,
+        field: "deleted_at",
       },
       createdAt: {
         type: DataTypes.DATE,

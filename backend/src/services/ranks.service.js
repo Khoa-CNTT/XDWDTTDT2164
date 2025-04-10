@@ -32,13 +32,27 @@ class RanksService {
 
   /**
    * Lấy danh sách cấp bậc
+   * @param {number} page - Số trang
+   * @param {number} limit - Số phần tử trong trang
    * @returns {Promise<Object>} - Danh sách cấp bậc
    */
-  async getRanks() {
-    const ranks = await db.Ranks.findAll({
-      where: { deleted: false },
+  async getRanks(pageParam, limitParam) {
+    // Kiểm tra có truyền tham số không, nếu không truyền thì lấy tất cả
+    if (!pageParam && !limitParam) {
+      return await db.Ranks.findAll({
+        where: { deletedAt: null },
+      });
+    }
+
+    const page = parseInt(pageParam, 10) || 1;
+    const limit = parseInt(limitParam, 10) || 8;
+    const offset = (page - 1) * limit;
+
+    return await db.Ranks.findAll({
+      where: { deletedAt: null },
+      offset,
+      limit,
     });
-    return ranks;
   }
 
   /**
@@ -50,7 +64,7 @@ class RanksService {
   async updateRank(rankName, id) {
     // Kiểm tra cấp bậc có tồn tại không
     const rank = await this.checkRankExistById(id);
-    if (!salary) {
+    if (!rank) {
       throw new ApiError(StatusCode.NOT_FOUND, "Cấp bậc không tồn tại");
     }
 
@@ -96,7 +110,7 @@ class RanksService {
       );
     }
 
-    await rank.update({ deleted: true });
+    await rank.update({ deletedAt: new Date() });
     return {
       message: "Cấp bậc đã được xóa thành công",
     };
@@ -106,7 +120,7 @@ class RanksService {
    * Hàm kiểm tra cấp bậc có tồn tại không theo slug
    */
   async checkRankExistBySlug(rankSlug) {
-    return await db.Ranks.findOne({ where: { rankSlug } });
+    return await db.Ranks.findOne({ where: { rankSlug, deletedAt: null } });
   }
 
   /**
@@ -114,7 +128,7 @@ class RanksService {
    */
   async checkRankExistById(id) {
     return await db.Ranks.findOne({
-      where: { id, deleted: false },
+      where: { id, deletedAt: null },
     });
   }
 }

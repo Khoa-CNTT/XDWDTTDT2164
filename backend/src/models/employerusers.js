@@ -49,10 +49,6 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: true,
         field: "is_active",
       },
-      deleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
       createdAt: {
         type: DataTypes.DATE,
         field: "created_at",

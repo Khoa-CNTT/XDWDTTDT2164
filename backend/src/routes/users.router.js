@@ -19,6 +19,15 @@ const { upload } = require("../config/cloudinary.config");
 const { uploadPdf } = require("../config/uploadpdf.config");
 
 /**
+ * @route GET /api/user/info
+ * @desc Lấy ra thông tin cá nhân
+ * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
+ * @access Private
+ * @controller UserController.getInfo
+ */
+router.get("/info", protectedRoute, userController.getInfo);
+
+/**
  * @route POST /api/user/forgot-password
  * @desc Quên mật khẩu
  * @access Public

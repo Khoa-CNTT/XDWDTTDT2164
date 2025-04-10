@@ -81,7 +81,7 @@ class JobsService {
     const transaction = await db.sequelize.transaction();
     try {
       // Kiểm tra bài đăng công việc
-      const job = await this.getJobById(jobId, { transaction });
+      const job = await this.findJobById(jobId, { transaction });
       if (!job) {
         throw new ApiError(
           StatusCode.BAD_REQUEST,
@@ -89,16 +89,9 @@ class JobsService {
         );
       }
 
-      if (job.employerId !== userId) {
-        throw new ApiError(
-          StatusCode.BAD_REQUEST,
-          "Bạn không có quyền thanh toán bài đăng công việc này"
-        );
-      }
-
       // Lấy thông tin employer (bao gồm wallet_balance)
       const employer = await db.Employers.findOne({
-        where: { id: userId },
+        where: { id: job.employerId },
         transaction,
       });
 
@@ -110,8 +103,17 @@ class JobsService {
       }
 
       // Kiểm tra số dư ví
+      const wallet = await db.Wallets.findOne({
+        where: { userId },
+      });
+      if (!wallet) {
+        throw new ApiError(
+          StatusCode.NOT_FOUND,
+          `Bạn hãy nạp tiền vào tài khoản.`
+        );
+      }
       const amountFloat = parseFloat(amount);
-      const walletBalance = parseFloat(employer.wallet_balance);
+      const walletBalance = parseFloat(wallet.balance);
       if (walletBalance < amountFloat) {
         throw new ApiError(
           StatusCode.BAD_REQUEST,
@@ -130,7 +132,6 @@ class JobsService {
           paymentDate: new Date(),
           jobId,
           userId,
-          userId,
         },
         { transaction }
       );
@@ -138,9 +139,9 @@ class JobsService {
 
       // Cập nhật số dư ví của employer
       const newBalance = walletBalance - amountFloat;
-      await db.Employers.update(
-        { wallet_balance: newBalance },
-        { where: { id: userId }, transaction }
+      await db.Wallets.update(
+        { balance: newBalance },
+        { where: { userId }, transaction }
       );
       console.log(
         `Updated employer ${userId} wallet balance to: ${newBalance}`
@@ -148,7 +149,7 @@ class JobsService {
 
       // Cập nhật job is visible thành true
       await db.Jobs.update(
-        { isVisible: true, price: amountFloat },
+        { isVisible: true },
         { where: { id: jobId }, transaction }
       );
 
@@ -236,7 +237,7 @@ class JobsService {
         ...whereClause,
         status: "Đã kiểm duyệt",
         isVisible: true,
-        deleted: false,
+        deletedAt: null,
       },
       offset,
       limit,
@@ -267,6 +268,21 @@ class JobsService {
   }
 
   /**
+   * Lấy ra danh sách bài đăng công việc theo nhà tuyển dụng
+   * @param {string} id - Id của nhà tuyển dụng
+   * @returns {Promise<Object>} Danh sach bài đăng công việc
+   */
+  async getJobsForEmployer(id) {
+    const jobs = await db.Jobs.find({
+      where: {
+        employerId: id,
+        deletedAt: null,
+      },
+    });
+    return jobs;
+  }
+
+  /**
    * Lấy ra chi tiết bài đăng theo slug
    * @param {string} slug - Slug của bài đăng công việc
    * @returns {Promise<Object>} Bài đăng công việc được tìm kiếm
@@ -277,7 +293,7 @@ class JobsService {
         jobSlug: slug,
         status: "Đã kiểm duyệt",
         isVisible: true,
-        deleted: false,
+        deletedAt: null,
       },
       include: [
         {
@@ -376,7 +392,7 @@ class JobsService {
       );
     }
 
-    job.deleted = true;
+    job.deletedAt = new Date();
     await job.save();
 
     // Xóa cache cũ
@@ -423,48 +439,63 @@ class JobsService {
           );
         }
 
-        // Kiểm tra job.price
-        const refundAmount = parseFloat(job.price);
-        if (isNaN(refundAmount) || refundAmount <= 0) {
-          throw new ApiError(
-            StatusCode.BAD_REQUEST,
-            "Giá bài đăng không hợp lệ để hoàn tiền"
-          );
-        }
-
-        // Cập nhật số dư ví của employer (dùng wallet_balance)
-        const wallet = await db.Wallets.findOne({
-          where: { userId: job.employerId },
+        // Lấy số tiền đã thanh toán từ bảng Payments
+        const payment = await db.Payments.findOne({
+          where: {
+            jobId: job.id,
+            transactionType: "Thanh toán", // Giả sử "Thanh toán" là loại giao dịch khi đăng bài
+          },
           transaction,
         });
-        const currentBalance = parseFloat(wallet.balance);
-        const newBalance = currentBalance + refundAmount;
-        await db.Wallets.update(
-          { balance: newBalance },
-          { where: { id: wallet.id }, transaction }
-        );
-        console.log(
-          `Refunded ${refundAmount} to employer ${job.employerId}. New balance: ${newBalance}`
-        );
 
-        // Tạo bản ghi hoàn tiền trong bảng Payments
-        await db.Payments.create(
-          {
-            id: DataTypes.UUIDV4(),
-            employerId: job.employerId,
-            userId: job.employerId,
-            amount: refundAmount,
-            balanceBefore: currentBalance,
-            balanceAfter: newBalance,
-            transactionType: "Hoàn tiền",
-            note: `Hoàn tiền cho bài đăng công việc ${job.jobName} không được kiểm duyệt`,
-            currency: "VND",
-            paymentDate: new Date(),
-            jobId: job.id,
-          },
-          { transaction }
-        );
-        console.log(`Created refund payment for job ${job.id}`);
+        if (!payment) {
+          throw new ApiError(
+            StatusCode.BAD_REQUEST,
+            "Không tìm thấy giao dịch thanh toán để hoàn tiền"
+          );
+        } else {
+          const refundAmount = parseFloat(payment.amount);
+          if (isNaN(refundAmount) || refundAmount <= 0) {
+            throw new ApiError(
+              StatusCode.BAD_REQUEST,
+              "Số tiền thanh toán không hợp lệ để hoàn tiền"
+            );
+          }
+
+          // Cập nhật số dư ví của employer (dùng wallet_balance)
+          const wallet = await db.Wallets.findOne({
+            where: { userId: job.employerId },
+            transaction,
+          });
+          const currentBalance = parseFloat(wallet.balance);
+          const newBalance = currentBalance + refundAmount;
+          await db.Wallets.update(
+            { balance: newBalance },
+            { where: { id: wallet.id }, transaction }
+          );
+          console.log(
+            `Refunded ${refundAmount} to employer ${job.employerId}. New balance: ${newBalance}`
+          );
+
+          // Tạo bản ghi hoàn tiền trong bảng Payments
+          await db.Payments.create(
+            {
+              id: DataTypes.UUIDV4(),
+              employerId: job.employerId,
+              userId: job.employerId,
+              amount: refundAmount,
+              balanceBefore: currentBalance,
+              balanceAfter: newBalance,
+              transactionType: "Hoàn tiền",
+              note: `Hoàn tiền cho bài đăng công việc ${job.jobName} không được kiểm duyệt`,
+              currency: "VND",
+              paymentDate: new Date(),
+              jobId: job.id,
+            },
+            { transaction }
+          );
+          console.log(`Created refund payment for job ${job.id}`);
+        }
       }
 
       // Lưu thay đổi trạng thái bài đăng
@@ -508,7 +539,7 @@ class JobsService {
    */
   async findJobBySlug(slug, employerId) {
     return await db.Jobs.findOne({
-      where: { jobSlug: slug, employerId, deleted: false },
+      where: { jobSlug: slug, employerId, deletedAt: null },
     });
   }
 
@@ -519,7 +550,7 @@ class JobsService {
    */
   async findJobById(id) {
     return await db.Jobs.findByPk(id, {
-      where: { deleted: false },
+      where: { deletedAt: null },
     });
   }
 

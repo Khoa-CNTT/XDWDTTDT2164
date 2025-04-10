@@ -41,7 +41,8 @@ class ExperiencesController {
    */
   async getExperiences(req, res) {
     try {
-      const experiences = await experiencesService.getExperiences();
+      const { page, limit } = req.query;
+      const experiences = await experiencesService.getExperiences(page, limit);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
