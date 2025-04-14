@@ -61,8 +61,8 @@ export default {
 .dashboard-main {
   flex: 1;
   padding: 20px;
-  margin-top: var(--header-height);
-  margin-bottom: var(--footer-height);
+  /* margin-top: var(--header-height); */
+  /* margin-bottom: var(--footer-height); */
 }
 
 .dashboard-footer {

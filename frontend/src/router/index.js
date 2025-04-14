@@ -209,7 +209,7 @@ const routes = [
     children: [
       {
         path: "",
-        component: () => import("@/views/guest/index.vue"),
+        component: () => import("@/views/common/index.vue"),
       },
     ],
   },
