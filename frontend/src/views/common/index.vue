@@ -210,7 +210,6 @@ export default {
 </script>
 
 <style scoped>
-.superio-job-board {}
 
 .bg-light {
     background-color: #eff6ff !important;
