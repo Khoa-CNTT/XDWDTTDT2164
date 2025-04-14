@@ -38,7 +38,8 @@ class JobTypesController {
    */
   async getJobTypes(req, res) {
     try {
-      const jobTypes = await JoTypesService.getJobTypes();
+      const { page, limit } = req.query;
+      const jobTypes = await JoTypesService.getJobTypes(page, limit);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,

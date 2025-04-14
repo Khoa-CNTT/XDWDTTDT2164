@@ -33,9 +33,22 @@ class ExperiencesService {
    * Lâý danh sách kinh nghiệm
    * @returns {Promise<Object>} Danh sách kinh nghiệm
    */
-  async getExperiences() {
+  async getExperiences(pageParam, limitParam) {
+    if (!pageParam || !limitParam) {
+      const experiences = await db.Experiences.findAll({
+        where: { deletedAt: null },
+      });
+      return experiences;
+    }
+
+    const page = parseInt(pageParam) || 1;
+    const limit = parseInt(limitParam) || 8;
+    const skip = (page - 1) * limit;
+
     const experiences = await db.Experiences.findAll({
       where: { deletedAt: null },
+      skip,
+      limit,
     });
     return experiences;
   }
