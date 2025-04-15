@@ -282,4 +282,11 @@ canvas {
   padding: 5px;
   font-size: 14px;
 }
+.col-4 {
+    transition: transform 0.3s ease;
+}
+
+.col-4:hover {
+    transform: translateY(-5px);
+}
 </style>
