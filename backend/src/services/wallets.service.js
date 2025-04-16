@@ -44,7 +44,7 @@ class WalletsService {
       description: `Superio - Nạp tiền vào tài khoản #${transID}`,
       bank_code: "",
       callback_url:
-        "https://a06b-116-110-240-94.ngrok-free.app/api/wallets/callback-zalopay",
+        "https://0c94-116-110-240-94.ngrok-free.app/api/wallets/callback-zalopay",
     };
 
     // appid|app_trans_id|appuser|amount|apptime|embeddata|item
