@@ -1,3 +1,6 @@
+const pdfParse = require("pdf-parse");
+const fs = require("fs");
+
 const caculatePromotionAmount = (amount) => {
   const amountFloat = parseFloat(amount);
 
@@ -27,6 +30,40 @@ const caculatePromotionAmount = (amount) => {
   return promotionAmountFixed;
 };
 
+/**
+ * Convert a PDF file to plain text.
+ * @param {string} filePath - Đường dẫn tới file PDF.
+ * @returns {Promise<string>} - Nội dung văn bản từ PDF.
+ */
+const convertPdfToText = async (file) => {
+  try {
+    const pdfBuffer = fs.readFileSync(file);
+    const data = await pdfParse(pdfBuffer);
+    return data.text;
+  } catch (error) {
+    console.error("Lỗi khi chuyển đổi pdf: ", error);
+    throw error;
+  }
+};
+
+const parseGeminiResult = (resultText) => {
+  const matchScoreRegex = /Điểm đánh giá:\s*([0-9.]+)\/10/;
+  const suitableRegex = /Mức độ phù hợp:\s*(.+)/;
+  const commentRegex = /Nhận xét:\s*(.+)/s;
+
+  const scoreMatch = resultText.match(matchScoreRegex);
+  const suitableMatch = resultText.match(suitableRegex);
+  const commentMatch = resultText.match(commentRegex);
+
+  return {
+    matchScore: scoreMatch ? parseFloat(scoreMatch[1]) : null,
+    isSuitable: suitableMatch ? suitableMatch[1].trim() : null,
+    coverLetter: commentMatch ? commentMatch[1].trim() : null,
+  };
+};
+
 module.exports = {
   caculatePromotionAmount,
+  convertPdfToText,
+  parseGeminiResult,
 };

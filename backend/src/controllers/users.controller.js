@@ -306,16 +306,15 @@ class UserController {
    */
   async createCandidateProfile(req, res) {
     try {
-      console.log(req.file);
       const { id } = req.user;
       const { gender, dateOfBirth, address, workExperience, salary, skillIds } =
         req.body;
 
-      if (!req.file || !req.file.filename) {
+      if (!req.file || !req.file.path) {
         throw new ApiError(StatusCode.BAD_REQUEST, "Không tìm thấy file CV");
       }
 
-      const cvUrl = req.file.filename;
+      const cvUrl = req.file.path;
 
       const candidateData = {
         userId: id,

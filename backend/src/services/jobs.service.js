@@ -3,6 +3,7 @@ const db = require("../models");
 const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
 const { redisClient } = require("../config/redis.config");
+const moderateJob = require("../libs/geminiClient");
 
 /**
  * Service xử lý login nghiệp vụ liên quan đến bài đăng công việc
@@ -135,16 +136,12 @@ class JobsService {
         },
         { transaction }
       );
-      console.log(`Created payment ${payment.id} for job ${jobId}`);
 
       // Cập nhật số dư ví của employer
       const newBalance = walletBalance - amountFloat;
       await db.Wallets.update(
         { balance: newBalance },
         { where: { userId }, transaction }
-      );
-      console.log(
-        `Updated employer ${userId} wallet balance to: ${newBalance}`
       );
 
       // Cập nhật job is visible thành true
@@ -153,18 +150,38 @@ class JobsService {
         { where: { id: jobId }, transaction }
       );
 
-      // Lấy danh sách admin để tạo notification
-      const admins = await this.getAdminList({ transaction });
+      // Gọi kiểm duyệt với Gemini
+      const moderationResult = await moderateJob(job);
 
-      // Gửi thông báo đến admin
-      const notifications = admins.map((admin) => ({
-        userId: admin.id,
-        message: `Bài đăng công việc ${job.jobName} đã được thanh tạo và thanh toán.`,
-        type: "job",
-      }));
+      console.log(moderationResult);
 
-      await db.Notifications.bulkCreate(notifications, { transaction });
-      console.log(`Created ${notifications.length} notifications for admins`);
+      if (moderationResult.startsWith("REJECT:")) {
+        // Cập nhật status job "Không kiểm duyệt"
+        await db.Jobs.update(
+          {
+            status: "Không kiểm duyệt",
+          },
+          { where: { id: job.id }, transaction }
+        );
+
+        // Lấy danh sách admin để tạo notification
+        const admins = await this.getAdminList({ transaction });
+
+        // Gửi thông báo đến admin
+        const notifications = admins.map((admin) => ({
+          userId: admin.id,
+          message: `Bài đăng "${job.jobName}" đã bị AI từ chối kiểm duyệt. Vui lòng kiểm tra lại.`,
+          type: "moderation",
+        }));
+
+        await db.Notifications.bulkCreate(notifications, { transaction });
+      } else {
+        // nếu ok thì đánh dấu đã duyệt
+        await db.Jobs.update(
+          { status: "Đã kiểm duyệt" },
+          { where: { id: jobId }, transaction }
+        );
+      }
 
       await transaction.commit();
       return payment;
