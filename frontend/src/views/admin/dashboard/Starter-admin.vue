@@ -414,5 +414,6 @@ canvas {
 
 .card-body::-webkit-scrollbar-thumb:hover {
   background: #555;
+
 }
 </style>
