@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="user-management">
-            <h2>Danh Sách Người Dùng</h2>
+            <h2 class="mt-5">Danh Sách Người Dùng</h2>
             <a href="blank">Quay trở lại trang chủ?</a>
             <div class="card mt-5">
                 <div class="card-header">

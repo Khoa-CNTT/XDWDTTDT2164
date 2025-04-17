@@ -1,19 +1,12 @@
 <template>
   <div class="formofwork-list">
-    <h2>Danh Sách Khoản Lương</h2>
-    <router-link to="/" class="mb-3 d-inline-block"
-      >Quay trở lại trang chủ?</router-link
-    >
+    <h2 class="mt-5">Danh Sách Khoản Lương</h2>
+    <router-link to="/" class="mb-3 d-inline-block">Quay trở lại trang chủ?</router-link>
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Danh Sách Khoản Lương</h5>
-        <button
-          class="btn btn-primary mt-2"
-          data-bs-toggle="modal"
-          data-bs-target="#add-modal"
-          style="width: 150px; height: 40px"
-          :disabled="salaryStore.isLoading"
-        >
+        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
+          style="width: 150px; height: 40px" :disabled="salaryStore.isLoading">
           Thêm mới
         </button>
       </div>
@@ -36,39 +29,27 @@
               </tr>
             </thead>
             <tbody class="text-center align-middle">
-              <tr
-                v-for="(salary, index) in salaryStore.salaries"
-                :key="salary.id"
-              >
+              <tr v-for="(salary, index) in salaryStore.salaries" :key="salary.id">
                 <td>
                   {{ index + 1 }}
                 </td>
                 <td>{{ salary.salaryName }}</td>
                 <td>{{ salary.salarySlug || "N/A" }}</td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      salary.deletedAt ? 'bg-danger' : 'bg-success',
-                    ]"
-                  >
+                  <span :class="[
+                    'badge',
+                    salary.deletedAt ? 'bg-danger' : 'bg-success',
+                  ]">
                     {{ salary.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                   </span>
                 </td>
                 <td>
-                  <button
-                    class="btn btn-success me-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#update-modal"
-                    @click="loadSalaryForUpdate(salary)"
-                  >
+                  <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal"
+                    @click="loadSalaryForUpdate(salary)">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button
-                    class="btn btn-danger me-2"
-                    @click="deleteSalary(salary.id)"
-                    :disabled="salaryStore.isLoading"
-                  >
+                  <button class="btn btn-danger me-2" @click="deleteSalary(salary.id)"
+                    :disabled="salaryStore.isLoading">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </td>
@@ -79,30 +60,20 @@
           <!-- Phân trang -->
           <nav v-if="salaryStore.totalPages > 1" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-              <li
-                class="page-item"
-                :class="{ disabled: salaryStore.currentPage === 1 }"
-              >
+              <li class="page-item" :class="{ disabled: salaryStore.currentPage === 1 }">
                 <button class="page-link" @click="previousPage">
                   Trang trước
                 </button>
               </li>
-              <li
-                v-for="page in salaryStore.totalPages"
-                :key="page"
-                class="page-item"
-                :class="{ active: salaryStore.currentPage === page }"
-              >
+              <li v-for="page in salaryStore.totalPages" :key="page" class="page-item"
+                :class="{ active: salaryStore.currentPage === page }">
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li
-                class="page-item"
-                :class="{
-                  disabled: salaryStore.currentPage === salaryStore.totalPages,
-                }"
-              >
+              <li class="page-item" :class="{
+                disabled: salaryStore.currentPage === salaryStore.totalPages,
+              }">
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
             </ul>
@@ -113,55 +84,29 @@
   </div>
 
   <!-- Modal thêm mới -->
-  <div
-    class="modal fade"
-    id="add-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Thêm mới khoản lương
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Khoảng lương</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="newSalary.salaryName"
-              :disabled="salaryStore.isLoading"
-            />
+            <input type="text" class="form-control" v-model="newSalary.salaryName" :disabled="salaryStore.isLoading" />
             <small v-if="salaryStore.error" class="text-danger">
               {{ salaryStore.error }}
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="salaryStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="salaryStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="addNewSalary"
-            :disabled="salaryStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" @click="addNewSalary" :disabled="salaryStore.isLoading">
             <span v-if="salaryStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
             </span>
@@ -173,55 +118,30 @@
   </div>
 
   <!-- Modal cập nhật -->
-  <div
-    class="modal fade"
-    id="update-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Cập nhật khoản lương
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Khoảng lương</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="updateSalary.salaryName"
-              :disabled="salaryStore.isLoading"
-            />
+            <input type="text" class="form-control" v-model="updateSalary.salaryName"
+              :disabled="salaryStore.isLoading" />
             <small v-if="salaryStore.error" class="text-danger">
               {{ salaryStore.error }}
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="salaryStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="salaryStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="updateSalaryDetails"
-            :disabled="salaryStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" @click="updateSalaryDetails" :disabled="salaryStore.isLoading">
             <span v-if="salaryStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
             </span>

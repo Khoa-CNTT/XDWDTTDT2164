@@ -1,6 +1,6 @@
 <template>
     <div class="company-management">
-        <h2>Danh Sách Công Ty</h2>
+        <h2 class="mt-5">Danh Sách Công Ty</h2>
         <a href="blank">Quay trở lại trang chủ?</a>
         <div class="card mt-5">
             <div class="card-header">

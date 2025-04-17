@@ -1,6 +1,6 @@
 <template>
   <div class="admin-starter">
-    <h1>Xin Chào Long Ma Bắc Giang</h1>
+    <h1 class="mt-5">Xin Chào Long Ma Bắc Giang</h1>
     <a href="blank">Quay trở lại trang chủ?</a>
     <div class="container-fluid mt-4">
       <div class="row">
