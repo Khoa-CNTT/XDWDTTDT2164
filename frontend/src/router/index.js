@@ -215,22 +215,25 @@ const routes = [
         path: "/guest/job_details",
         component: () => import("@/views/common/Job_details.vue"),
       },
-      {
-        //Conditions
-        path: "/guest/conditions",
-        component: () => import("../views/common/Conditions.vue"),
-      },
-      {
-        //about
-        path: "/guest/abouts",
-        component: () => import("../views/common/Abouts.vue"),
-      },
-      {
-        //sc013
-        path: "/guest/pagenotfull",
-        component: () => import("../views/common/Pagenotfull.vue"),
-      },
     ],
+  },
+  {
+    //Conditions
+    path: "/conditions",
+    component: () => import("../views/common/Conditions.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //about
+    path: "/Abouts",
+    component: () => import("../views/common/Abouts.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //sc013
+    path: "/Pagenotfull",
+    component: () => import("../views/common/Pagenotfull.vue"),
+    meta: { layout: "auth" },
   },
 ];
 
