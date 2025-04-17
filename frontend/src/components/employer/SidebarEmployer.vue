@@ -3,9 +3,16 @@
     <div class="balance-box">
       <div class="box">
         <p class="mb-0 mt-2 ms-2 header">Số dư tài khoản</p>
-        <p class="ms-2 fw-bold">0</p>
+        <p class="ms-2 fw-bold">
+          <!-- Hiển thị số dư ví hoặc "0" nếu chưa tải -->
+          {{
+            walletStore.isLoading
+              ? "Đang tải..."
+              : formatNumber(walletStore.wallet?.balance || 0)
+          }}đ
+        </p>
       </div>
-      <button class="btn-deposit">
+      <button class="btn-deposit" @click="goToDeposit">
         <i class="fa-solid fa-credit-card"></i> Nạp tiền
       </button>
     </div>
@@ -98,7 +105,7 @@
             Thay Đổi Mật Khẩu
           </router-link>
 
-          <li class="sidebar-item header logout">
+          <li class="sidebar-item logout" @click="handleLogout">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             Đăng xuất
           </li>
@@ -109,21 +116,49 @@
 </template>
 
 <script>
+import { useWalletStore } from "@stores/useWalletStore";
+import { logoutApi } from "@apis/auth";
+
 export default {
   name: "SidebarEmployer",
+  setup() {
+    const walletStore = useWalletStore();
+    return { walletStore };
+  },
+  methods: {
+    formatNumber(number) {
+      return new Intl.NumberFormat("vi-VN").format(number);
+    },
+    goToDeposit() {
+      this.$router.push("/employer-dashboard/employer-recharge");
+    },
+    async fetchWalletData() {
+      try {
+        await this.walletStore.fetchWallet();
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin ví trong sidebar:", error);
+      }
+    },
+    async handleLogout() {
+      try {
+        await logoutApi();
+        localStorage.removeItem("token");
+        this.$router.push("/login");
+      } catch (error) {
+        console.error("Đăng xuất thất bại:", error);
+      }
+    },
+  },
+  mounted() {
+    this.fetchWalletData();
+  },
 };
 </script>
 
 <style scoped>
 a {
   text-decoration: none !important;
-  /* Tắt dấu gạch dưới của router-link */
 }
-
-/* .router-link-active,
-.router-link-exact-active {
-    all: unset !important;
-} */
 
 .sidebar {
   background: white;
@@ -201,5 +236,10 @@ a {
   display: flex;
   gap: 4px;
   align-items: center;
+}
+
+.btn-deposit:hover {
+  background: #e0a800;
+  transition: background 0.3s ease;
 }
 </style>

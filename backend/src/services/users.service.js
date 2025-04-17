@@ -9,7 +9,7 @@ const {
   sendTokenEmail,
   sendTemporaryPasswordEmail,
 } = require("../libs/sendMail");
-const { hashPassword } = require("../libs/hashPassword");
+const { hashPassword, verifyPassword } = require("../libs/hashPassword");
 /**
  * Service xử lý logic nghiệp vụ liên quan đến user
  */
@@ -128,7 +128,7 @@ class UserService {
     }
 
     // Kiểm tra mật khẩu cũ có chính xác không
-    const isPasswordCorrect = await comparePassword(
+    const isPasswordCorrect = await verifyPassword(
       passwordData.oldPassword,
       user.password
     );
@@ -229,12 +229,12 @@ class UserService {
 
   /**
    * Lấy thông tin nhà tuyển dụng
-   * @param {string} companySlug - slug của nhà tuyển dụng
+   * @param {string} companyId - slug của nhà tuyển dụng
    * @returns {Promise<Object>} - Thông tin nhà tuyển dụng
    */
-  async getEmployerProfile(companySlug) {
+  async getEmployerProfile(companyId) {
     const employer = await db.Employers.findOne({
-      where: { companySlug, isApproved: true },
+      where: { id: companyId },
     });
 
     if (!employer) {
@@ -254,22 +254,48 @@ class UserService {
     const offset = (page - 1) * limit;
     const search = query.search || ""; // Tìm kiếm theo tên công ty (nếu có)
 
+    const whereClause = {
+      isApproved: true,
+    };
+
+    if (search) {
+      whereClause.companyName = {
+        [db.Sequelize.Op.like]: `%${search}%`, // Tìm kiếm không phân biệt hoa thường
+      };
+    }
+
     const { count: totalEmployers, rows: employers } =
       await db.Employers.findAndCountAll({
-        where: search
-          ? {
-              companyName: {
-                [db.Sequelize.Op.iLike]: `%${search}%`, // Tìm kiếm không phân biệt hoa thường
-              },
-              isApproved: true,
-            }
-          : {},
+        where: whereClause,
         offset,
         limit,
         attributes: ["id", "companyName", "companySlug", "companyLogo"],
       });
 
     return { page, limit, totalEmployers, employers };
+  }
+
+  /**
+   * Lấy danh sách nhà tuyển dụng cho admin
+   * @returns {Promise<Object>} - Danh sách nhà tuyển dụng cho admin
+   */
+  async getEmployerListForAdmin(query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count: totalEmployers, rows: employers } =
+      await db.Employers.findAndCountAll({
+        limit,
+        offset,
+      });
+
+    return {
+      page,
+      limit,
+      totalEmployers,
+      employers,
+    };
   }
 
   /**
@@ -371,6 +397,24 @@ class UserService {
     });
 
     return employees;
+  }
+
+  /**
+   * Lấy danh sách ứng viên
+   * @returns {Promise<Object>} - Danh sách ứng viên
+   */
+  async getCandidates(query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const { count: totalCandidate, rows: candidates } =
+      await db.Candidates.findAndCountAll({
+        offset: skip,
+        limit,
+      });
+
+    return { page, limit, totalCandidate, candidates };
   }
 
   /**

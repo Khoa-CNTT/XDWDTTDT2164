@@ -100,6 +100,80 @@ class WalletsController {
       });
     }
   }
+
+  /**
+   * Lấy ra ví người dùng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getWallet(req, res) {
+    try {
+      const { id } = req.user;
+      const data = await walletsService.getWallet(id);
+
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy ra lịch sử nạp tiền
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getHistoryDeposit(req, res) {
+    try {
+      const { id } = req.user;
+      const data = await walletsService.getHistoryDeposit(id, req.query);
+
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy ra lịch sử thanh toán
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getHistoryPayment(req, res) {
+    try {
+      const { id } = req.user;
+      const data = await walletsService.getHistoryPayment(id, req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
 }
 
 module.exports = new WalletsController();
