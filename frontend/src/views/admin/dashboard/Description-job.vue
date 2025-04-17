@@ -1,6 +1,6 @@
 <template>
     <div class="description-job">
-        <h2 class="mt-5">Xem Chi Tiết Bài Đăng</h2>
+        <h2>Xem Chi Tiết Bài Đăng</h2>
         <router-link to="/admin-dashboard/post-management">
             <div>Quay trở lại?</div>
         </router-link>

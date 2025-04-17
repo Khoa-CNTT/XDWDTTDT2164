@@ -1,6 +1,6 @@
 <template>
   <div class="list-jobtype">
-    <h2 class="mt-5">Danh Sách Loại Công Việc</h2>
+    <h2>Danh Sách Loại Công Việc</h2>
     <router-link to="/" class="mb-3 d-inline-block"
       >Quay trở lại trang chủ?</router-link
     >

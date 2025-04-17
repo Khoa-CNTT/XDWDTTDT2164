@@ -13,6 +13,7 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated: (state) => !!state.token && !!state.user,
   },
   actions: {
+    // Đăng nhập và lấy token
     async login(credentials) {
       try {
         this.isLoading = true;
@@ -27,7 +28,7 @@ export const useAuthStore = defineStore("auth", {
         this.token = token;
         localStorage.setItem("token", token);
 
-        // Lấy thông tin người dùng
+        // Fetch thông tin người dùng sau khi đăng nhập thành công
         await this.fetchUserInfo();
         toast.success("Đăng nhập thành công!");
         return this.user;
@@ -40,6 +41,7 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    // Fetch thông tin người dùng từ API
     async fetchUserInfo() {
       try {
         if (!this.token) return null;
@@ -55,6 +57,7 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    // Đăng xuất người dùng
     logout() {
       this.user = null;
       this.token = null;
@@ -65,7 +68,11 @@ export const useAuthStore = defineStore("auth", {
     // Phương thức để khởi tạo trạng thái khi refresh trang
     async initAuth() {
       if (this.token && !this.user) {
-        await this.fetchUserInfo();
+        try {
+          await this.fetchUserInfo(); // Fetch lại thông tin người dùng nếu có token
+        } catch (error) {
+          // Không cần xử lý gì ở đây, lỗi đã được xử lý trong fetchUserInfo
+        }
       }
     },
   },

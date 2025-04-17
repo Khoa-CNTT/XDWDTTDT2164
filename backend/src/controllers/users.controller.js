@@ -192,14 +192,14 @@ class UserController {
    */
   async getEmployerProfile(req, res) {
     try {
-      const { companySlug } = req.params;
+      const { employerId } = req.user;
 
-      const employer = await userService.getEmployerProfile(companySlug);
+      const employer = await userService.getEmployerProfile(employerId);
 
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
-        employer,
+        data: employer,
       });
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
@@ -220,16 +220,62 @@ class UserController {
     try {
       const { page, limit, search } = req.query;
 
-      const employers = await userService.getEmployerList(
-        page || 1,
-        limit || 10,
-        search
-      );
+      const employers = await userService.getEmployerList({
+        page,
+        limit,
+        search,
+      });
 
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
-        employers,
+        data: employers,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy danh sách nhà tuyển dụng cho admin
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getEmployerListForAdmin(req, res) {
+    try {
+      const data = await userService.getEmployerListForAdmin(req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy danh sách ứng viên
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getCandidates(req, res) {
+    try {
+      const data = await userService.getCandidates(req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
       });
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
@@ -287,7 +333,7 @@ class UserController {
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
-        employees,
+        data: employees,
       });
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({

@@ -6,6 +6,8 @@ const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
 const db = require("../models");
 const { caculatePromotionAmount } = require("../libs/helper");
+const dotenv = require("dotenv").config();
+const { Op } = require("sequelize");
 
 const config = {
   app_id: "2553",
@@ -25,7 +27,7 @@ class WalletsService {
    */
   async depositToWallet(amount, userId) {
     const embed_data = {
-      redirecturl: "https://facebook.com",
+      redirecturl: `${process.env.CLIENT_URL}/employer-dashboard/employer-recharge`,
     };
 
     // Tính số tiền khuyến mãi
@@ -170,8 +172,6 @@ class WalletsService {
       payment.status = "Thành công";
       await payment.save({ transaction });
 
-      console.log(`Updated payment ${payment.id} to "Thành công"`);
-
       // Cập nhật số dư cho ví
       const wallet = await db.Wallets.findOne({
         where: { userId: payment.userId },
@@ -179,7 +179,8 @@ class WalletsService {
       });
 
       if (wallet) {
-        wallet.balance += payment.amount;
+        wallet.balance =
+          parseFloat(wallet.balance) + parseFloat(payment.amount);
         await wallet.save({ transaction });
       } else {
         await db.Wallets.create(
@@ -244,7 +245,7 @@ class WalletsService {
     var requestId = partnerCode + new Date().getTime();
     var orderId = requestId;
     var orderInfo = "Nạp tiền vào tài khoản";
-    var redirectUrl = "https://momo.vn/return";
+    var redirectUrl = `${process.env.CLIENT_URL}/employer-dashboard/employer-recharge`;
     var ipnUrl =
       "https://a06b-116-110-240-94.ngrok-free.app/api/wallets/callback-momo";
     var requestType = "payWithMethod";
@@ -397,7 +398,7 @@ class WalletsService {
       });
 
       if (wallet) {
-        wallet.balance = parseFloat(wallet.balance) + paymentAmount;
+        wallet.balance = parseFloat(wallet.balance) + parseFloat(paymentAmount);
         await wallet.save({ transaction });
         console.log(
           `Updated wallet ${wallet.id} balance to: ${wallet.balance}`
@@ -426,12 +427,26 @@ class WalletsService {
   }
 
   /**
+   * Lấy ra ví người dùng
+   * @param {string} userId - Mã người dùng
+   * @returns {Promise<void>} - Trả về dữ liệu ví
+   */
+  async getWallet(userId) {
+    const wallet = await db.Wallets.findOne({
+      where: { userId },
+    });
+
+    return wallet;
+  }
+
+  /**
    * Lịch sử nạp tiền
    * @param {string} userId - Id của người dùng
    * @returns {Promise<void>} - Trả về lịch sử nạp tiền
    */
   async getHistoryDeposit(userId, query) {
-    const { page, limit } = query;
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 8;
     const offset = (page - 1) * limit;
     const history = await db.Payments.findAndCountAll({
       where: {
@@ -445,12 +460,13 @@ class WalletsService {
         "promotionAmount",
         "transactionId",
         "paymentMethod",
+        "status",
       ],
       limit,
       offset,
     });
 
-    return { page, limit, total: history.count, data: history.rows };
+    return { page, limit, total: history.count, deposits: history.rows };
   }
 
   /**
@@ -459,8 +475,10 @@ class WalletsService {
    * @returns {Promise<void>} - Trả về lịch sử thanh toán
    */
   async getHistoryPayment(userId, query) {
-    const { page, limit } = query;
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
     const offset = (page - 1) * limit;
+
     const history = await db.Payments.findAndCountAll({
       where: {
         userId,
@@ -471,12 +489,8 @@ class WalletsService {
       order: [["createdAt", "DESC"]],
       include: [
         {
-          model: db.Wallets,
-          attributes: ["balanceBefore", "balanceAfter"],
-        },
-        {
           model: db.Jobs,
-          attributes: ["id", "title"],
+          as: "Jobs",
         },
       ],
       attributes: ["paymentDate", "amount", "paymentMethod", "note"],
@@ -484,7 +498,12 @@ class WalletsService {
       offset,
     });
 
-    return { page, limit, total: history.count, data: history.rows };
+    return {
+      page,
+      limit,
+      total: history.count,
+      payments: history.rows,
+    };
   }
 }
 

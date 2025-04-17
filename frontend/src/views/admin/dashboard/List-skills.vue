@@ -1,6 +1,6 @@
 <template>
   <div class="list-skills">
-    <h2 class="mt-5">Danh Sách Kỹ Năng</h2>
+    <h2>Danh Sách Kỹ Năng</h2>
     <router-link to="/" class="mb-3 d-inline-block"
       >Quay trở lại trang chủ?</router-link
     >
