@@ -1,6 +1,6 @@
 <template>
   <div class="transaction-management">
-    <div class="d-flex justify-content-between align-items-center mt-5">
+    <div class="d-flex justify-content-between align-items-center">
       <div>
         <h2>Quản Lý Giao Dịch</h2>
         <a href="blank">Quay trở lại trang chủ?</a>

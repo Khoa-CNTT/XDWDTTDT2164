@@ -1,19 +1,12 @@
 <template>
   <div class="list-jobtype">
     <h2>Danh Sách Loại Công Việc</h2>
-    <router-link to="/" class="mb-3 d-inline-block"
-      >Quay trở lại trang chủ?</router-link
-    >
+    <router-link to="/" class="mb-3 d-inline-block">Quay trở lại trang chủ?</router-link>
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Danh Sách Loại Công Việc</h5>
-        <button
-          class="btn btn-primary mt-2"
-          data-bs-toggle="modal"
-          data-bs-target="#add-modal"
-          style="width: 150px; height: 40px"
-          :disabled="categoryStore.isLoading"
-        >
+        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
+          style="width: 150px; height: 40px" :disabled="categoryStore.isLoading">
           Thêm mới
         </button>
       </div>
@@ -21,10 +14,7 @@
         <div v-if="categoryStore.isLoading" class="text-center">
           <i class="fas fa-spinner fa-spin"></i> Đang tải...
         </div>
-        <div
-          v-else-if="categoryStore.categories.length === 0"
-          class="text-center"
-        >
+        <div v-else-if="categoryStore.categories.length === 0" class="text-center">
           Không có loại công việc nào.
         </div>
         <table v-else class="table table-bordered table-hover">
@@ -39,45 +29,29 @@
             </tr>
           </thead>
           <tbody class="text-center align-middle">
-            <tr
-              v-for="(jobType, index) in categoryStore.categories"
-              :key="jobType.id"
-            >
+            <tr v-for="(jobType, index) in categoryStore.categories" :key="jobType.id">
               <td>{{ index + 1 }}</td>
               <td>{{ jobType.categoryName }}</td>
               <td>{{ jobType.categorySlug || "N/A" }}</td>
               <td>
-                <img
-                  class="img-logo"
-                  :src="getImageUrl(jobType.categoryImage)"
-                  alt="logo-jobtype"
-                  @error="handleImageError"
-                />
+                <img class="img-logo" :src="getImageUrl(jobType.categoryImage)" alt="logo-jobtype"
+                  @error="handleImageError" />
               </td>
               <td>
-                <span
-                  :class="[
-                    'badge',
-                    jobType.deletedAt ? 'bg-danger' : 'bg-success',
-                  ]"
-                >
+                <span :class="[
+                  'badge',
+                  jobType.deletedAt ? 'bg-danger' : 'bg-success',
+                ]">
                   {{ jobType.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                 </span>
               </td>
               <td>
-                <button
-                  class="btn btn-success me-2"
-                  data-bs-toggle="modal"
-                  data-bs-target="#update-modal"
-                  @click="loadJobTypeForUpdate(jobType)"
-                >
+                <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal"
+                  @click="loadJobTypeForUpdate(jobType)">
                   <i class="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button
-                  class="btn btn-danger me-2"
-                  @click="deleteJobType(jobType.id)"
-                  :disabled="categoryStore.isLoading"
-                >
+                <button class="btn btn-danger me-2" @click="deleteJobType(jobType.id)"
+                  :disabled="categoryStore.isLoading">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </td>
@@ -89,25 +63,14 @@
   </div>
 
   <!-- Modal thêm mới -->
-  <div
-    class="modal fade"
-    id="add-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Thêm mới loại công việc
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="card">
@@ -119,13 +82,8 @@
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label">Tên loại công việc</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Công nghệ thông tin"
-                      v-model="newJobType.categoryName"
-                      :disabled="categoryStore.isLoading"
-                    />
+                    <input type="text" class="form-control" placeholder="Công nghệ thông tin"
+                      v-model="newJobType.categoryName" :disabled="categoryStore.isLoading" />
                   </div>
                 </div>
 
@@ -133,21 +91,12 @@
                   <label class="form-label">Hình ảnh</label>
                   <div class="image-upload-container">
                     <div class="upload-actions mb-3">
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        @click="triggerFileInput"
-                        :disabled="categoryStore.isLoading"
-                      >
+                      <button type="button" class="btn btn-outline-primary" @click="triggerFileInput"
+                        :disabled="categoryStore.isLoading">
                         <i class="fas fa-image"></i> Chọn ảnh
                       </button>
-                      <input
-                        type="file"
-                        ref="fileInput"
-                        style="display: none"
-                        @change="handleImageUpload"
-                        accept="image/*"
-                      />
+                      <input type="file" ref="fileInput" style="display: none" @change="handleImageUpload"
+                        accept="image/*" />
                     </div>
                     <div class="image-preview">
                       <p>Hình ảnh hiển thị</p>
@@ -166,20 +115,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="categoryStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="categoryStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="addNewJobType"
-            :disabled="categoryStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="addNewJobType" :disabled="categoryStore.isLoading">
             <span v-if="categoryStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
             </span>
@@ -191,25 +130,14 @@
   </div>
 
   <!-- Modal cập nhật -->
-  <div
-    class="modal fade"
-    id="update-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Cập nhật loại công việc
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="card">
@@ -221,13 +149,8 @@
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label">Tên loại công việc</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Nhập tên công việc (không bắt buộc)"
-                      v-model="updateJobType.categoryName"
-                      :disabled="categoryStore.isLoading"
-                    />
+                    <input type="text" class="form-control" placeholder="Nhập tên công việc (không bắt buộc)"
+                      v-model="updateJobType.categoryName" :disabled="categoryStore.isLoading" />
                   </div>
                 </div>
 
@@ -235,21 +158,12 @@
                   <label class="form-label">Hình ảnh (Không bắt buộc)</label>
                   <div class="image-upload-container">
                     <div class="upload-actions mb-3">
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        @click="triggerFileInputUpdate"
-                        :disabled="categoryStore.isLoading"
-                      >
+                      <button type="button" class="btn btn-outline-primary" @click="triggerFileInputUpdate"
+                        :disabled="categoryStore.isLoading">
                         <i class="fas fa-image"></i> Chọn ảnh
                       </button>
-                      <input
-                        type="file"
-                        ref="fileInputUpdate"
-                        style="display: none"
-                        @change="handleImageUploadUpdate"
-                        accept="image/*"
-                      />
+                      <input type="file" ref="fileInputUpdate" style="display: none" @change="handleImageUploadUpdate"
+                        accept="image/*" />
                     </div>
                     <div class="image-preview">
                       <p>Hình ảnh hiển thị</p>
@@ -268,20 +182,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="categoryStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="categoryStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="updateJobTypeDetails"
-            :disabled="categoryStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateJobTypeDetails"
+            :disabled="categoryStore.isLoading">
             <span v-if="categoryStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
             </span>

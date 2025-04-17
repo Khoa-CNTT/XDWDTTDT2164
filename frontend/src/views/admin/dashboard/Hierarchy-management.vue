@@ -1,19 +1,12 @@
 <template>
   <div class="hierarchy-management">
     <h2>Quản Lý Cấp Bậc</h2>
-    <router-link to="/" class="mb-3 d-inline-block"
-      >Quay trở lại trang chủ?</router-link
-    >
+    <router-link to="/" class="mb-3 d-inline-block">Quay trở lại trang chủ?</router-link>
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Quản Lý Cấp Bậc</h5>
-        <button
-          class="btn btn-primary mt-2"
-          data-bs-toggle="modal"
-          data-bs-target="#add-modal"
-          style="width: 150px; height: 40px"
-          :disabled="rankStore.isLoading"
-        >
+        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
+          style="width: 150px; height: 40px" :disabled="rankStore.isLoading">
           Thêm mới
         </button>
       </div>
@@ -43,29 +36,19 @@
                 <td>{{ rank.rankName }}</td>
                 <td>{{ rank.rankSlug || "N/A" }}</td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      rank.deletedAt ? 'bg-danger' : 'bg-success',
-                    ]"
-                  >
+                  <span :class="[
+                    'badge',
+                    rank.deletedAt ? 'bg-danger' : 'bg-success',
+                  ]">
                     {{ rank.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                   </span>
                 </td>
                 <td>
-                  <button
-                    class="btn btn-success me-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#update-modal"
-                    @click="loadRankForUpdate(rank)"
-                  >
+                  <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal"
+                    @click="loadRankForUpdate(rank)">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button
-                    class="btn btn-danger me-2"
-                    @click="deleteRank(rank.id)"
-                    :disabled="rankStore.isLoading"
-                  >
+                  <button class="btn btn-danger me-2" @click="deleteRank(rank.id)" :disabled="rankStore.isLoading">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </td>
@@ -76,30 +59,20 @@
           <!-- Phân trang -->
           <nav v-if="rankStore.totalPages > 1" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-              <li
-                class="page-item"
-                :class="{ disabled: rankStore.currentPage === 1 }"
-              >
+              <li class="page-item" :class="{ disabled: rankStore.currentPage === 1 }">
                 <button class="page-link" @click="previousPage">
                   Trang trước
                 </button>
               </li>
-              <li
-                v-for="page in rankStore.totalPages"
-                :key="page"
-                class="page-item"
-                :class="{ active: rankStore.currentPage === page }"
-              >
+              <li v-for="page in rankStore.totalPages" :key="page" class="page-item"
+                :class="{ active: rankStore.currentPage === page }">
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li
-                class="page-item"
-                :class="{
-                  disabled: rankStore.currentPage === rankStore.totalPages,
-                }"
-              >
+              <li class="page-item" :class="{
+                disabled: rankStore.currentPage === rankStore.totalPages,
+              }">
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
             </ul>
@@ -110,59 +83,33 @@
   </div>
 
   <!-- Modal thêm mới -->
-  <div
-    class="modal fade"
-    id="add-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Thêm mới cấp bậc
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Tên cấp bậc</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="newRank.rankName"
-              :disabled="rankStore.isLoading"
-            />
+            <input type="text" class="form-control" v-model="newRank.rankName" :disabled="rankStore.isLoading" />
             <small v-if="rankStore.error" class="text-danger">
               {{ rankStore.error }}
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="rankStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="rankStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="addNewRank"
-            :disabled="rankStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="addNewRank" :disabled="rankStore.isLoading">
             <span v-if="rankStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
             </span>
-            <span v-else>Lưu</span>
+            <span v-else>Thêm mới</span>
           </button>
         </div>
       </div>
@@ -170,55 +117,29 @@
   </div>
 
   <!-- Modal cập nhật -->
-  <div
-    class="modal fade"
-    id="update-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Cập nhật cấp bậc
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Tên cấp bậc</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="updateRank.rankName"
-              :disabled="rankStore.isLoading"
-            />
+            <input type="text" class="form-control" v-model="updateRank.rankName" :disabled="rankStore.isLoading" />
             <small v-if="rankStore.error" class="text-danger">
               {{ rankStore.error }}
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="rankStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="rankStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="updateRankDetails"
-            :disabled="rankStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateRankDetails" :disabled="rankStore.isLoading">
             <span v-if="rankStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
             </span>

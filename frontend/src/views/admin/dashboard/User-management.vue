@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="user-management">
+        <div class="user-management mt-3">
             <h2>Danh Sách Người Dùng</h2>
             <a href="blank">Quay trở lại trang chủ?</a>
             <div class="card mt-5">
@@ -103,7 +103,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="button" class="btn btn-primary">Cập nhật</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cập nhật</button>
                     </div>
                 </div>
             </div>
