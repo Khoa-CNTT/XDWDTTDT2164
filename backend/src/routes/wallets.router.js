@@ -68,4 +68,52 @@ router.post(
  */
 router.post("/callback-momo", walletsController.callbackMoMo);
 
+/**
+ * @route GET /get-wallet
+ * @desc Lấy ra ví người dùng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute: Kiểm tra quyền truy cập
+ * @middleware authorizedEmployer: Kiểm tra quyền truy cập
+ * @controller walletsController.getWallet: Lấy ra ví người dùng
+ */
+router.get(
+  "/get-wallet",
+  protectedRoute,
+  authorizedRoute("employer"),
+  walletsController.getWallet
+);
+
+/**
+ * @route GET /get-wallet
+ * @desc Lấy ra lịch sử nạp tiền
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute: Kiểm tra quyền truy cập
+ * @middleware authorizedEmployer: Kiểm tra quyền truy cập
+ * @controller walletsController.getHistoryDeposit: Lấy ra lịch sử nạp tiền
+ */
+router.get(
+  "/get-history-deposit",
+  protectedRoute,
+  authorizedRoute("employer"),
+  walletsController.getHistoryDeposit
+);
+
+/**
+ * @route GET /get-wallet
+ * @desc Lấy ra lịch sử thanh toán
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute: Kiểm tra quyền truy cập
+ * @middleware authorizedEmployer: Kiểm tra quyền truy cập
+ * @controller walletsController.getHistoryPayment: Lấy ra lịch sử thanh toán
+ */
+router.get(
+  "/get-history-payment",
+  protectedRoute,
+  authorizedRoute("employer"),
+  walletsController.getHistoryPayment
+);
+
 module.exports = router;

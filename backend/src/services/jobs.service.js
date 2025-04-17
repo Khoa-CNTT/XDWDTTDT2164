@@ -285,18 +285,78 @@ class JobsService {
   }
 
   /**
-   * Lấy ra danh sách bài đăng công việc theo nhà tuyển dụng
-   * @param {string} id - Id của nhà tuyển dụng
-   * @returns {Promise<Object>} Danh sach bài đăng công việc
+   * Lấy ra danh sách bài đăng công việc cho admin
+   * @param {Object} query - Dữ liệu phân trang
+   * @returns {Promise<Object>} Danh sách bài đăng công việc
    */
-  async getJobsForEmployer(id) {
-    const jobs = await db.Jobs.find({
+  async getJobForAdmin(query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count: totalJobs, rows: jobs } = await db.Jobs.findAndCountAll({
       where: {
-        employerId: id,
-        deletedAt: null,
+        isVisible: true,
       },
+      include: [
+        {
+          model: db.Users,
+          as: "Users",
+        },
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
+      ],
+      limit,
+      offset,
     });
-    return jobs;
+
+    return {
+      page,
+      limit,
+      totalJobs,
+      jobs,
+    };
+  }
+
+  /**
+   * Lấy ra danh sách bài đăng công việc theo công ty
+   * @param {Object} query - Dữ liệu query
+   * @returns {Promise<Object>} Danh sách bài đăng công việc
+   */
+  async getJobsForEmployer(employerId, query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 8;
+    const offset = (page - 1) * limit;
+
+    const { count: totalJobs, rows: jobs } = await db.Jobs.findAndCountAll({
+      where: {
+        employerId,
+      },
+      include: [
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
+        {
+          model: db.Users,
+          as: "Users",
+        },
+        {
+          model: db.Ranks,
+          as: "Ranks",
+        },
+      ],
+      limit,
+      offset,
+    });
+    return {
+      page,
+      limit,
+      totalJobs,
+      jobs,
+    };
   }
 
   /**
@@ -315,23 +375,23 @@ class JobsService {
       include: [
         {
           model: db.Employers,
-          as: "employer",
+          as: "Employers",
         },
         {
           model: db.Categories,
-          as: "category",
+          as: "Categories",
         },
         {
           model: db.JobTypes,
-          as: "jobType",
+          as: "JobTypes",
         },
         {
           model: db.Salaries,
-          as: "salary",
+          as: "Salaries",
         },
         {
           model: db.Experiences,
-          as: "experience",
+          as: "Experiences",
         },
       ],
     });

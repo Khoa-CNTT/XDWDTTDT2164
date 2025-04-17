@@ -51,7 +51,7 @@ router.post("/reset-password", userController.resetPassword);
  * @middleware handleValidationErrors: Xử lý lỗi validation
  * @controller UserController.changePassword
  */
-router.post(
+router.put(
   "/change-password",
   protectedRoute,
   validateChangePassword,
@@ -101,7 +101,12 @@ router.get(
  * @access Public
  * @controller UserController.getEmployerProfile
  */
-router.get("/employer/:companySlug", userController.getEmployerProfile);
+router.get(
+  "/employer",
+  protectedRoute,
+  authorizedRoute("employer"),
+  userController.getEmployerProfile
+);
 
 /**
  * @route GET /api/user/employers
@@ -110,6 +115,32 @@ router.get("/employer/:companySlug", userController.getEmployerProfile);
  * @controller UserController.getEmployerList
  */
 router.get("/employers", userController.getEmployerList);
+
+/**
+ * @route GET /api/user/employers-admin
+ * @desc Lấy danh sách nhà tuyển dụng cho admin
+ * @access Private
+ * @controller UserController.getEmployerListForAdmin
+ */
+router.get(
+  "/employers-admin",
+  protectedRoute,
+  authorizedRoute("admin"),
+  userController.getEmployerListForAdmin
+);
+
+/**
+ * @route GET /api/user/candidates
+ * @desc Lấy danh sách ứng viên
+ * @access Private
+ * @controller UserController.getCandidates
+ */
+router.get(
+  "/candidates",
+  protectedRoute,
+  authorizedRoute("admin"),
+  userController.getCandidates
+);
 
 /**
  * @route POST /api/user/employer/:employerId/add-employee

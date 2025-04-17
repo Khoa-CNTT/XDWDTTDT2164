@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@stores/useAuthStore";
 
 const routes = [
   {
@@ -31,7 +32,6 @@ const routes = [
     component: () => import("@/views/common/OTP.vue"),
     meta: { layout: "auth" },
   },
-
 
   // Candidate
   {
@@ -119,7 +119,7 @@ const routes = [
   // Admin routes
   {
     path: "/admin-dashboard",
-    meta: { layout: "admin" },
+    meta: { layout: "admin", requiresAuth: true, role: "admin" },
     children: [
       {
         path: "",
@@ -204,7 +204,7 @@ const routes = [
   },
   // Guest
   {
-    path: "/guest-dashboard",
+    path: "/",
     meta: { layout: "guest" },
     children: [
       {
@@ -237,6 +237,32 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  const isAuthenticated = authStore.isAuthenticated;
+
+  // Nếu đã đăng nhập và cố gắng truy cập vào trang login, chuyển hướng đến trang dashboard hoặc trang chủ
+  if (
+    isAuthenticated &&
+    (to.path === "/login" ||
+      to.path === "/register" ||
+      to.path === "/forgot-password" ||
+      to.path === "/reset-password" ||
+      to.path === "/otp")
+  ) {
+    next({ path: "/" }); // Chuyển hướng tới trang chủ hoặc trang dashboard
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
+    // Nếu yêu cầu đăng nhập nhưng người dùng chưa đăng nhập, chuyển hướng đến trang login
+    next({ path: "/login" });
+  } else if (to.meta.role && to.meta.role !== authStore.user?.role) {
+    // Kiểm tra quyền nếu có yêu cầu role
+    next({ path: "/" });
+  } else {
+    // Nếu không có vấn đề gì, tiếp tục điều hướng
+    next();
+  }
 });
 
 export default router;
