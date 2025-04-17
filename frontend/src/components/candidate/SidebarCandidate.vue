@@ -6,42 +6,24 @@
         <div class="menu-section">
           <ul class="sidebar-list">
             <!-- Trang Chủ -->
-            <router-link to="/candidate-dashboard">
-              <li class="sidebar-item header">
-                <a href="/admin-dashboard" class=""
-                  ><i class="fa-solid fa-house"></i><span> Dashboard</span></a
-                >
-              </li>
+            <router-link to="/" class="sidebar-item header text-dark">
+              <a><i class="fa-solid fa-house"></i><span> Dashboard</span></a>
             </router-link>
             <!-- Nhóm quản lý người đùng -->
-            <li class="sidebar-item header">
-              <router-link to="/candidate-dashboard/candidate-test">
-                <a href="" class=""
-                  ><i class="fa-solid fa-user"></i>Hồ sơ cá nhân
-                </a>
-              </router-link>
-            </li>
-            <li class="sidebar-item header">
-              <router-link to="/candidate-dashboard/candidate-jobs">
-                <a href="" class=""
-                  ><i class="fa-solid fa-bookmark"></i>Đã lưu
-                </a>
-              </router-link>
-            </li>
-            <li class="sidebar-item header">
-              <router-link to="/candidate-dashboard/candidate-apply">
-                <a href="" class=""
-                  ><i class="fa-solid fa-calendar"></i>Ứng viên công việc</a
-                >
-              </router-link>
-            </li>
-            <li class="sidebar-item header">
-              <router-link to="/candidate-dashboard/candidate-password">
-                <a href="" class=""
-                  ><i class="fa-solid fa-lock"></i>Đổi mật khẩu</a
-                >
-              </router-link>
-            </li>
+            <router-link to="/candidate-dashboard/candidate-test" class="sidebar-item header text-dark">
+              <a><i class="fa-solid fa-user"></i>Hồ sơ cá nhân
+              </a>
+            </router-link>
+            <router-link to="/candidate-dashboard/candidate-jobs" class="sidebar-item header text-dark">
+              <a><i class="fa-solid fa-bookmark"></i>Đã lưu
+              </a>
+            </router-link>
+            <router-link to="/candidate-dashboard/candidate-apply" class="sidebar-item header text-dark">
+              <a><i class="fa-solid fa-calendar"></i>Ứng viên công việc</a>
+            </router-link>
+            <router-link to="/candidate-dashboard/candidate-password" class="sidebar-item header text-dark">
+              <a><i class="fa-solid fa-lock"></i>Đổi mật khẩu</a>
+            </router-link>
             <!-- Đăng xuất -->
             <li class="sidebar-item logout" @click="handleLogout">
               <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -85,7 +67,7 @@ a {
   color: black;
   width: 280px;
   height: 100vh;
-  padding: 20px 0;
+  padding: 20px 0px;
 }
 
 .sidebar-list {
@@ -104,16 +86,11 @@ a {
 }
 
 .sidebar-item.header {
-  font-weight: 500;
+  font-weight: 470;
   text-transform: uppercase;
   font-size: 0.7em;
   color: #7f8c8d;
   margin-top: 5px;
-}
-
-.sidebar-item.sub-item {
-  padding-left: 50px;
-  font-size: 0.9em;
 }
 
 .sidebar-item:hover {

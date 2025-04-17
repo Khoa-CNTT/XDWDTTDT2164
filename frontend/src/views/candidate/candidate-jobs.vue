@@ -1,7 +1,7 @@
 <template>
     <div class="p-6 bg-gray-100 min-h-screen">
         <div>
-            <h2 class="text-2xl font-bold mb-2">Danh sách công việc đã lưu.</h2>
+            <h2 class="text-2xl font-bold mb-2 mt-4">Danh sách công việc đã lưu.</h2>
             <h6>Trở lại trang chủ</h6>
         </div>
         <div class="bg-white p-4 rounded-lg shadow">

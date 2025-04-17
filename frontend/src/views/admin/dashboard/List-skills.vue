@@ -1,19 +1,12 @@
 <template>
   <div class="list-skills">
     <h2>Danh Sách Kỹ Năng</h2>
-    <router-link to="/" class="mb-3 d-inline-block"
-      >Quay trở lại trang chủ?</router-link
-    >
+    <router-link to="/" class="mb-3 d-inline-block">Quay trở lại trang chủ?</router-link>
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Danh Sách Kỹ Năng</h5>
-        <button
-          class="btn btn-primary mt-2"
-          data-bs-toggle="modal"
-          data-bs-target="#add-modal"
-          style="width: 150px; height: 40px"
-          :disabled="skillStore.isLoading"
-        >
+        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
+          style="width: 150px; height: 40px" :disabled="skillStore.isLoading">
           Thêm mới
         </button>
       </div>
@@ -43,29 +36,19 @@
                 <td>{{ skill.skillSlug || "N/A" }}</td>
                 <td>{{ skill.Categories.categoryName || "N/A" }}</td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      skill.deletedAt ? 'bg-danger' : 'bg-success',
-                    ]"
-                  >
+                  <span :class="[
+                    'badge',
+                    skill.deletedAt ? 'bg-danger' : 'bg-success',
+                  ]">
                     {{ skill.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                   </span>
                 </td>
                 <td>
-                  <button
-                    class="btn btn-success me-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#update-modal"
-                    @click="loadSkillForUpdate(skill)"
-                  >
+                  <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal"
+                    @click="loadSkillForUpdate(skill)">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button
-                    class="btn btn-danger me-2"
-                    @click="deleteSkill(skill.id)"
-                    :disabled="skillStore.isLoading"
-                  >
+                  <button class="btn btn-danger me-2" @click="deleteSkill(skill.id)" :disabled="skillStore.isLoading">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </td>
@@ -81,20 +64,12 @@
                   Trang trước
                 </button>
               </li>
-              <li
-                v-for="page in totalPages"
-                :key="page"
-                class="page-item"
-                :class="{ active: currentPage === page }"
-              >
+              <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li
-                class="page-item"
-                :class="{ disabled: currentPage === totalPages }"
-              >
+              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
             </ul>
@@ -105,49 +80,26 @@
   </div>
 
   <!-- Modal thêm mới -->
-  <div
-    class="modal fade"
-    id="add-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Thêm mới kỹ năng
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Tên kỹ năng</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="newSkill.skillName"
-              :disabled="skillStore.isLoading"
-            />
+            <input type="text" class="form-control" v-model="newSkill.skillName" :disabled="skillStore.isLoading" />
           </div>
           <div class="mt-2">
             <label class="mb-2">Danh mục công việc</label>
-            <select
-              class="form-select"
-              v-model="newSkill.categoryId"
-              :disabled="skillStore.isLoading || categories.length === 0"
-            >
+            <select class="form-select" v-model="newSkill.categoryId"
+              :disabled="skillStore.isLoading || categories.length === 0">
               <option value="" disabled>Chọn danh mục công việc</option>
-              <option
-                v-for="category in categories"
-                :key="category.id"
-                :value="category.id"
-              >
+              <option v-for="category in categories" :key="category.id" :value="category.id">
                 {{ category.categoryName }}
               </option>
             </select>
@@ -157,20 +109,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="skillStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="skillStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="addNewSkill"
-            :disabled="skillStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="addNewSkill" :disabled="skillStore.isLoading">
             <span v-if="skillStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
             </span>
@@ -182,49 +124,26 @@
   </div>
 
   <!-- Modal cập nhật -->
-  <div
-    class="modal fade"
-    id="update-modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Cập nhật kỹ năng
           </h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Tên kỹ năng</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="updateSkill.skillName"
-              :disabled="skillStore.isLoading"
-            />
+            <input type="text" class="form-control" v-model="updateSkill.skillName" :disabled="skillStore.isLoading" />
           </div>
           <div class="mt-2">
             <label class="mb-2">Danh mục công việc</label>
-            <select
-              class="form-select"
-              v-model="updateSkill.categoryId"
-              :disabled="skillStore.isLoading || categories.length === 0"
-            >
+            <select class="form-select" v-model="updateSkill.categoryId"
+              :disabled="skillStore.isLoading || categories.length === 0">
               <option value="" disabled>Chọn danh mục công việc</option>
-              <option
-                v-for="category in categories"
-                :key="category.id"
-                :value="category.id"
-              >
+              <option v-for="category in categories" :key="category.id" :value="category.id">
                 {{ category.categoryName }}
               </option>
             </select>
@@ -234,20 +153,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            :disabled="skillStore.isLoading"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="skillStore.isLoading">
             Đóng
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="updateSkillDetails"
-            :disabled="skillStore.isLoading"
-          >
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateSkillDetails" :disabled="skillStore.isLoading">
             <span v-if="skillStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
             </span>

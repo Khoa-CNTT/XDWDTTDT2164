@@ -106,7 +106,7 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="salaryStore.isLoading">
             Đóng
           </button>
-          <button type="button" class="btn btn-primary" @click="addNewSalary" :disabled="salaryStore.isLoading">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="addNewSalary" :disabled="salaryStore.isLoading">
             <span v-if="salaryStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
             </span>
@@ -141,7 +141,7 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="salaryStore.isLoading">
             Đóng
           </button>
-          <button type="button" class="btn btn-primary" @click="updateSalaryDetails" :disabled="salaryStore.isLoading">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateSalaryDetails" :disabled="salaryStore.isLoading">
             <span v-if="salaryStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
             </span>

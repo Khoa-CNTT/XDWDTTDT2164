@@ -47,7 +47,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="(job, index) in jobStore.jobs"
+                v-for="(job) in jobStore.jobs"
                 :key="job.id"
                 class="align-middle text-center"
               >
