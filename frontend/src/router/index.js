@@ -208,7 +208,7 @@ const routes = [
     meta: { layout: "guest" },
     children: [
       {
-        path: "",
+        path: "/",
         component: () => import("@/views/common/index.vue"),
       },
     ],
