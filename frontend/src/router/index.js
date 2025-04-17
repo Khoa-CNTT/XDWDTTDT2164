@@ -211,6 +211,10 @@ const routes = [
         path: "/",
         component: () => import("@/views/common/index.vue"),
       },
+      {
+        path: "/guest/job_details",
+        component: () => import("@/views/common/Job_details.vue"),
+      },
     ],
   },
   {
