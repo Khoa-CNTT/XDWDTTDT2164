@@ -231,8 +231,8 @@ const routes = [
   },
   {
     //sc013
-    path: "/Pagenotfull",
-    component: () => import("../views/common/Pagenotfull.vue"),
+    path: "/Pagenotfound",
+    component: () => import("../views/common/Pagenotfound.vue"),
     meta: { layout: "auth" },
   },
 ];
