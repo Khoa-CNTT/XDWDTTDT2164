@@ -3,20 +3,19 @@
     <!-- Job Header Section -->
     <section class="job-header mb-5" style="background-color: #f3f6fd;">
       <div class="container d-flex">
-        <img src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq" style="width: 150px;">
+        <img src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
+          style="width: 150px; border-radius: 50%;">
         <div class="ms-3">
-          <a href="/">
-            <h1 class="job-title mb-4">Software Engineer (Android), Libraries</h1>
-          </a>
-          <div class="job-tags mb-4">
-            <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-briefcase"></i> Phân đoạn</span>
-            <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-location-dot"></i> Đà Nẵng</span>
-            <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-clock"></i> 11 giờ trước</span>
-            <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-money-bill"></i> 35 - 45 Triệu</span>
+          <h5 class="job-title mb-4">Software Engineer (Android), Libraries</h5>
+          <div class="job-tags mb-4 d-flex">
+            <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-briefcase me-2"></i> Phân đoạn</span></h5>
+            <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-location-dot me-2"></i> Đà Nẵng</span></h5>
+            <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-clock me-2"></i> 11 giờ trước</span></h5>
+            <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-money-bill me-2"></i> 35 - 45 Triệu</span></h5>
           </div>
-          <div class="salary-badge">
-            <span class="badge text-dark me-2" style="background-color: #e0e4fe;">Toàn thời gian</span>
-            <span class="badge text-dark" style="background-color: #fdf2df;">Cấp bách</span>
+          <div class="salary-badge d-flex">
+            <h5><span class="badge text-dark me-3" style="background-color: #e0e4fe;">Toàn thời gian</span></h5>
+            <h5><span class="badge text-dark" style="background-color: #fdf2df;">Cấp bách</span></h5>
           </div>
         </div>
       </div>
@@ -65,27 +64,42 @@
             <hr>
 
             <!--Card công việc liên quan -->
-            <div class=" card mt-5">
+            <h3 class="section-title mb-3 mt-5">Công việc liên quan</h3>
+            <div class=" card mb-3">
               <div class="card-body">
-                <h3 class="section-title mb-5">Công việc liên quan</h3>
-                <section class="mb-5">
-                  <div class="container d-flex">
-                    <img src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
-                      style="width: 100px;  height: 100px;">
-                    <div class="ms-3">
-                      <a href="#">
-                        <h5 class="mb-3 text-dark">Software Engineer (Android), Libraries</h5>
-                      </a>
-                      <div class="mb-4">
-                        <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-briefcase"></i> Phân đoạn</span>
-                        <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-location-dot"></i> Đà Nẵng</span>
-                        <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-clock"></i> 11 giờ trước</span>
-                        <span class="badge bg-light text-dark me-2"><i class="fa-solid fa-money-bill"></i> 35 - 45 Triệu</span>
+                <section class=" mt-3">
+                  <div class="container d-flex justify-content-between">
+                    <div class="d-flex">
+                      <img class="me-3 mt-3" src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
+                        style="width: 100px;  height: 100px; border-radius: 50%;">
+                      <div class="ms-3">
+                        <a href="#">
+                          <h5 class="mb-3">Software Engineer (Android), Libraries</h5>
+                        </a>
+                        <div class="mb-3 d-flex">
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-briefcase me-2"></i>
+                              Phân
+                              đoạn</span></h5>
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-location-dot me-2"></i>
+                              Đà
+                              Nẵng</span></h5>
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-clock me-2"></i> 11 giờ
+                              trước</span></h5>
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-money-bill me-2"></i> 35
+                              -
+                              45 Triệu</span></h5>
+                        </div>
+                        <div class="salary-badge d-flex">
+                          <h5><span class="badge text-dark me-2" style="background-color: #e0e4fe;">Toàn thời
+                              gian</span>
+                          </h5>
+                          <h5><span class="badge text-dark" style="background-color: #fdf2df;">Cấp bách</span></h5>
+                        </div>
                       </div>
-                      <div class="salary-badge">
-                        <span class="badge text-dark me-2" style="background-color: #e0e4fe;">Toàn thời gian</span>
-                        <span class="badge text-dark" style="background-color: #fdf2df;">Cấp bách</span>
-                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <button class="btn btn-outline-primary btn-sm me-2" style="padding: 10px 10px;"><i
+                          class="fa-solid fa-bookmark"></i> Lưu</button>
                     </div>
                   </div>
                 </section>
@@ -127,7 +141,7 @@
                 <h4 class="card-title">Thông tin về công ty</h4>
                 <div class=" d-flex mb-3">
                   <img class="me-3" src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
-                    style="width: 50px; height: 50px;">
+                    style="width: 50px; height: 50px; border-radius: 50%;">
                   <div>
                     <h5>Segment</h5>
                     <a href="/Pagenotfound" class="me-2">Xem chi tiết công ty</a>
@@ -319,7 +333,7 @@ export default {
   color: #0d6efd;
 }
 
-address {
+.address {
   font-style: normal;
   color: #6c757d;
 }
@@ -349,5 +363,18 @@ address {
 
 .company-details p {
   margin-bottom: 0.8rem;
+}
+
+/* Style cho thẻ a */
+a {
+  color: #000;
+  /* Màu đen */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #0066cc;
+  /* Xanh dương */
 }
 </style>
