@@ -13,6 +13,18 @@ const routes = [
     component: () => import("@/views/common/Sign_up.vue"),
     meta: { layout: "auth" },
   },
+  {
+    //List
+    path: "/list",
+    component: () => import("@/views/common/List.vue"),
+    meta: { layout: "auth" },
+  },
+  {
+    //List
+    path: "/list-company",
+    component: () => import("@/views/common/ListCompany.vue"),
+    meta: { layout: "auth" },
+  },
 
   // Candidate
   {
@@ -37,7 +49,7 @@ const routes = [
       },
     ],
   },
-
+  
   // Employer
   {
     path: "/employer-dashboard",
