@@ -47,7 +47,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="(job) in jobStore.jobs"
+                v-for="job in jobStore.jobs"
                 :key="job.id"
                 class="align-middle text-center"
               >
@@ -101,6 +101,12 @@
                   </span>
                 </td>
                 <td>
+                  <router-link
+                    :to="`/employer-dashboard/employer-candidates/${job.id}`"
+                    class="btn btn-sm btn-light me-2 px-3"
+                  >
+                    Xem CV đã nộp
+                  </router-link>
                   <router-link
                     :to="`/employer-dashboard/edit-job/${job.id}`"
                     class="btn btn-sm btn-light me-2 px-3"

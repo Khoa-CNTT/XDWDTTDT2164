@@ -24,50 +24,72 @@
             <span>Dashboard</span>
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-info" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-info"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-user"></i>
             Hồ Sơ Công Ty
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-list" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-list"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-bookmark"></i>
             Quản lý nhân viên
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-newjob" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-newjob"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-play"></i>
             Thêm mới nhân viên
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-recharge" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-recharge"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-wallet"></i>
             Nạp tiền tài khoản
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-deposithistory" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-deposithistory"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-wallet"></i>
             Lịch sử nạp tiền
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-paymenthistory" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-paymenthistory"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-wallet"></i>
             Lịch sử thanh toán
           </router-link>
-          <router-link to="/employer-dashboard/employer-newjob" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-newjob"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-play"></i>
             Đăng Một Công Việc Mới
           </router-link>
-          <router-link to="/employer-dashboard/employer-workmanagement" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-workmanagement"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-bag-shopping"></i>
             Quản Lý Công Việc
           </router-link>
 
-          <router-link to="/employer-dashboard/employer-candidates" class="sidebar-item header text-dark">
-            <i class="fa-solid fa-table"></i>
-            Tất Cả Các Ứng Viên
-          </router-link>
-
-          <router-link to="/employer-dashboard/employer-password" class="sidebar-item header text-dark">
+          <router-link
+            to="/employer-dashboard/employer-password"
+            class="sidebar-item header text-dark"
+          >
             <i class="fa-solid fa-lock"></i>
             Thay Đổi Mật Khẩu
           </router-link>
