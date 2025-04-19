@@ -25,6 +25,7 @@ const routes = [
     path: "/list-company",
     component: () => import("@/views/common/ListCompany.vue"),
   },
+  {
     //Forgot password
     path: "/forgot-password",
     component: () => import("@/views/common/Forgot_password.vue"),
@@ -66,7 +67,7 @@ const routes = [
       },
     ],
   },
-  
+
   // Employer
   {
     path: "/employer-dashboard",
