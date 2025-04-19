@@ -86,14 +86,51 @@
                 </div>
             </div>
         </div>
-            
-        <div class="card-header bg-primary">
-            <p class="text-light"><b>Công việc mơ ước của bạn đang chờ đợi</b></p>
-            <p class="text-light">Hơn 1 triệu tương tác, 50.000 chuyện thành công làm cho bạn ngay bây giờ</p>
-            <button class="btn btn-light">Tìm việc làm</button>
+
+        <div class="card-header bg-primary p-5 text-center">
+            <h2 class="text-light mb-3">Công việc mơ ước của bạn đang chờ đợi</h2>
+            <p class="text-light mb-4">Hơn 1 triệu tương tác, 50.000 chuyên gia thành công</p>
+            <button class="btn btn-light">Tìm việc làm ngay</button>
+        </div>
+        <div class="mt-5">
+            <h2><b>Nó hoạt động như thế nào</b></h2>
+            <p>Công việc cho bất cứ ai, bất cứ nơi nào</p>
+        </div>
+
+        <div class="container service-section py-5">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h4 class="service-title">Đánh giá sơ yếu lý lịch miễn phí</h4>
+                            <p class="service-desc">Nhà tuyển dụng trung bình dành 31 giây để quét sơ yếu lý lịch xác
+                                định ứng viên phù hợp</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <h4 class="service-title">Công việc phù hợp với bạn</h4>
+                            <p class="service-desc">Hệ thống AI sẽ gợi ý những công việc phù hợp nhất với năng lực và
+                                kinh nghiệm của bạn</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="service-title">Hỗ trợ mọi bước đường</h4>
+                            <p class="service-desc">Chúng tôi đồng hành cùng bạn từ khi nộp đơn đến khi nhận việc thành
+                                công</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
 </template>
 <script>
 export default {
