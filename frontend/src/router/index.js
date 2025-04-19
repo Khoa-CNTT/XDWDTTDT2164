@@ -15,17 +15,6 @@ const routes = [
     meta: { layout: "auth" },
   },
   {
-    //List
-    path: "/list",
-    component: () => import("@/views/common/List.vue"),
-    meta: { layout: "auth" },
-  },
-  {
-    //List
-    path: "/list-company",
-    component: () => import("@/views/common/ListCompany.vue"),
-  },
-  {
     //Forgot password
     path: "/forgot-password",
     component: () => import("@/views/common/Forgot_password.vue"),
@@ -223,34 +212,34 @@ const routes = [
         component: () => import("@/views/common/index.vue"),
       },
       {
-        path: "/guest/job_details",
+        path: "/job_details",
         component: () => import("@/views/common/Job_details.vue"),
       },
+      {
+        path: "/conditions",
+        component: () => import("../views/common/Conditions.vue"),
+      },
+      {
+        path: "/abouts",
+        component: () => import("../views/common/Abouts.vue"),
+      },
+      {
+        path: "/company-details",
+        component: () => import("../views/common/Companydetails.vue"),
+      },
+      {
+        path: "/page-not-found",
+        component: () => import("../views/common/Pagenotfound.vue"),
+      },
+      {
+        path: "/list",
+        component: () => import("../views/common/List.vue"),
+      },
+      {
+        path: "/list-company",
+        component: () => import("../views/common/ListCompany.vue"),
+      },
     ],
-  },
-  {
-    //Conditions
-    path: "/conditions",
-    component: () => import("../views/common/Conditions.vue"),
-    meta: { layout: "auth" },
-  },
-  {
-    //Companydetails
-    path: "/Companydetails",
-    component: () => import("../views/common/Companydetails.vue"),
-    meta: { layout: "auth" },
-  },
-  {
-    //about
-    path: "/Abouts",
-    component: () => import("../views/common/Abouts.vue"),
-    meta: { layout: "auth" },
-  },
-  {
-    //sc013
-    path: "/Pagenotfound",
-    component: () => import("../views/common/Pagenotfound.vue"),
-    meta: { layout: "auth" },
   },
 ];
 

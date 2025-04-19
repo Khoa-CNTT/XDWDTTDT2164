@@ -1,275 +1,197 @@
 <template>
-  <div>
-    <div>
-      <nav class="navbar navbar-expand-lg bg-body-tertiary p-0">
-        <div class="container-fluid"
-          style="padding-left: 50px; padding-right: 50px; padding-top: 20px; padding-bottom: 20px; background-color:white;border-bottom: 2px solid #dee2e6;">
-          <a class="logo me-3" href="#">
-            <img src="/src/assets/logo/logo.svg" alt="Superio" width="150" height="">
-          </a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-            aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <a class="nav-link active text-primary" aria-current="page" href="#">Trang chủ</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active text-primary" aria-current="page" href="#">Việc làm</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active text-primary" aria-current="page" href="#">Công Ty</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active text-primary" aria-current="page" href="#">Giới Thiệu</a>
-              </li>
-            </ul>
-            <form class="d-flex" role="search">
-              <router-link to="/login">
-                <a class="btn btn-outline-primary" href="login_form.html" type="button">Đăng nhập / Đăng ký</a>
-              </router-link>
-            </form>
-          </div>
+  <section class="job-header mb-5" style="background-color: #f3f6fd;">
+    <div class="container text-center">
+      <div class="ms-3">
+        <h1>Tìm Việc Làm</h1>
+        <div class="text-center d-flex justify-content-center">
+          <a href="/" class="me-2">Trang Chủ</a> / <p class="ms-2">Danh sách công việc</p>
         </div>
-      </nav>
+      </div>
     </div>
-    <div class="col-lg-12">
-    <div class="row text-center bg-ECF1FB">
-      <h2 class=" mt-3">Tìm việc làm</h2>
-      <h5><b>Trang chủ</b> / Danh sách công việc</h5>
-    </div>
-    </div>
-    <div class="col-lg-12 mt-3">
-      <div class="row">
+  </section>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-3">
         <!-- Sidebar -->
-        <div class="col-lg-1"></div>
-        <div class="col-lg-2 ms-5">
-          <div class="card mb-4">
-            <div class="mt-2 ms-4">
-              <h5 class="mb-0">Tìm kiếm bằng từ khóa</h5>
-            </div>
-            <div class="card-body">
-              <input type="text" class="form-control" placeholder="Tên công việc, kỹ năng..." />
-            </div>
-            <div class="mt-2 ms-4">
-              <h5 class="mb-0">Địa chỉ</h5>
-            </div>
-            <div class="card-body">
-              <select class="form-select">
-                <option value="">Chọn tỉnh thành phố</option>
-                <option value="Hà Nội">Hà Nội</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
-                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-              </select>
-            </div>
-            <div class="mt-2 ms-4">
-              <h5 class="mb-0">Danh mục việc làm</h5>
-            </div>
-            <div class="card-body">
-              <input type="text" class="form-control" placeholder="Chọn danh mục việc làm" />
-            </div>
-            <div class="mt-2 ms-2">
-              <div>
-                <h5 class="mb-0 ms-3 mt-2">Hình thức làm việc</h5>
-                <div class="card-body">
-                  <ul class="list-unstyled">
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Freelance</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Full Time</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Part Time</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Temporaly</label>
-                    </li>
-                  </ul>
-                </div>
+        <div class="card mb-4" style="background-color: #edf1fc;">
+          <div class="mt-2 ms-4">
+            <h5 class="mb-0 mt-4">Tìm kiếm bằng từ khóa</h5>
+          </div>
+          <div class="card-body">
+            <input type="text" class="form-control" placeholder="Tên công việc, kỹ năng..." />
+          </div>
+          <div class="mt-2 ms-4">
+            <h5 class="mb-0">Địa chỉ</h5>
+          </div>
+          <div class="card-body">
+            <select class="form-select">
+              <option value="">Chọn tỉnh thành phố</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+              <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+            </select>
+          </div>
+          <div class="mt-2 ms-4">
+            <h5 class="mb-0">Danh mục việc làm</h5>
+          </div>
+          <div class="card-body">
+            <input type="text" class="form-control" placeholder="Chọn danh mục việc làm" />
+          </div>
+          <div class="mt-2 ms-2">
+            <div>
+              <h5 class="mb-0 ms-3 mt-2">Hình thức làm việc</h5>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Freelance</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Full Time</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Part Time</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Temporaly</label>
+                  </li>
+                </ul>
               </div>
-            </div>
-            <div class="mt-2 ms-2">
-              <div>
-                <h5 class="mb-0 ms-3 mt-2">Ngày đăng</h5>
-                <div class="card-body">
-                  <ul class="list-unstyled">
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Tất cả </label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">24 giờ qua</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">7 ngày qua</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">14 ngày qua</label>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="mt-2 ms-2">
-              <div>
-                <h5 class="mb-0 ms-3 mt-2">Cấp độ kinh nghiệm</h5>
-                <div class="card-body">
-                  <ul class="list-unstyled">
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Intern</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">Fresh</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">1 year</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">2 year</label>
-                    </li>
-                    <li>
-                      <input type="checkbox" />
-                      <label class="ms-2">3 year</label>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="ms-4">
-              <h5 class="mb-0">Mức lương</h5>
-            </div>
-            <div class="card-body">
-              <input type="range" class="form-range" min="0" max="50000" step="1000" />
-              <p class="text-center">$0 $2000</p>
             </div>
           </div>
+          <div class="mt-2 ms-2">
+            <div>
+              <h5 class="mb-0 ms-3 mt-2">Ngày đăng</h5>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Tất cả </label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">24 giờ qua</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">7 ngày qua</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">14 ngày qua</label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 ms-2">
+            <div>
+              <h5 class="mb-0 ms-3 mt-2">Cấp độ kinh nghiệm</h5>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Intern</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">Fresh</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">1 year</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">2 year</label>
+                  </li>
+                  <li>
+                    <input type="checkbox" />
+                    <label class="ms-2">3 year</label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="ms-4">
+            <h5 class="mb-0">Mức lương</h5>
+          </div>
+          <div class="card-body">
+            <input type="range" class="form-range" min="0" max="2000" step="100" v-model="salaryRange"
+              :style="{ '--range-progress': rangeProgress + '%' }" @input="updateSalary" />
+            <p class="text-center">${{ salaryRange }}</p>
+          </div>
+          <div class="mt-2 ms-2 mb-5">
+            <h5 class="mb-0 ms-3">Tags</h5>
+            <button class="badge bg-large text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+            <button class="badge text-dark mt-2 ms-2">App</button>
+          </div>
         </div>
+      </div>
+      <div class="col-lg-9">
         <!-- Job Listings -->
-        <div class="col-lg-8">
+        <div>
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <p>Hiển thị 10 công việc</p>
+            <p>Hiển thị <b>10</b> công việc</p>
             <div>
               <select class="form-select d-inline-block w-auto me-2">
                 <option value="newest">Mới nhất</option>
                 <option value="salary">Lương cao nhất</option>
               </select>
-              <button class="btn btn-primary">Tìm kiếm</button>
+              <select class="form-select d-inline-block w-auto">
+                <option value="newest">Tất cả</option>
+                <option value="salary">Option 1</option>
+              </select>
             </div>
           </div>
           <div class="list-group">
-            <div class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiP5OOYYQ-OhLP2M0tapnypGkRBk9la5AmJg&s"
-                  alt="" width="70px">
-                <div class="ms-3">
-                  <h5 class="mb-1">Software Engineer</h5>
-                  <p class="mb-1">
-                    <span class="text-muted">Hà Nội</span> |
-                    <span class="text-muted">35 triệu</span>
-                  </p>
-                  <small class="text-muted">Full-time</small>
-                </div>
-                </div>
-                <div>
-                  <button class="btn btn-outline-primary btn-sm me-2">Xem chi tiết</button>
-                  <button class="btn btn-outline-secondary btn-sm">Ứng tuyển</button>
-                </div>
-              </div>
-            </div>
-            <div class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiP5OOYYQ-OhLP2M0tapnypGkRBk9la5AmJg&s"
-                  alt="" width="70px">
-                <div class="ms-3">
-                  <h5 class="mb-1">Marketing Specialist</h5>
-                  <p class="mb-1">
-                    <span class="text-muted">Đà Nẵng</span> |
-                    <span class="text-muted">20 triệu</span>
-                  </p>
-                  <small class="text-muted">Part-time</small>
-                </div>
-                </div>
-                <div>
-                  <button class="btn btn-outline-primary btn-sm me-2">Xem chi tiết</button>
-                  <button class="btn btn-outline-secondary btn-sm">Ứng tuyển</button>
-                </div>
-              </div>
-            </div>
-            <div class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiP5OOYYQ-OhLP2M0tapnypGkRBk9la5AmJg&s"
-                  alt="" width="70px">
-                <div class="ms-3">
-                  <h5 class="mb-1">Marketing Specialist</h5>
-                  <p class="mb-1">
-                    <span class="text-muted">Đà Nẵng</span> |
-                    <span class="text-muted">20 triệu</span>
-                  </p>
-                  <small class="text-muted">Part-time</small>
-                </div>
-                </div>
-                <div>
-                  <button class="btn btn-outline-primary btn-sm me-2">Xem chi tiết</button>
-                  <button class="btn btn-outline-secondary btn-sm">Ứng tuyển</button>
-                </div>
-              </div>
-            </div>
-            <div class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiP5OOYYQ-OhLP2M0tapnypGkRBk9la5AmJg&s"
-                  alt="" width="70px">
-                <div class="ms-3">
-                  <h5 class="mb-1">Marketing Specialist</h5>
-                  <p class="mb-1">
-                    <span class="text-muted">Đà Nẵng</span> |
-                    <span class="text-muted">20 triệu</span>
-                  </p>
-                  <small class="text-muted">Part-time</small>
-                </div>
-                </div>
-                <div>
-                  <button class="btn btn-outline-primary btn-sm me-2">Xem chi tiết</button>
-                  <button class="btn btn-outline-secondary btn-sm">Ứng tuyển</button>
-                </div>
-              </div>
-            </div>
-            <div class="list-group-item list-group-item-action">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiP5OOYYQ-OhLP2M0tapnypGkRBk9la5AmJg&s"
-                  alt="" width="70px">
-                <div class="ms-3">
-                  <h5 class="mb-1">Marketing Specialist</h5>
-                  <p class="mb-1">
-                    <span class="text-muted">Đà Nẵng</span> |
-                    <span class="text-muted">20 triệu</span>
-                  </p>
-                  <small class="text-muted">Part-time</small>
-                </div>
-                </div>
-                <div>
-                  <button class="btn btn-outline-primary btn-sm me-2">Xem chi tiết</button>
-                  <button class="btn btn-outline-secondary btn-sm">Ứng tuyển</button>
-                </div>
+            <div class=" card">
+              <div class="card-body">
+                <section class="mb-5 mt-3">
+                  <div class="container d-flex justify-content-between">
+                    <div class="d-flex">
+                      <img class="me-3 mt-3" src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
+                        style="width: 100px;  height: 100px; border-radius: 50%;">
+                      <div class="ms-3">
+                        <a href="#">
+                          <h5 class="mb-3">Software Engineer (Android), Libraries</h5>
+                        </a>
+                        <div class="mb-4 d-flex">
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-briefcase me-2"></i>
+                              Phân
+                              đoạn</span></h5>
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-location-dot me-2"></i>
+                              Đà
+                              Nẵng</span></h5>
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-clock me-2"></i> 11 giờ
+                              trước</span></h5>
+                          <h5><span class="badge bg-light text-dark me-3"><i class="fa-solid fa-money-bill me-2"></i> 35
+                              -
+                              45 Triệu</span></h5>
+                        </div>
+                        <div class="salary-badge d-flex">
+                          <h5><span class="badge text-dark me-2" style="background-color: #e0e4fe;">Toàn thời
+                              gian</span>
+                          </h5>
+                          <h5><span class="badge text-dark" style="background-color: #fdf2df;">Cấp bách</span></h5>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-5">
+                      <button class="btn btn-outline-primary btn-sm me-2" style="padding: 10px 10px;"><i
+                          class="fa-solid fa-bookmark"></i> Lưu</button>
+                    </div>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
@@ -295,18 +217,30 @@
             </ul>
           </nav>
         </div>
-        <div class="col-lg-1"></div>
-
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.container {
-  max-width: 1200px;
+<script>
+export default {
+  data() {
+    return {
+      salaryRange: 0,
+    }
+  },
+  computed: {
+    rangeProgress() {
+      return (this.salaryRange / 2000) * 100;
+    }
+  },
+  methods: {
+    updateSalary() {
+      // Có thể thêm logic xử lý khác nếu cần
+    },
+  }
 }
-
+</script>
+<style scoped>
 .card-header {
   background-color: #f8f9fa;
   font-weight: bold;
@@ -320,5 +254,83 @@
 .pagination .page-item.active .page-link {
   background-color: #007bff;
   border-color: #007bff;
+}
+
+.job-header {
+  padding: 2rem 0;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Tùy chỉnh range input */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #ddd;
+  outline: none;
+}
+
+/* Thanh trượt - WebKit (Chrome, Safari) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4e6ef2;
+  cursor: pointer;
+  margin-top: -6px;
+}
+
+/* Thanh trượt - Mozilla (Firefox) */
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4e6ef2;
+  cursor: pointer;
+}
+
+/* Thanh trượt - Microsoft (Edge) */
+input[type="range"]::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4e6ef2;
+  cursor: pointer;
+}
+
+/* Tô màu phần đã kéo */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: linear-gradient(to right, #4e6ef2 0%, #4e6ef2 var(--range-progress), #ddd var(--range-progress), #ddd 100%);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: linear-gradient(to right, #4e6ef2 0%, #4e6ef2 var(--range-progress), #ddd var(--range-progress), #ddd 100%);
+}
+
+input[type="range"]::-ms-track {
+  height: 8px;
+  background: linear-gradient(to right, #4e6ef2 0%, #4e6ef2 var(--range-progress), #ddd var(--range-progress), #ddd 100%);
+}
+
+.job-overview-card .card-title {
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #212529;
+}
+
+/* Style cho thẻ a */
+a {
+  color: #000; /* Màu đen */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #0066cc; /* Xanh dương */
 }
 </style>
