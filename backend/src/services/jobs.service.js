@@ -3,6 +3,7 @@ const db = require("../models");
 const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
 const { redisClient } = require("../config/redis.config");
+const moderateJob = require("../libs/geminiClient");
 
 /**
  * Service xử lý login nghiệp vụ liên quan đến bài đăng công việc
@@ -135,16 +136,12 @@ class JobsService {
         },
         { transaction }
       );
-      console.log(`Created payment ${payment.id} for job ${jobId}`);
 
       // Cập nhật số dư ví của employer
       const newBalance = walletBalance - amountFloat;
       await db.Wallets.update(
         { balance: newBalance },
         { where: { userId }, transaction }
-      );
-      console.log(
-        `Updated employer ${userId} wallet balance to: ${newBalance}`
       );
 
       // Cập nhật job is visible thành true
@@ -153,18 +150,38 @@ class JobsService {
         { where: { id: jobId }, transaction }
       );
 
-      // Lấy danh sách admin để tạo notification
-      const admins = await this.getAdminList({ transaction });
+      // Gọi kiểm duyệt với Gemini
+      const moderationResult = await moderateJob(job);
 
-      // Gửi thông báo đến admin
-      const notifications = admins.map((admin) => ({
-        userId: admin.id,
-        message: `Bài đăng công việc ${job.jobName} đã được thanh tạo và thanh toán.`,
-        type: "job",
-      }));
+      console.log(moderationResult);
 
-      await db.Notifications.bulkCreate(notifications, { transaction });
-      console.log(`Created ${notifications.length} notifications for admins`);
+      if (moderationResult.startsWith("REJECT:")) {
+        // Cập nhật status job "Không kiểm duyệt"
+        await db.Jobs.update(
+          {
+            status: "Không kiểm duyệt",
+          },
+          { where: { id: job.id }, transaction }
+        );
+
+        // Lấy danh sách admin để tạo notification
+        const admins = await this.getAdminList({ transaction });
+
+        // Gửi thông báo đến admin
+        const notifications = admins.map((admin) => ({
+          userId: admin.id,
+          message: `Bài đăng "${job.jobName}" đã bị AI từ chối kiểm duyệt. Vui lòng kiểm tra lại.`,
+          type: "moderation",
+        }));
+
+        await db.Notifications.bulkCreate(notifications, { transaction });
+      } else {
+        // nếu ok thì đánh dấu đã duyệt
+        await db.Jobs.update(
+          { status: "Đã kiểm duyệt" },
+          { where: { id: jobId }, transaction }
+        );
+      }
 
       await transaction.commit();
       return payment;
@@ -268,18 +285,78 @@ class JobsService {
   }
 
   /**
-   * Lấy ra danh sách bài đăng công việc theo nhà tuyển dụng
-   * @param {string} id - Id của nhà tuyển dụng
-   * @returns {Promise<Object>} Danh sach bài đăng công việc
+   * Lấy ra danh sách bài đăng công việc cho admin
+   * @param {Object} query - Dữ liệu phân trang
+   * @returns {Promise<Object>} Danh sách bài đăng công việc
    */
-  async getJobsForEmployer(id) {
-    const jobs = await db.Jobs.find({
+  async getJobForAdmin(query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count: totalJobs, rows: jobs } = await db.Jobs.findAndCountAll({
       where: {
-        employerId: id,
-        deletedAt: null,
+        isVisible: true,
       },
+      include: [
+        {
+          model: db.Users,
+          as: "Users",
+        },
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
+      ],
+      limit,
+      offset,
     });
-    return jobs;
+
+    return {
+      page,
+      limit,
+      totalJobs,
+      jobs,
+    };
+  }
+
+  /**
+   * Lấy ra danh sách bài đăng công việc theo công ty
+   * @param {Object} query - Dữ liệu query
+   * @returns {Promise<Object>} Danh sách bài đăng công việc
+   */
+  async getJobsForEmployer(employerId, query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 8;
+    const offset = (page - 1) * limit;
+
+    const { count: totalJobs, rows: jobs } = await db.Jobs.findAndCountAll({
+      where: {
+        employerId,
+      },
+      include: [
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
+        {
+          model: db.Users,
+          as: "Users",
+        },
+        {
+          model: db.Ranks,
+          as: "Ranks",
+        },
+      ],
+      limit,
+      offset,
+    });
+    return {
+      page,
+      limit,
+      totalJobs,
+      jobs,
+    };
   }
 
   /**
@@ -298,23 +375,23 @@ class JobsService {
       include: [
         {
           model: db.Employers,
-          as: "employer",
+          as: "Employers",
         },
         {
           model: db.Categories,
-          as: "category",
+          as: "Categories",
         },
         {
           model: db.JobTypes,
-          as: "jobType",
+          as: "JobTypes",
         },
         {
           model: db.Salaries,
-          as: "salary",
+          as: "Salaries",
         },
         {
           model: db.Experiences,
-          as: "experience",
+          as: "Experiences",
         },
       ],
     });

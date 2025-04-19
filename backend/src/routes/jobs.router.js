@@ -55,15 +55,26 @@ router.post(
 router.get("/", jobsController.getJobs);
 
 /**
- * @route GET jobs//jobs-employer/:id
- * @desc Lấy danh sách bài đăng công việc theo nhà tuyển dụng
- * @access Private
- * @middleware protectedRoute: Kiểm tra xác thực người dùng
- * @middleware authorizedRoute("employer"): Kiểm tra quyền truy cập nhà tuyển dụng
- * @controller JobsController.getJobsForEmployer: Lấy danh sách bài đăng công việc theo nhà tuyển dụng
+ * @route GET/jobs/get-jobs-admin
+ * @desc Lấy danh sách bài đăng công việc cho admin
+ * @access Public
+ * @controller JobsController.getJobsForAdmin: Lấy danh sách bài đăng công việc
  */
 router.get(
-  "/jobs-employer/:id",
+  "/get-jobs-admin",
+  protectedRoute,
+  authorizedRoute("admin"),
+  jobsController.getJobsForAdmin
+);
+
+/**
+ * @route GET/jobs/get-jobs-employer
+ * @desc Lấy danh sách bài đăng công việc cho nhà tuyển dụng
+ * @access Public
+ * @controller JobsController.getJobsForEmployer: Lấy danh sách bài đăng công việc
+ */
+router.get(
+  "/get-jobs-employer",
   protectedRoute,
   authorizedRoute("employer"),
   jobsController.getJobsForEmployer

@@ -13,6 +13,8 @@ const jobsRoutes = require("./jobs.router");
 const saveJobsRoutes = require("./saveJobs.router");
 const rankRoutes = require("./ranks.router");
 const walletRoutes = require("./wallets.router");
+const applyJobRoutes = require("./applyJob.router");
+const notificationRoutes = require("./notification.router");
 
 /**
  * Khởi tạo các tuyến đường chính cho ứng dụng
@@ -51,6 +53,12 @@ const initialRoutes = (app) => {
 
   // Định tuyến cho ví
   app.use("/api/wallets", walletRoutes);
+
+  // Định tuyến cho ứng tuyển
+  app.use("/api/apply-jobs", applyJobRoutes);
+
+  // Định tuyến cho thông báo
+  app.use("/api/notifications", notificationRoutes);
 
   // Middleware xử lý khi không tìm thấy route
   app.use(notFound);

@@ -8,6 +8,7 @@
 import AdminLayout from "@/components/layouts/AdminLayout.vue";
 import CandidateLayout from "@/components/layouts/CandidateLayout.vue";
 import EmployerLayout from "@/components/layouts/EmployerLayout.vue";
+import GuestLayout from "@/components/layouts/GuestLayout.vue";
 
 export default {
   computed: {
@@ -19,6 +20,8 @@ export default {
           return CandidateLayout;
         case "employer":
           return EmployerLayout;
+        case "guest":
+          return GuestLayout;
         default:
           return "div";
       }

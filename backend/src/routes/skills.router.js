@@ -31,12 +31,27 @@ router.post(
 );
 
 /**
+ * @route GET/skills/
+ * @desc Lấy danh sách skill
+ * @access Public
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute: Kiểm tra quyền truy cập
+ * @controller SkillsController.getSkills: Xử lý lấy danh sách skill theo categoryId
+ */
+router.get(
+  "/",
+  protectedRoute,
+  authorizedRoute("admin"),
+  skillsController.getSkills
+);
+
+/**
  * @route GET/skills/:categoryId
  * @desc Lấy danh sách skill theo categoryId
  * @access Public
  * @controller SkillsController.getSkills: Xử lý lấy danh sách skill theo categoryId
  */
-router.get("/:categoryId", skillsController.getSkills);
+router.get("/:categoryId", skillsController.getSkillsByCategory);
 
 /**
  * @route PUT/skills/:id

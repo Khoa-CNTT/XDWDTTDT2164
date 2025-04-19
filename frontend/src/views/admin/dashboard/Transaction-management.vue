@@ -158,6 +158,7 @@
 </template>
 
 <script>
+
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Chart, registerables } from "chart.js";
 import { BarController, PieController } from "chart.js";
@@ -468,5 +469,13 @@ export default {
 
 canvas {
   max-height: 300px;
+}
+
+.col-lg-3 {
+    transition: transform 0.3s ease;
+}
+
+.col-lg-3:hover {
+    transform: translateY(-5px);
 }
 </style>

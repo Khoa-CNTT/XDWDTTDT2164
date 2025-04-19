@@ -38,7 +38,8 @@ class SalariesController {
    */
   async getSalaries(req, res) {
     try {
-      const salaries = await salariesService.getSalaries();
+      const { page, limit } = req.query;
+      const salaries = await salariesService.getSalaries(page, limit);
 
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,

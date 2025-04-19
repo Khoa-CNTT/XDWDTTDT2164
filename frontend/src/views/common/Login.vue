@@ -64,8 +64,12 @@
             <button
               type="submit"
               class="btn btn-primary w-100 py-2 mb-3 fw-bold"
+              :disabled="authStore.isLoading"
             >
-              Đăng nhập
+              <span v-if="authStore.isLoading">
+                <i class="fas fa-spinner fa-spin me-2"></i>Đang đăng nhập...
+              </span>
+              <span v-else>Đăng nhập</span>
             </button>
 
             <div class="text-center mb-4">
@@ -79,6 +83,7 @@
               type="button"
               class="btn btn-outline-danger w-100 py-2"
               @click="loginWithGoogle"
+              :disabled="authStore.isLoading"
             >
               <i class="fab fa-google me-2"></i>
               Đăng nhập với Google
@@ -91,8 +96,18 @@
 </template>
 
 <script>
-export default {
+import { useAuthStore } from "@stores/useAuthStore";
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "LoginPage",
+  setup() {
+    const authStore = useAuthStore();
+
+    return {
+      authStore,
+    };
+  },
   data() {
     return {
       isPasswordVisible: false,
@@ -106,18 +121,28 @@ export default {
     togglePasswordVisibility() {
       this.isPasswordVisible = !this.isPasswordVisible;
     },
-    handleLogin() {
-      // Xử lý logic đăng nhập
-      console.log("Login data:", this.form);
-      // Gọi API đăng nhập ở đây
-      // this.$store.dispatch('auth/login', this.form)
+    async handleLogin() {
+      try {
+        const userInfo = await this.authStore.login(this.form); // Gọi API đăng nhập
+
+        // Lấy đường dẫn chuyển hướng nếu có
+        const redirectPath =
+          this.$route.query.redirect ||
+          (userInfo?.role === "admin" ? "/admin-dashboard" : "/");
+
+        // Điều hướng người dùng
+        await this.$router.push(redirectPath);
+      } catch (error) {
+        console.error("Đăng nhập thất bại:", error);
+        // Toast đã được hiển thị trong store, không cần hiển thị lại
+      }
     },
     loginWithGoogle() {
-      // Xử lý đăng nhập bằng Google
+      // Xử lý đăng nhập bằng Google (có thể tích hợp Firebase hoặc OAuth)
       console.log("Login with Google");
     },
   },
-};
+});
 </script>
 
 <style scoped>
@@ -170,5 +195,9 @@ export default {
 .btn-outline-danger:hover {
   background-color: #dc3545;
   color: white;
+}
+
+.btn-primary:disabled {
+  opacity: 0.65;
 }
 </style>

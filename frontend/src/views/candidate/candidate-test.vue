@@ -1,7 +1,7 @@
 <template>
     <div>
         <div>
-            <h1>Xin chào , Shu</h1>
+            <h1 class="mt-3">Xin chào , Shu</h1>
             <h6>Trở lại trang chủ ?</h6>
         </div>
         <div class="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-lg">

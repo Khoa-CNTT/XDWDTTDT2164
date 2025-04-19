@@ -1,7 +1,9 @@
 <template>
   <div class="admin-starter">
     <h1>Xin Chào Long Ma Bắc Giang</h1>
-    <a href="blank">Quay trở lại trang chủ?</a>
+    <router-link to="/" class="mb-3 d-inline-block"
+      >Quay trở lại trang chủ?</router-link
+    >
     <div class="container-fluid mt-4">
       <div class="row">
         <div class="col-lg-7 col-md-12">
@@ -15,13 +17,15 @@
             <div class="col-4">
               <div class="card p-3">
                 <h5>Tổng số nhà tuyển dụng</h5>
-                <p class="text-success">100 nhà tuyển dụng</p>
+                <p class="text-success">
+                  {{ userStore.totalPages }} nhà tuyển dụng
+                </p>
               </div>
             </div>
             <div class="col-4">
               <div class="card p-3">
                 <h5>Tổng số ứng viên</h5>
-                <p class="text-success">100 ứng viên</p>
+                <p class="text-success">{{ userStore.totalPages }} ứng viên</p>
               </div>
             </div>
           </div>
@@ -71,28 +75,37 @@
               <h3>THÔNG BÁO</h3>
             </div>
             <div class="card-body">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <p><b>Kiểm duyệt bài đăng</b></p>
-                  <p>(1 giờ trước)</p>
-                </div>
-                <span>Thông báo kiểm duyệt bài đăng mới từ nhà tuyển dụng</span>
-                <hr />
+              <!-- Trạng thái loading -->
+              <div v-if="notificationStore.isLoading" class="text-center">
+                <i class="fas fa-spinner fa-spin"></i> Đang tải thông báo...
               </div>
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <p><b>Kiểm duyệt bài đăng</b></p>
-                  <p>(1 giờ trước)</p>
-                </div>
-                <span>Thông báo kiểm duyệt bài đăng mới từ nhà tuyển dụng</span>
-                <hr />
+              <!-- Trạng thái lỗi -->
+              <div
+                v-else-if="notificationStore.error"
+                class="text-center text-danger"
+              >
+                {{ notificationStore.error }}
               </div>
-              <div>
+              <!-- Không có thông báo -->
+              <div
+                v-else-if="notificationStore.notifications.length === 0"
+                class="text-center"
+              >
+                Không có thông báo nào.
+              </div>
+              <!-- Hiển thị danh sách thông báo -->
+              <div
+                v-else
+                v-for="notification in notificationStore.notifications"
+                :key="notification.id"
+              >
                 <div class="d-flex justify-content-between align-items-center">
-                  <p><b>Kiểm duyệt bài đăng</b></p>
-                  <p>(1 giờ trước)</p>
+                  <p>
+                    <b>{{ notification.title }}</b>
+                  </p>
+                  <p>{{ formatTime(notification.createdAt) }}</p>
                 </div>
-                <span>Thông báo kiểm duyệt bài đăng mới từ nhà tuyển dụng</span>
+                <span>{{ notification.message }}</span>
                 <hr />
               </div>
             </div>
@@ -105,10 +118,17 @@
 
 <script>
 import { Chart, registerables } from "chart.js";
+import { useNotificationStore } from "@stores/useNotificationStore";
+import { useUserStore } from "@stores/useUserStore";
 
 Chart.register(...registerables);
 
 export default {
+  setup() {
+    const notificationStore = useNotificationStore();
+    const userStore = useUserStore();
+    return { notificationStore, userStore };
+  },
   data() {
     return {
       postChartInstance: null,
@@ -174,8 +194,95 @@ export default {
   mounted() {
     this.renderPostChart();
     this.renderCandidateChart();
+    this.fetchNotifications();
+    this.fetchCandidates();
+    this.fetchEmployers();
   },
   methods: {
+    async fetchNotifications() {
+      try {
+        await this.notificationStore.fetchNotifications();
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách thông báo:", error);
+      }
+    },
+    async fetchCandidates() {
+      try {
+        await this.userStore.fetchCandidates(
+          this.userStore.currentPage,
+          this.userStore.pageSize
+        );
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách ứng viên:", error);
+      }
+    },
+    async fetchEmployers() {
+      try {
+        await this.userStore.fetchEmployers(
+          this.userStore.currentPage,
+          this.userStore.pageSize
+        );
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách nhà tuyển dụng:", error);
+      }
+    },
+    formatTime(createdAt) {
+      const date = new Date(createdAt);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+
+      if (diffInSeconds < 60) {
+        return `${diffInSeconds} giây trước`;
+      } else if (diffInSeconds < 3600) {
+        return `${Math.floor(diffInSeconds / 60)} phút trước`;
+      } else if (diffInSeconds < 86400) {
+        return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+      } else {
+        return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
+      }
+    },
+    previousCandidatePage() {
+      if (this.userStore.currentPage > 1) {
+        this.fetchCandidates(
+          this.userStore.currentPage - 1,
+          this.userStore.pageSize
+        );
+      }
+    },
+    nextCandidatePage() {
+      if (this.userStore.currentPage < this.userStore.totalPages) {
+        this.fetchCandidates(
+          this.userStore.currentPage + 1,
+          this.userStore.pageSize
+        );
+      }
+    },
+    goToCandidatePage(page) {
+      if (page >= 1 && page <= this.userStore.totalPages) {
+        this.fetchCandidates(page, this.userStore.pageSize);
+      }
+    },
+    previousEmployerPage() {
+      if (this.userStore.currentPage > 1) {
+        this.fetchEmployers(
+          this.userStore.currentPage - 1,
+          this.userStore.pageSize
+        );
+      }
+    },
+    nextEmployerPage() {
+      if (this.userStore.currentPage < this.userStore.totalPages) {
+        this.fetchEmployers(
+          this.userStore.currentPage + 1,
+          this.userStore.pageSize
+        );
+      }
+    },
+    goToEmployerPage(page) {
+      if (page >= 1 && page <= this.userStore.totalPages) {
+        this.fetchEmployers(page, this.userStore.pageSize);
+      }
+    },
     renderPostChart() {
       const ctx = this.$refs.postChartCanvas.getContext("2d");
       const { labels, data } = this.BD_Data[this.selectedPostFilter];
@@ -281,5 +388,32 @@ canvas {
 .form-select {
   padding: 5px;
   font-size: 14px;
+}
+
+.admin-starter {
+  padding: 20px;
+}
+
+.card-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.card-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+
 }
 </style>

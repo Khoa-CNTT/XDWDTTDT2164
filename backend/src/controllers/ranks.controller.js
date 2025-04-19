@@ -38,7 +38,8 @@ class RanksController {
    */
   async getRanks(req, res) {
     try {
-      const ranks = await ranksService.getRanks();
+      const { page, limit } = req.query;
+      const ranks = await ranksService.getRanks(page, limit);
 
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,

@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen bg-blue-50 p-6">
         <div>
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Cập nhật thông tin - Nguyễn Văn A</h2>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 mt-4">Cập nhật thông tin - Nguyễn Văn A</h2>
             <a href="#" class="text-blue-500 text-sm mb-6 inline-block">Trở lại trang chủ?</a>
         </div>
         <div class="max-w-4xl mx-auto bg-white shadow-md rounded-xl p-8">
