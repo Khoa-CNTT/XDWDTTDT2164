@@ -220,6 +220,12 @@ const routes = [
     meta: { layout: "auth" },
   },
   {
+    //Companydetails
+    path: "/Companydetails",
+    component: () => import("../views/common/Companydetails.vue"),
+    meta: { layout: "auth" },
+  },
+  {
     //about
     path: "/Abouts",
     component: () => import("../views/common/Abouts.vue"),
