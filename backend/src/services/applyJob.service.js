@@ -60,6 +60,68 @@ class ApplyJobService {
 
     return newApplyJob;
   }
+
+  /**
+   * Lấy ra danh sách ứng viên ứng tuyển
+   * @param {Object} jobId - ID công việc
+   * @returns {Promise<void>} - Trả về danh sách ứng viên
+   */
+  async getCandidates(jobId, query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count: totalCandidates, rows: candidates } =
+      await db.Applications.findAndCountAll({
+        where: {
+          jobId,
+        },
+        include: [
+          {
+            model: db.Candidates,
+            as: "Candidates",
+            include: [
+              {
+                model: db.Users,
+                as: "Users",
+                attributes: ["fullName"],
+              },
+            ],
+          },
+        ],
+        limit,
+        offset,
+      });
+
+    return {
+      page,
+      limit,
+      totalCandidates,
+      candidates,
+    };
+  }
+
+  /**
+   * Xem chi tiết đánh giá và cv ứng viên
+   * @param {Object} applyId - ID của ứng tuyển
+   * @param {Object} candidateId - ID của ứng viên
+   * @returns {Promise<void>} - Trả về thông tin chi tiết ứng viên
+   */
+  async getCandidateDetail(applyId, candidateId) {
+    const candidate = await db.Applications.findOne({
+      where: {
+        id: applyId,
+      },
+      include: [
+        {
+          model: db.Candidates,
+          as: "Candidates",
+        },
+      ],
+    });
+
+    return candidate;
+  }
 }
 
 module.exports = new ApplyJobService();

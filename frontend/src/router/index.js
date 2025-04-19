@@ -117,7 +117,7 @@ const routes = [
           import("../views/employer/employer-workmanagement.vue"),
       },
       {
-        path: "employer-candidates",
+        path: "employer-candidates/:jobId",
         component: () => import("@/views/employer/employer-candidates.vue"),
       },
       {
