@@ -356,11 +356,11 @@ class UserController {
       const { gender, dateOfBirth, address, workExperience, salary, skillIds } =
         req.body;
 
-      if (!req.file || !req.file.path) {
+      if (!req.file || !req.file.filename) {
         throw new ApiError(StatusCode.BAD_REQUEST, "Không tìm thấy file CV");
       }
 
-      const cvUrl = req.file.path;
+      const cvUrl = req.file.filename;
 
       const candidateData = {
         userId: id,

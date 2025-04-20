@@ -247,33 +247,204 @@ export default {
 </script>
 
 <style scoped>
+/* Container chính */
 .container-fluid {
   max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
+/* Card chứa form */
 .card {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+/* Tiêu đề */
+h2.mb-0 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+
+h5.mb-4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #0d6efd;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+/* Form group và label */
+.form-group {
+  margin-bottom: 1.75rem;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Input và textarea */
+.form-control {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-control:focus {
   border-color: #0d6efd;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+  outline: none;
 }
 
-.form-label {
-  font-weight: 500;
-  margin-bottom: 0.5rem;
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
+/* Phần upload ảnh */
+.position-relative {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
 }
 
+.border-dashed {
+  border: 2px dashed #d0d0d0;
+  border-radius: 12px;
+  background: #f9f9f9;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.border-dashed:hover {
+  border-color: #0d6efd;
+  background: #f0f6ff;
+}
+
+.border-dashed i {
+  color: #888;
+  transition: color 0.3s ease;
+}
+
+.border-dashed:hover i {
+  color: #0d6efd;
+}
+
+.border-dashed span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+img {
+  border-radius: 12px;
+}
+
+/* Thông tin ảnh */
+small.text-muted {
+  font-size: 0.8rem;
+  color: #777;
+  line-height: 1.5;
+}
+
+/* Nút Lưu */
+.btn-primary {
+  background-color: #0d6efd;
+  border: none;
+  padding: 0.75rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0a58ca;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Trạng thái loading */
+.text-center i {
+  font-size: 1.5rem;
+  color: #0d6efd;
+}
+
+/* Trạng thái lỗi */
 .text-danger {
-  font-size: 0.875rem;
+  font-size: 1rem;
+  color: #dc3545;
+  background: #f8d7da;
+  padding: 1rem;
+  border-radius: 8px;
+  display: inline-block;
 }
 
-.w-30 {
-  width: 30%;
+/* Footer */
+.text-center.mt-4 small {
+  font-size: 0.85rem;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  h2.mb-0 {
+    font-size: 1.75rem;
+  }
+
+  .position-relative {
+    width: 120px;
+    height: 120px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .col-md-6 {
+    width: 100%;
+  }
+
+  .form-control {
+    font-size: 0.95rem;
+  }
+
+  .form-label {
+    font-size: 0.9rem;
+  }
 }
 </style>

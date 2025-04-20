@@ -1,9 +1,9 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const dotenv = require("dotenv").config();
+const ai = new GoogleGenerativeAI("AIzaSyCTpN9LXt1X8NlS1mhhosRRMVMwKPwXs3k");
 
 async function moderateJob(job) {
-  const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
 Bạn là một chuyên gia kiểm duyệt nội dung tuyển dụng. Hãy đọc kỹ bài đăng dưới đây và đánh giá dựa trên 5 tiêu chí:
@@ -38,7 +38,7 @@ Chỉ trả lời duy nhất 1 dòng theo định dạng trên.
 }
 
 async function moderateApplyJob(apply, job) {
-  const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `Bạn là một chuyên gia nhân sự có kinh nghiệm tuyển dụng trong nhiều lĩnh vực. Dưới đây là một bài ứng tuyển, hãy đọc kỹ và đưa ra đánh giá theo các tiêu chí sau:
 
@@ -63,7 +63,7 @@ Hãy trả lời theo định dạng sau:
 
 Điểm đánh giá: [số điểm /10]  
 Mức độ phù hợp: [Phù hợp / Không phù hợp / Cần xem xét]  
-Nhận xét: [viết nhận xét chi tiết, khoảng 3-5 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên]
+Nhận xét: [viết nhận xét chi tiết, khoảng 5-7 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên]
 
 Chỉ trả lời theo đúng định dạng yêu cầu, không thêm nội dung khác. `;
 

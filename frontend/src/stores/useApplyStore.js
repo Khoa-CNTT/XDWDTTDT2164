@@ -44,11 +44,11 @@ export const useApplyStore = defineStore("apply-job", {
       }
     },
 
-    async fetchCandidates(jobId) {
+    async fetchCandidates(jobId, page, limit) {
       this.setLoadingState(true);
       this.resetError();
       try {
-        const response = await getCandidatesApi(jobId);
+        const response = await getCandidatesApi(jobId, page, limit);
         if (!response || !response.data) {
           throw new Error("Dữ liệu danh sách không hợp lệ");
         }

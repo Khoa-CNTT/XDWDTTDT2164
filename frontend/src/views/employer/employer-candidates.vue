@@ -16,17 +16,17 @@
         <h5 class="mb-4">Ứng viên</h5>
 
         <!-- Loading State -->
-        <div v-if="jobStore.isLoading" class="text-center mb-4">
+        <div v-if="applyJobStore.isLoading" class="text-center mb-4">
           <i class="fas fa-spinner fa-spin"></i> Đang tải danh sách ứng viên...
         </div>
 
         <!-- Error State -->
-        <div v-else-if="jobStore.error" class="alert alert-danger">
-          {{ jobStore.error }}
+        <div v-else-if="applyJobStore.error" class="alert alert-danger">
+          {{ applyJobStore.error }}
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="!jobStore.applicants?.length" class="text-center">
+        <div v-else-if="!applyJobStore.candidates?.length" class="text-center">
           Không có ứng viên nào.
         </div>
 
@@ -44,34 +44,37 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="applicant in jobStore.applicants" :key="applicant.id">
-                <td>{{ applicant.fullName || "N/A" }}</td>
-                <td>{{ applicant.phone || "N/A" }}</td>
+              <tr
+                v-for="applicant in applyJobStore.candidates"
+                :key="applicant.id"
+              >
+                <td>{{ applicant.Candidates.Users.fullName || "N/A" }}</td>
+                <td>{{ applicant.Candidates.Users.phoneNumber || "N/A" }}</td>
                 <td>
-                  {{ applicant.matchRate ? `${applicant.matchRate}%` : "N/A" }}
+                  {{
+                    applicant.matchScore ? `${applicant.matchScore}%` : "N/A"
+                  }}
                 </td>
                 <td>
                   <span
                     :class="[
                       'badge rounded-pill px-3',
-                      applicant.rating === 'Tạm chấp nhận'
+                      applicant.isSuitable === 'Tạm chấp nhận'
                         ? 'bg-warning text-dark'
                         : 'bg-secondary',
                     ]"
                   >
-                    {{ applicant.rating || "Chưa đánh giá" }}
+                    {{ applicant.isSuitable || "Chưa đánh giá" }}
                   </span>
                 </td>
                 <td>{{ applicant.status || "Chưa xem" }}</td>
                 <td>
-                  <a
-                    v-if="applicant.cvUrl"
-                    :href="applicant.cvUrl"
-                    target="_blank"
+                  <router-link
+                    :to="`/employer-dashboard/employer-candidate-detail/${applicant.id}`"
                     class="btn btn-link text-decoration-none p-0 me-4"
                   >
-                    Xem CV
-                  </a>
+                    Xem chi tiết CV
+                  </router-link>
                   <button
                     class="btn btn-link text-decoration-none p-0"
                     @click="rateApplicant(applicant.id)"
@@ -82,6 +85,47 @@
               </tr>
             </tbody>
           </table>
+
+          <!-- Pagination -->
+          <nav v-if="applyJobStore.totalPages > 1" class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li
+                class="page-item"
+                :class="{ disabled: applyJobStore.currentPage === 1 }"
+              >
+                <button
+                  class="page-link"
+                  @click="fetchCandidates(applyJobStore.currentPage - 1)"
+                >
+                  Trang trước
+                </button>
+              </li>
+              <li
+                v-for="page in paginationPages"
+                :key="page"
+                class="page-item"
+                :class="{ active: applyJobStore.currentPage === page }"
+              >
+                <button class="page-link" @click="fetchCandidates(page)">
+                  {{ page }}
+                </button>
+              </li>
+              <li
+                class="page-item"
+                :class="{
+                  disabled:
+                    applyJobStore.currentPage === applyJobStore.totalPages,
+                }"
+              >
+                <button
+                  class="page-link"
+                  @click="fetchCandidates(applyJobStore.currentPage + 1)"
+                >
+                  Trang sau
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
@@ -89,37 +133,64 @@
 </template>
 
 <script>
-import { useJobStore } from "@stores/useJobStore";
+import { useApplyStore } from "@stores/useApplyStore";
 import { toast } from "vue3-toastify";
 
 export default {
   name: "ApplicantList",
   setup() {
-    const jobStore = useJobStore();
-    return { jobStore };
+    const applyJobStore = useApplyStore();
+    return { applyJobStore };
+  },
+  computed: {
+    paginationPages() {
+      const total = this.applyJobStore.totalPages;
+      const current = this.applyJobStore.currentPage;
+      const maxPagesToShow = 5;
+      const pages = [];
+
+      let startPage = Math.max(1, current - Math.floor(maxPagesToShow / 2));
+      let endPage = Math.min(total, startPage + maxPagesToShow - 1);
+
+      if (endPage - startPage + 1 < maxPagesToShow) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+
+      return pages;
+    },
   },
   methods: {
-    async fetchApplicants() {
+    async fetchCandidates(page = 1) {
       const jobId = this.$route.params.jobId;
       if (!jobId) {
-        this.jobStore.error = "Không tìm thấy ID công việc.";
+        this.applyJobStore.error = "Không tìm thấy ID công việc.";
+        toast.error("Không tìm thấy ID công việc. Vui lòng thử lại.");
+        this.$router.push("/employer-dashboard/employer-workmanagement");
         return;
       }
       try {
-        await this.jobStore.fetchApplicants(jobId, 1, 10);
+        await this.applyJobStore.fetchCandidates(
+          jobId,
+          page,
+          this.applyJobStore.pageSize || 10
+        );
       } catch (error) {
         console.error("Lỗi khi lấy danh sách ứng viên:", error);
+        toast.error("Không thể tải danh sách ứng viên. Vui lòng thử lại sau.");
       }
     },
     rateApplicant(applicantId) {
-      // Placeholder cho logic đánh giá
       toast.info(
         `Chức năng đánh giá ứng viên ${applicantId} đang được phát triển!`
       );
     },
   },
   mounted() {
-    this.fetchApplicants();
+    this.fetchCandidates();
   },
 };
 </script>
@@ -153,5 +224,26 @@ export default {
 
 .text-primary {
   color: #0d6efd !important;
+}
+
+.page-link {
+  color: #6c757d;
+  border: none;
+  padding: 0.5rem 1rem;
+}
+
+.page-link:hover {
+  color: #000;
+  background: none;
+}
+
+.page-item.active .page-link {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.page-item.disabled .page-link {
+  color: #d3d3d3;
+  cursor: not-allowed;
 }
 </style>

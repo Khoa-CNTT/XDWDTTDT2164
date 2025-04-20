@@ -10,12 +10,16 @@
   },
   "dependencies": {
     "@primeuix/themes": "^1.0.0",
+    "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.8.2",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.8",
+    "pdfjs-dist": "^5.1.91",
     "pinia": "^3.0.2",
     "primevue": "^4.3.3",
+    "quill": "^2.0.3",
     "vue": "^3.5.13",
+    "vue-pdf-embed": "^2.1.2",
     "vue-router": "^4.5.0",
     "vue3-toastify": "^0.2.8",
     "vuex": "^4.1.0"

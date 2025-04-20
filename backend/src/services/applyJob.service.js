@@ -48,14 +48,16 @@ class ApplyJobService {
     const job = await db.Jobs.findByPk(applyJobData.jobId);
     const aiResult = await moderateApplyJob(cvText, job);
     const parseResult = parseGeminiResult(aiResult);
+    console.log(parseResult);
     // Thêm mới dữ liệu vào data
-    const newApplyJob = await db.Applications.findOne({
+    const newApplyJob = await db.Applications.create({
       jobId: applyJobData.jobId,
       candidateId: applyJobData.candidateId,
       cvUpload: applyJobData.cvUpload,
+      coverLetter: applyJobData.coverLetter,
       matchScore: parseResult.matchScore,
       isSuitable: parseResult.isSuitable,
-      coverLetter: parseResult.coverLetter,
+      moderatorReview: parseResult.moderateReview,
     });
 
     return newApplyJob;
@@ -80,14 +82,23 @@ class ApplyJobService {
           {
             model: db.Candidates,
             as: "Candidates",
+            attributes: ["id"],
             include: [
               {
                 model: db.Users,
                 as: "Users",
-                attributes: ["fullName"],
+                attributes: ["fullName", "phoneNumber", "email"],
               },
             ],
           },
+        ],
+        attributes: [
+          "id",
+          "jobId",
+          "candidateId",
+          "status",
+          "matchScore",
+          "isSuitable",
         ],
         limit,
         offset,
@@ -107,7 +118,7 @@ class ApplyJobService {
    * @param {Object} candidateId - ID của ứng viên
    * @returns {Promise<void>} - Trả về thông tin chi tiết ứng viên
    */
-  async getCandidateDetail(applyId, candidateId) {
+  async getCandidateDetail(applyId) {
     const candidate = await db.Applications.findOne({
       where: {
         id: applyId,
@@ -116,6 +127,14 @@ class ApplyJobService {
         {
           model: db.Candidates,
           as: "Candidates",
+          attributes: ["cvUrl"], // chỉ lấy những field cần thiết thôi
+          include: [
+            {
+              model: db.Users,
+              as: "Users",
+              attributes: ["fullName", "phoneNumber", "email"],
+            },
+          ],
         },
       ],
     });

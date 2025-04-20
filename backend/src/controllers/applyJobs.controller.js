@@ -37,8 +37,8 @@ class ApplyJobController {
    */
   async getCandidates(req, res) {
     try {
-      const { jobId } = req.param;
-      const data = await applyJobService.getCandidates(jobId, query);
+      const { jobId } = req.params;
+      const data = await applyJobService.getCandidates(jobId, req.query);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
@@ -61,11 +61,8 @@ class ApplyJobController {
    */
   async getCandidateDetail(req, res) {
     try {
-      const { applyId, candidateId } = req.param;
-      const data = await applyJobService.getCandidateDetail(
-        applyId,
-        candidateId
-      );
+      const { applyId } = req.params;
+      const data = await applyJobService.getCandidateDetail(applyId);
 
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,

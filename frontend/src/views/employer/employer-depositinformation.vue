@@ -83,7 +83,10 @@
                 />
                 <span class="input-group-text">đ</span>
               </div>
-              <small class="text-muted">{{ amountInWords }}</small>
+              <small v-if="errorAmount" class="text-danger d-block mt-1">{{
+                errorAmount
+              }}</small>
+              <small class="text-muted d-block mt-1">{{ amountInWords }}</small>
             </div>
 
             <!-- Deposit Summary -->
@@ -107,7 +110,7 @@
             <button
               class="btn btn-primary w-100"
               @click="deposit"
-              :disabled="walletStore.isLoading"
+              :disabled="walletStore.isLoading || amount < 50000"
             >
               {{ walletStore.isLoading ? "Đang xử lý..." : "Tiếp tục" }}
             </button>
@@ -135,6 +138,8 @@ export default {
       selectedAmount: 50000,
       customAmount: "50000",
       amount: 50000,
+      errorAmount: "",
+      validPaymentMethods: ["MOMO", "ZALOPAY", "VNPAY"],
     };
   },
   computed: {
@@ -228,10 +233,18 @@ export default {
       const cleaned = this.customAmount.replace(/[^0-9]/g, "");
       this.amount = cleaned ? parseInt(cleaned, 10) : 0;
       this.selectedAmount = null;
+
+      // Kiểm tra số tiền hợp lệ
+      if (this.amount < 50000) {
+        this.errorAmount = "Số tiền nạp tối thiểu là 50.000đ!";
+      } else {
+        this.errorAmount = "";
+      }
     },
     updateAmountFromQuick() {
       this.amount = this.selectedAmount;
       this.customAmount = this.formatNumber(this.amount);
+      this.errorAmount = "";
     },
     async deposit() {
       try {
@@ -263,7 +276,17 @@ export default {
         }
       } catch (error) {
         console.error("Lỗi khi nạp tiền:", error);
+        toast.error("Lỗi khi nạp tiền. Vui lòng thử lại sau!");
       }
+    },
+    validatePaymentMethod() {
+      const method = this.$route.query.paymentMethod;
+      if (!method || !this.validPaymentMethods.includes(method)) {
+        toast.error("Phương thức thanh toán không hợp lệ!");
+        this.$router.push("/");
+        return false;
+      }
+      return true;
     },
   },
   watch: {
@@ -274,46 +297,234 @@ export default {
     },
   },
   mounted() {
-    this.paymentMethod = this.$route.query.paymentMethod || "Không xác định";
-    this.updateAmountFromQuick();
+    const isValid = this.validatePaymentMethod();
+    if (isValid) {
+      this.paymentMethod = this.$route.query.paymentMethod;
+      this.updateAmountFromQuick();
+    }
   },
 };
 </script>
 
 <style scoped>
+/* Container chính */
 .container {
   max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
+/* Tiêu đề */
+h2.mb-2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+
+h5.mb-3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #0d6efd;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+h6.mb-3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #444;
+}
+
+/* Link trở lại */
+.text-muted {
+  font-size: 0.9rem;
+  color: #6c757d;
+  transition: color 0.3s ease;
+}
+
+.text-muted:hover {
+  color: #0d6efd;
+  text-decoration: none !important;
+}
+
+/* Card chứa nội dung */
 .card {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+/* Thông tin ưu đãi và nạp tiền */
+.alert-info {
+  background: #e7f1ff !important;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.alert-info h6 {
+  font-weight: 600;
+}
+
+.alert-info ul li {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.alert-info .d-flex span:last-child {
+  font-weight: 600;
+  color: #0d6efd;
+}
+
+/* Chọn nhanh số tiền */
+.form-check {
+  margin-bottom: 0;
 }
 
 .form-check-input {
   display: none;
 }
 
-.form-check-input:checked + .form-check-label .card {
-  border-color: #0d6efd !important;
-  background-color: #f8f9fa;
+.form-check-label .card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.1s ease;
 }
 
-.card:hover {
+.form-check-input:checked + .form-check-label .card {
   border-color: #0d6efd !important;
+  background-color: #f0f6ff;
+  transform: scale(1.02);
+}
+
+.form-check-label .card:hover {
+  border-color: #0d6efd !important;
+  background-color: #f8f9fa;
   cursor: pointer;
+  transform: scale(1.02);
+}
+
+.form-check-label .card-body {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+  padding: 0.75rem;
+}
+
+/* Nhập số tiền tùy chỉnh */
+.input-group {
+  max-width: 300px;
+}
+
+.form-control {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px 0 0 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-control:focus {
   border-color: #0d6efd;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+  outline: none;
 }
 
 .input-group-text {
-  background-color: #f8f9fa;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  font-size: 1rem;
+  color: #666;
 }
 
-.btn:disabled {
-  opacity: 0.65;
+.text-muted.d-block {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 0.5rem;
+}
+
+.text-danger.d-block {
+  font-size: 0.85rem;
+  color: #dc3545;
+}
+
+/* Nút Tiếp tục */
+.btn-primary {
+  background-color: #0d6efd;
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0a58ca;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  background-color: #cccccc;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  h2.mb-2 {
+    font-size: 1.5rem;
+  }
+
+  .input-group {
+    max-width: 100%;
+  }
+
+  .col-4 {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+  }
+}
+
+@media (max-width: 576px) {
+  .col-4 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .form-check-label .card-body {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+
+  .btn-primary {
+    font-size: 0.95rem;
+  }
 }
 </style>
