@@ -58,7 +58,7 @@ const parseGeminiResult = (resultText) => {
   return {
     matchScore: scoreMatch ? parseFloat(scoreMatch[1]) : null,
     isSuitable: suitableMatch ? suitableMatch[1].trim() : null,
-    coverLetter: commentMatch ? commentMatch[1].trim() : null,
+    moderateReview: commentMatch ? commentMatch[1].trim() : null,
   };
 };
 

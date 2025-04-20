@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
+const path = require("path");
 
 const connectionDatabase = require("./config/db.config");
 const { connectRedis } = require("./config/redis.config");
@@ -26,6 +27,8 @@ app.use(
 );
 
 app.use(cookieParser());
+
+app.use("/uploads", express.static(path.join(__dirname, "../src/uploads")));
 
 // Kết nối cơ sở dữ liệu và Redis
 connectionDatabase();

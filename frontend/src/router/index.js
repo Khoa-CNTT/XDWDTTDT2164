@@ -82,6 +82,10 @@ const routes = [
         component: () => import("@/views/employer/employer-newjob.vue"),
       },
       {
+        path: "employer-job-payment",
+        component: () => import("@/views/employer/employer-job-payment.vue"),
+      },
+      {
         path: "employer-info",
         component: () => import("@/views/employer/employer-info.vue"),
       },
@@ -120,6 +124,11 @@ const routes = [
       {
         path: "employer-candidates/:jobId",
         component: () => import("@/views/employer/employer-candidates.vue"),
+      },
+      {
+        path: "employer-candidate-detail/:applyId",
+        component: () =>
+          import("@/views/employer/employer-candidate-detail.vue"),
       },
       {
         path: "employer-password",
