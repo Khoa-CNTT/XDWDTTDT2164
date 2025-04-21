@@ -99,7 +99,7 @@ router.get("/:slug", jobsController.getJobBySlug);
 router.get(
   "/get-job-employer/:id",
   protectedRoute,
-  authorizedRoute("employer"),
+  authorizedRoute("employer", "admin"),
   jobsController.getJobDetailForEmployer
 );
 
