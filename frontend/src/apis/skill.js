@@ -41,3 +41,13 @@ export const deleteSkillApi = async (id) => {
   const response = await api.delete(`/api/skills/${id}`);
   return response.data;
 };
+
+/**
+ * Lấy danh sách kỹ năng theo mã danh mục
+ * @param categoryId
+ * @returns {Promise<Object>}
+ */
+export const getSkillsByCategoryIdApi = async (categoryId) => {
+  const response = await api.get(`/api/skills/${categoryId}`);
+  return response.data;
+};

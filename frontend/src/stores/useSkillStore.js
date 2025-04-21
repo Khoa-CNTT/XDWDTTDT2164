@@ -5,6 +5,7 @@ import {
   deleteSkillApi,
   getSkillsApi,
   updateSkillApi,
+  getSkillsByCategoryIdApi,
 } from "@apis/skill";
 
 export const useSkillStore = defineStore("skill", {
@@ -32,6 +33,29 @@ export const useSkillStore = defineStore("skill", {
         this.totalPages = response.data.totalPages;
         this.currentPage = response.data.currentPage;
         this.pageSize = response.data.pageSize;
+      } catch (error) {
+        console.error("Lấy danh sách kỹ năng thất bại:", error);
+        const errorMessage =
+          error.response?.data?.message || "Lỗi khi lấy danh sách kỹ năng!";
+        toast.error(errorMessage);
+        this.error = errorMessage;
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async fetchSkillByCategoryIds(categoryId) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await getSkillsByCategoryIdApi(categoryId);
+
+        if (!response || !response.data) {
+          throw new Error("Dữ liệu kỹ năng không hợp lệ");
+        }
+
+        this.skills = response.data;
       } catch (error) {
         console.error("Lấy danh sách kỹ năng thất bại:", error);
         const errorMessage =

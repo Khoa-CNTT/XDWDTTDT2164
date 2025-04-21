@@ -153,6 +153,30 @@ class JobsController {
   }
 
   /**
+   * Lấy chi tiết bài đăng công việc cho nhà tuyển dụng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Chi tiết bài đăng công việc
+   */
+  async getJobDetailForEmployer(req, res) {
+    try {
+      const { id } = req.params;
+      const data = await jobsService.getJobDetailForEmployer(id);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Cập nhật bài đăng công việc
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -208,7 +232,7 @@ class JobsController {
    */
   async verifyJob(req, res) {
     try {
-      const job = await jobsService.verifyJob(req.params.id, req.body.status);
+      const job = await jobsService.verifyJob(req.params.id, req.body);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,

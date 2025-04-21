@@ -22,6 +22,23 @@
         <h2 class="subtitle mb-4">Tiêu đề công việc</h2>
 
         <form @submit.prevent="submitForm">
+          <!-- Tên bài đăng -->
+          <div class="col-12">
+            <div class="form-group">
+              <label for="jobName">Tên bài đăng</label>
+              <input
+                type="text"
+                id="jobName"
+                v-model.trim="form.jobName"
+                placeholder="Tên bài đăng công việc"
+                class="form-control"
+                required
+                aria-required="true"
+                maxlength="100"
+              />
+            </div>
+          </div>
+
           <!-- Mô tả -->
           <div class="form-group mb-4">
             <label for="description">Mô tả</label>
@@ -45,6 +62,7 @@
               ]"
               placeholder="Mô tả công việc..."
               class="quill-editor"
+              aria-required="true"
             />
           </div>
 
@@ -53,16 +71,23 @@
             <!-- Danh mục việc làm -->
             <div class="col-md-6">
               <div class="form-group">
-                <label for="category">Danh mục việc làm</label>
+                <label for="categoryId">Danh mục việc làm</label>
                 <select
-                  id="category"
-                  v-model="form.category"
+                  id="categoryId"
+                  v-model="form.categoryId"
                   class="form-control"
+                  required
+                  aria-required="true"
+                  @change="fetchSkillsByCategory"
                 >
                   <option value="" disabled>Chọn danh mục</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Freelance">Freelance</option>
+                  <option
+                    v-for="category in categoryStore.categories"
+                    :key="category.id"
+                    :value="category.id"
+                  >
+                    {{ category.categoryName }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -71,11 +96,21 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="salary">Mức lương</label>
-                <select id="salary" v-model="form.salary" class="form-control">
+                <select
+                  id="salary"
+                  v-model="form.salaryId"
+                  class="form-control"
+                  required
+                  aria-required="true"
+                >
                   <option value="" disabled>Chọn mức lương</option>
-                  <option value="34 - 40 triệu">34 - 40 triệu</option>
-                  <option value="40 - 50 triệu">40 - 50 triệu</option>
-                  <option value="50 - 60 triệu">50 - 60 triệu</option>
+                  <option
+                    v-for="salary in salaryStore.salaries"
+                    :key="salary.id"
+                    :value="salary.id"
+                  >
+                    {{ salary.salaryName }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -86,16 +121,19 @@
                 <label for="skills">Kỹ năng</label>
                 <select
                   id="skills"
-                  v-model="form.skills"
+                  v-model="form.skillIds"
                   multiple
                   class="form-control skills-select"
+                  required
+                  aria-required="true"
+                  aria-multiselectable="true"
                 >
                   <option
-                    v-for="skill in skillOptions"
-                    :key="skill"
-                    :value="skill"
+                    v-for="skill in skillStore.skills"
+                    :key="skill.id"
+                    :value="skill.id"
                   >
-                    {{ skill }}
+                    {{ skill.skillName }}
                   </option>
                 </select>
                 <small class="text-muted d-block mt-1">
@@ -111,13 +149,19 @@
                 <label for="workType">Hình thức làm việc</label>
                 <select
                   id="workType"
-                  v-model="form.workType"
+                  v-model="form.jobTypeId"
                   class="form-control"
+                  required
+                  aria-required="true"
                 >
                   <option value="" disabled>Chọn hình thức</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Hybrid">Hybrid</option>
+                  <option
+                    v-for="jobType in jobTypeStore.jobTypes"
+                    :key="jobType.id"
+                    :value="jobType.id"
+                  >
+                    {{ jobType.jobTypeName }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -126,16 +170,17 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="quantity">Số lượng người tuyển</label>
-                <select
+                <input
+                  type="number"
                   id="quantity"
-                  v-model="form.quantity"
+                  v-model.number="form.numberOfRecruits"
+                  placeholder="Số lượng người tuyển"
                   class="form-control"
-                >
-                  <option value="" disabled>Chọn chuyên môn</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                </select>
+                  min="1"
+                  max="100"
+                  required
+                  aria-required="true"
+                />
               </div>
             </div>
 
@@ -145,13 +190,19 @@
                 <label for="experience">Kinh nghiệm</label>
                 <select
                   id="experience"
-                  v-model="form.experience"
+                  v-model="form.experienceId"
                   class="form-control"
+                  required
+                  aria-required="true"
                 >
                   <option value="" disabled>Chọn kinh nghiệm</option>
-                  <option value="1 năm">1 năm</option>
-                  <option value="2 năm">2 năm</option>
-                  <option value="3 năm">3 năm</option>
+                  <option
+                    v-for="experience in experienceStore.experiences"
+                    :key="experience.id"
+                    :value="experience.id"
+                  >
+                    {{ experience.experienceName }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -160,11 +211,21 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="level">Cấp bậc</label>
-                <select id="level" v-model="form.level" class="form-control">
+                <select
+                  id="level"
+                  v-model="form.rankId"
+                  class="form-control"
+                  required
+                  aria-required="true"
+                >
                   <option value="" disabled>Chọn cấp bậc</option>
-                  <option value="Fresher">Fresher</option>
-                  <option value="Intern">Intern</option>
-                  <option value="Junior">Junior</option>
+                  <option
+                    v-for="rank in rankStore.ranks"
+                    :key="rank.id"
+                    :value="rank.id"
+                  >
+                    {{ rank.rankName }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -176,8 +237,11 @@
                 <input
                   type="date"
                   id="deadline"
-                  v-model="form.deadline"
+                  v-model="form.expire"
                   class="form-control"
+                  :min="minDate"
+                  required
+                  aria-required="true"
                 />
               </div>
             </div>
@@ -189,9 +253,12 @@
                 <input
                   type="text"
                   id="address"
-                  v-model="form.address"
+                  v-model.trim="form.address"
                   placeholder="Địa chỉ công ty"
                   class="form-control"
+                  required
+                  aria-required="true"
+                  maxlength="200"
                 />
               </div>
             </div>
@@ -199,7 +266,13 @@
 
           <!-- Nút Tiếp tục -->
           <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Tiếp tục</button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="isSubmitting"
+            >
+              {{ isSubmitting ? "Đang gửi..." : "Tiếp tục" }}
+            </button>
           </div>
         </form>
       </div>
@@ -211,85 +284,195 @@
 import { toast } from "vue3-toastify";
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import { useCategoryStore } from "@stores/useCategoryStore";
+import { useSalaryStore } from "@stores/useSalaryStore";
+import { useSkillStore } from "@stores/useSkillStore";
+import { useJobTypeStore } from "@stores/useJobTypeStore";
+import { useExperienceStore } from "@stores/useExperienceStore";
+import { useRankStore } from "@stores/useRankStore";
+import { useJobStore } from "@stores/useJobStore";
 
 export default {
   name: "AddJob",
   components: { QuillEditor },
+  setup() {
+    const categoryStore = useCategoryStore();
+    const salaryStore = useSalaryStore();
+    const skillStore = useSkillStore();
+    const jobTypeStore = useJobTypeStore();
+    const experienceStore = useExperienceStore();
+    const rankStore = useRankStore();
+    const jobStore = useJobStore();
+    return {
+      categoryStore,
+      salaryStore,
+      skillStore,
+      jobTypeStore,
+      experienceStore,
+      rankStore,
+      jobStore,
+    };
+  },
   data() {
     return {
       form: {
+        jobName: "",
         description: "",
-        category: "",
-        salary: "",
-        skills: [],
-        workType: "",
-        quantity: "",
-        experience: "",
-        level: "",
-        deadline: "",
+        categoryId: "",
+        salaryId: "",
+        skillIds: [],
+        jobTypeId: "",
+        numberOfRecruits: "",
+        experienceId: "",
+        rankId: "",
+        expire: "",
         address: "",
       },
-      skillOptions: [
-        "React",
-        "NestJS",
-        "NodeJS",
-        "VueJS",
-        "Angular",
-        "Java",
-        "Python",
-      ],
+      isSubmitting: false,
+      minDate: new Date().toISOString().split("T")[0], // Today's date as minimum
     };
   },
+  async mounted() {
+    await this.fetchJobTypes();
+  },
   methods: {
-    submitForm() {
-      // Kiểm tra dữ liệu
-      if (!this.form.description || this.form.description === "<p><br></p>") {
+    async fetchJobTypes() {
+      try {
+        await Promise.all([
+          this.categoryStore.fetchCategories(),
+          this.salaryStore.fetchSalaries(),
+          this.jobTypeStore.fetchJobTypes(),
+          this.experienceStore.fetchExperiences(),
+          this.rankStore.fetchRanks(),
+        ]);
+        if (!this.categoryStore.categories.length) {
+          toast.error("Không có danh mục việc làm nào được tải!");
+        }
+        if (!this.salaryStore.salaries.length) {
+          toast.error("Không có mức lương nào được tải!");
+        }
+        if (!this.jobTypeStore.jobTypes.length) {
+          toast.error("Không có hình thức làm việc nào được tải!");
+        }
+        if (!this.experienceStore.experiences.length) {
+          toast.error("Không có kinh nghiệm nào được tải!");
+        }
+        if (!this.rankStore.ranks.length) {
+          toast.error("Không có cấp bậc nào được tải!");
+        }
+      } catch (error) {
+        toast.error("Lỗi khi lấy dữ liệu danh mục!");
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      }
+    },
+    async fetchSkillsByCategory() {
+      if (!this.form.categoryId) {
+        this.skillStore.skills = []; // Clear skills if no category is selected
+        return;
+      }
+      try {
+        await this.skillStore.fetchSkillByCategoryIds(this.form.categoryId);
+        if (!this.skillStore.skills.length) {
+          toast.warn("Không có kỹ năng nào phù hợp với danh mục này!");
+        }
+      } catch (error) {
+        toast.error("Lỗi khi lấy danh sách kỹ năng!");
+        console.error("Lỗi khi lấy kỹ năng:", error);
+      }
+    },
+    async submitForm() {
+      if (this.isSubmitting) return;
+      this.isSubmitting = true;
+
+      // Validate fields
+      if (!this.form.jobName.trim()) {
+        toast.error("Vui lòng nhập tên bài đăng công việc!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (this.form.jobName.length > 100) {
+        toast.error("Tên bài đăng không được vượt quá 100 ký tự!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (
+        !this.form.description ||
+        this.form.description === "<p><br></p>" ||
+        this.form.description.trim() === ""
+      ) {
         toast.error("Vui lòng nhập mô tả công việc!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.category) {
+      if (!this.form.categoryId) {
         toast.error("Vui lòng chọn danh mục việc làm!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.salary) {
+      if (!this.form.salaryId) {
         toast.error("Vui lòng chọn mức lương!");
+        this.isSubmitting = false;
         return;
       }
-      if (this.form.skills.length === 0) {
+      if (this.form.skillIds.length === 0) {
         toast.error("Vui lòng chọn ít nhất một kỹ năng!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.workType) {
+      if (!this.form.jobTypeId) {
         toast.error("Vui lòng chọn hình thức làm việc!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.quantity) {
-        toast.error("Vui lòng chọn số lượng người tuyển!");
+      if (!this.form.numberOfRecruits || this.form.numberOfRecruits < 1) {
+        toast.error("Vui lòng nhập số lượng người tuyển hợp lệ!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.experience) {
+      if (this.form.numberOfRecruits > 100) {
+        toast.error("Số lượng người tuyển không được vượt quá 100!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (!this.form.experienceId) {
         toast.error("Vui lòng chọn kinh nghiệm!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.level) {
+      if (!this.form.rankId) {
         toast.error("Vui lòng chọn cấp bậc!");
+        this.isSubmitting = false;
         return;
       }
-      if (!this.form.deadline) {
-        toast.error("Vui lòng chọn ngày hết hạn ứng tuyển!");
+      if (
+        !this.form.expire ||
+        new Date(this.form.expire) < new Date(this.minDate)
+      ) {
+        toast.error("Vui lòng chọn ngày hết hạn ứng tuyển hợp lệ!");
+        this.isSubmitting = false;
         return;
       }
       if (!this.form.address.trim()) {
         toast.error("Vui lòng nhập địa chỉ!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (this.form.address.length > 200) {
+        toast.error("Địa chỉ không được vượt quá 200 ký tự!");
+        this.isSubmitting = false;
         return;
       }
 
-      // Log dữ liệu form (giả định gửi API)
-      console.log("Dữ liệu công việc:", this.form);
-      toast.success("Đã gửi thông tin công việc! Đang chuyển hướng...");
-
-      // Giả định chuyển sang tab Thanh toán
-      this.$router.push("/employer-dashboard/employer-job-payment");
+      try {
+        await this.jobStore.createNewJob(this.form);
+        toast.success("Đã gửi thông tin công việc! Đang chuyển hướng...");
+        this.$router.push("/employer-dashboard/employer-job-payment");
+      } catch (error) {
+        toast.error("Lỗi khi thêm mới bài đăng công việc!");
+        console.error("Lỗi khi thêm mới bài đăng công việc:", error);
+      } finally {
+        this.isSubmitting = false;
+      }
     },
   },
 };
@@ -427,20 +610,20 @@ label {
 .quill-editor :deep(.ql-container) {
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  min-height: 200px; /* Tăng chiều cao lên 200px */
-  font-size: 1.1rem; /* Tăng font chữ cho khu vực nhập liệu */
+  min-height: 150px;
+  font-size: 1rem;
   color: #333;
 }
 
 .quill-editor :deep(.ql-editor) {
-  padding: 1rem; /* Tăng padding để nội dung thoáng hơn */
-  min-height: 200px; /* Đồng bộ với container */
+  padding: 1rem;
+  min-height: 150px;
 }
 
 .quill-editor :deep(.ql-editor.ql-blank::before) {
   color: #999;
   font-style: normal;
-  font-size: 1.1rem; /* Đồng bộ font chữ với editor */
+  font-size: 1rem;
 }
 
 .quill-editor :deep(.ql-toolbar.ql-snow .ql-picker-label) {
@@ -466,7 +649,7 @@ label {
 
 /* Select đa chọn cho Kỹ năng */
 .skills-select {
-  height: 120px; /* Chiều cao để hiển thị nhiều lựa chọn */
+  height: 100px;
 }
 
 /* Text hướng dẫn */
@@ -493,6 +676,11 @@ label {
 
 .btn-primary:active {
   transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
 
 /* Responsive */
@@ -524,12 +712,12 @@ label {
 
   .quill-editor :deep(.ql-container),
   .quill-editor :deep(.ql-editor) {
-    min-height: 150px; /* Giảm chiều cao trên màn hình vừa */
-    font-size: 1rem; /* Giảm font chữ để phù hợp */
+    min-height: 120px;
+    font-size: 0.95rem;
   }
 
   .quill-editor :deep(.ql-editor.ql-blank::before) {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .btn-primary {
@@ -538,7 +726,7 @@ label {
   }
 
   .skills-select {
-    height: 100px;
+    height: 80px;
   }
 }
 
@@ -557,16 +745,16 @@ label {
 
   .quill-editor :deep(.ql-container),
   .quill-editor :deep(.ql-editor) {
-    min-height: 120px; /* Giảm chiều cao trên màn hình nhỏ */
-    font-size: 0.95rem; /* Giảm font chữ để phù hợp */
+    min-height: 100px;
+    font-size: 0.9rem;
   }
 
   .quill-editor :deep(.ql-editor.ql-blank::before) {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 
   .skills-select {
-    height: 80px;
+    height: 60px;
   }
 }
 </style>

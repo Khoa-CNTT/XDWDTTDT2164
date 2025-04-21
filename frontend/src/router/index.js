@@ -71,7 +71,7 @@ const routes = [
         component: () => import("@/views/employer/employer-newjob.vue"),
       },
       {
-        path: "employer-job-payment",
+        path: "employer-job-payment/:jobId",
         component: () => import("@/views/employer/employer-job-payment.vue"),
       },
       {
@@ -125,6 +125,7 @@ const routes = [
       },
     ],
   },
+
   // Admin routes
   {
     path: "/admin-dashboard",
@@ -174,7 +175,7 @@ const routes = [
           import("@/views/admin/dashboard/Salary-management.vue"),
       },
       {
-        path: "description-job",
+        path: "description-job/:jobId",
         component: () => import("@/views/admin/dashboard/Description-job.vue"),
       },
       {

@@ -145,6 +145,19 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         field: "is_visible",
       },
+      isApproved: {
+        type: DataTypes.ENUM(
+          "Chờ kiểm duyệt",
+          "Đã được duyệt",
+          "Đã bị từ chối"
+        ),
+        field: "is_approved",
+      },
+      rejectionReason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: "rejection_reason",
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",
