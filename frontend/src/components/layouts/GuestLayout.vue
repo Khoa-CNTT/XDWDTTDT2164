@@ -22,7 +22,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@/css/common.css";
 import "@/style.css";
 
-import TopSuperio from "@/components/admin/TopSuperio.vue";
+import TopSuperio from "@/components/guest/Top-guest.vue";
 import BotGuest from "@/components/guest/Bot-guest.vue";
 
 export default {
@@ -61,8 +61,8 @@ export default {
 .dashboard-main {
   flex: 1;
   padding: 20px;
-  margin-top: var(--header-height);
-  margin-bottom: var(--footer-height);
+  /* margin-top: var(--header-height); */
+  /* margin-bottom: var(--footer-height); */
 }
 
 .dashboard-footer {

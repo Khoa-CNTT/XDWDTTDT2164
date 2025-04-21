@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@stores/useAuthStore";
 
 const routes = [
   {
@@ -31,7 +32,6 @@ const routes = [
     component: () => import("@/views/common/OTP.vue"),
     meta: { layout: "auth" },
   },
-
 
   // Candidate
   {
@@ -71,6 +71,10 @@ const routes = [
         component: () => import("@/views/employer/employer-newjob.vue"),
       },
       {
+        path: "employer-job-payment/:jobId",
+        component: () => import("@/views/employer/employer-job-payment.vue"),
+      },
+      {
         path: "employer-info",
         component: () => import("@/views/employer/employer-info.vue"),
       },
@@ -107,8 +111,13 @@ const routes = [
           import("../views/employer/employer-workmanagement.vue"),
       },
       {
-        path: "employer-candidates",
+        path: "employer-candidates/:jobId",
         component: () => import("@/views/employer/employer-candidates.vue"),
+      },
+      {
+        path: "employer-candidate-detail/:applyId",
+        component: () =>
+          import("@/views/employer/employer-candidate-detail.vue"),
       },
       {
         path: "employer-password",
@@ -116,10 +125,11 @@ const routes = [
       },
     ],
   },
+
   // Admin routes
   {
     path: "/admin-dashboard",
-    meta: { layout: "admin" },
+    meta: { layout: "admin", requiresAuth: true, role: "admin" },
     children: [
       {
         path: "",
@@ -165,7 +175,7 @@ const routes = [
           import("@/views/admin/dashboard/Salary-management.vue"),
       },
       {
-        path: "description-job",
+        path: "description-job/:jobId",
         component: () => import("@/views/admin/dashboard/Description-job.vue"),
       },
       {
@@ -204,32 +214,42 @@ const routes = [
   },
   // Guest
   {
-    path: "/guest-dashboard",
+    path: "/",
     meta: { layout: "guest" },
     children: [
       {
-        path: "",
-        component: () => import("@/views/guest/index.vue"),
+        path: "/",
+        component: () => import("@/views/common/index.vue"),
+      },
+      {
+        path: "/job_details",
+        component: () => import("@/views/common/Job_details.vue"),
+      },
+      {
+        path: "/conditions",
+        component: () => import("../views/common/Conditions.vue"),
+      },
+      {
+        path: "/abouts",
+        component: () => import("../views/common/Abouts.vue"),
+      },
+      {
+        path: "/company-details",
+        component: () => import("../views/common/Companydetails.vue"),
+      },
+      {
+        path: "/page-not-found",
+        component: () => import("../views/common/Pagenotfound.vue"),
+      },
+      {
+        path: "/list",
+        component: () => import("../views/common/List.vue"),
+      },
+      {
+        path: "/list-company",
+        component: () => import("../views/common/ListCompany.vue"),
       },
     ],
-  },
-  {
-    //Conditions
-    path: "/conditions",
-    component: () => import("../views/common/Conditions.vue"),
-    meta: { layout: "auth" },
-  },
-  {
-    //about
-    path: "/Abouts",
-    component: () => import("../views/common/Abouts.vue"),
-    meta: { layout: "auth" },
-  },
-  {
-    //sc013
-    path: "/Pagenotfull",
-    component: () => import("../views/common/Pagenotfull.vue"),
-    meta: { layout: "auth" },
   },
 ];
 
@@ -237,6 +257,32 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  const isAuthenticated = authStore.isAuthenticated;
+
+  // Nếu đã đăng nhập và cố gắng truy cập vào trang login, chuyển hướng đến trang dashboard hoặc trang chủ
+  if (
+    isAuthenticated &&
+    (to.path === "/login" ||
+      to.path === "/register" ||
+      to.path === "/forgot-password" ||
+      to.path === "/reset-password" ||
+      to.path === "/otp")
+  ) {
+    next({ path: "/" }); // Chuyển hướng tới trang chủ hoặc trang dashboard
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
+    // Nếu yêu cầu đăng nhập nhưng người dùng chưa đăng nhập, chuyển hướng đến trang login
+    next({ path: "/login" });
+  } else if (to.meta.role && to.meta.role !== authStore.user?.role) {
+    // Kiểm tra quyền nếu có yêu cầu role
+    next({ path: "/" });
+  } else {
+    // Nếu không có vấn đề gì, tiếp tục điều hướng
+    next();
+  }
 });
 
 export default router;

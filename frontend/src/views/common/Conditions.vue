@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <div class="text-center">
+        <div class="text-center mt-5">
             <!-- SC012-Điều khoản -->
             <h4><b>Điều khoản và điều kiện</b></h4>
             <p>Trang chủ/Điều khoản và điều kiện</p>

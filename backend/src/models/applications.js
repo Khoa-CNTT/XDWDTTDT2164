@@ -57,6 +57,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         field: "cover_letter",
       },
+      moderatorReview: {
+        type: DataTypes.TEXT,
+        field: "moderator_review",
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",

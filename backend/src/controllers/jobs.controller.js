@@ -80,6 +80,29 @@ class JobsController {
   }
 
   /**
+   * Lấy danh sách bài đăng công việc cho admin
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Danh sách bài đăng công việc
+   */
+  async getJobsForAdmin(req, res) {
+    try {
+      const data = await jobsService.getJobForAdmin(req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Lấy danh sách bài đăng công việc theo nhà tuyển dụng
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -87,12 +110,14 @@ class JobsController {
    */
   async getJobsForEmployer(req, res) {
     try {
-      const { id } = req.param;
-      const jobs = await jobsService.getJobsForEmployer(id);
+      const { employerId } = req.user;
+      console.log(req.query);
+      const data = await jobsService.getJobsForEmployer(employerId, req.query);
+
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
-        data: jobs,
+        data,
       });
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
@@ -117,6 +142,30 @@ class JobsController {
         status: ResponseStatus.SUCCESS,
         message: "Lấy chi tiết bài đăng công việc thành công",
         data: job,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy chi tiết bài đăng công việc cho nhà tuyển dụng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Chi tiết bài đăng công việc
+   */
+  async getJobDetailForEmployer(req, res) {
+    try {
+      const { id } = req.params;
+      const data = await jobsService.getJobDetailForEmployer(id);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
       });
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
@@ -183,7 +232,7 @@ class JobsController {
    */
   async verifyJob(req, res) {
     try {
-      const job = await jobsService.verifyJob(req.params.id, req.body.status);
+      const job = await jobsService.verifyJob(req.params.id, req.body);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
