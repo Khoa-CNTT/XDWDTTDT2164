@@ -13,7 +13,7 @@
     </div>
 
     <!-- Card doanh thu -->
-    <div class="row mt-5">
+    <div class="row">
       <div class="col-lg-3 col-md-6">
         <div class="card">
           <div class="card-body">
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Biểu đồ doanh thu -->
-    <div class="row mt-4">
+    <div class="row">
       <div class="col-lg-7 col-md-12">
         <div class="card p-3">
           <div class="d-flex justify-content-between align-items-center">
@@ -158,7 +158,6 @@
 </template>
 
 <script>
-
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Chart, registerables } from "chart.js";
 import { BarController, PieController } from "chart.js";
@@ -444,38 +443,323 @@ export default {
 };
 </script>
 
+<
 <style scoped>
+/* General container */
 .transaction-management {
-  padding: 20px;
+  padding: 30px;
+  max-width: 100%;
+  background: #f8fafc; /* Light background for depth */
+  border-radius: 12px;
+  min-height: 100vh;
+}
+
+/* Header */
+h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b; /* Dark slate for contrast */
+  margin-bottom: 10px;
+}
+
+a[href="blank"] {
+  font-size: 0.95rem;
+  color: #2563eb; /* Vibrant blue */
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+a[href="blank"]:hover {
+  color: #1e40af; /* Darker blue on hover */
+  transform: translateX(-3px); /* Subtle shift */
+}
+
+a[href="blank"]::before {
+  content: "\f060"; /* Font Awesome arrow-left */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+
+/* Header layout */
+.d-flex.justify-content-between {
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-success {
+  background: #10b981; /* Green */
+  border: none;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-success:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(16, 185, 129, 0.2);
+}
+
+.btn-success i {
+  font-size: 1rem;
+}
+
+.btn-danger {
+  background: #ef4444; /* Red */
+  border: none;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(239, 68, 68, 0.2);
+}
+
+/* Revenue cards */
+.row.mt-5 {
+  gap: 20px; /* Add gap for better spacing */
+}
+
+.col-lg-3.col-md-6 {
+  transition: transform 0.3s ease;
+}
+
+.col-lg-3.col-md-6:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
 }
 
 .card {
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+  background: #ffffff;
+  overflow: hidden;
 }
 
 .card-body {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-body h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.card-body span.text-success {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #065f46; /* Dark green */
+}
+
+.card-body span.text-danger {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #991b1b; /* Dark red */
+}
+
+/* Chart cards */
+.row.mt-4 {
+  gap: 20px;
+}
+
+.col-lg-7.col-md-12,
+.col-lg-5.col-md-12 {
+  transition: transform 0.3s ease;
+}
+
+.col-lg-7.col-md-12:hover,
+.col-lg-5.col-md-12:hover {
+  transform: translateY(-5px);
+}
+
+.card.p-3 {
+  padding: 20px;
+}
+
+.card.p-3 h5 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.form-select {
+  border: 1px solid #d1d5db; /* Light gray */
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  width: 120px; /* Slightly wider */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+canvas {
+  max-height: 300px;
+  width: 100%;
+}
+
+/* Table */
+.card.mt-5 {
+  margin-top: 30px;
+}
+
+.table-responsive {
+  overflow-x: auto;
 }
 
 .table {
   margin-bottom: 0;
+  font-size: 0.95rem;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .table th,
 .table td {
   vertical-align: middle;
+  padding: 12px 15px;
+  border-color: #e2e8f0; /* Light border */
 }
 
-canvas {
-  max-height: 300px;
+.table th {
+  background: #d1fae5; /* Light green header */
+  color: #065f46; /* Dark green text */
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
 }
 
-.col-lg-3 {
-    transition: transform 0.3s ease;
+.table-hover tbody tr:hover {
+  background: #f8fafc; /* Subtle hover effect */
+  transition: background 0.2s ease;
 }
 
-.col-lg-3:hover {
-    transform: translateY(-5px);
+.table td {
+  color: #334155; /* Dark slate text */
+}
+
+/* Badges */
+.badge {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: default;
+}
+
+.badge.bg-success {
+  background: #d1fae5; /* Light green */
+  color: #065f46;
+}
+
+.badge.bg-danger {
+  background: #fee2e2; /* Light red */
+  color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .row.mt-5,
+  .row.mt-4 {
+    gap: 15px;
+  }
+
+  .col-lg-3.col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%; /* Full-width cards on medium screens */
+  }
+
+  .col-lg-7.col-md-12,
+  .col-lg-5.col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%; /* Full-width charts on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .transaction-management {
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .btn-success {
+    width: 100%; /* Full-width button on mobile */
+  }
+
+  .table th,
+  .table td {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .card-body h5 {
+    font-size: 1rem;
+  }
+
+  .card-body span.text-success {
+    font-size: 1.1rem;
+  }
+
+  .form-select {
+    width: 100%; /* Full-width select on mobile */
+  }
+}
+
+@media (max-width: 576px) {
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .btn-success,
+  .btn-danger {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  canvas {
+    max-height: 250px;
+  }
+
+  .card-body span.text-success,
+  .card-body span.text-danger {
+    font-size: 0.95rem;
+  }
 }
 </style>
+>

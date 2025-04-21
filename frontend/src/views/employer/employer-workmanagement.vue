@@ -65,7 +65,18 @@
                       />
                     </div>
                     <div>
-                      <div class="fw-500 mb-1">{{ job.jobName || "N/A" }}</div>
+                      <div class="d-flex align-items-center mb-1">
+                        <div class="fw-500 me-2">
+                          {{ job.jobName || "N/A" }}
+                        </div>
+                        <router-link
+                          v-if="job.isVisible === false"
+                          :to="`/employer-dashboard/employer-job-payment/${job.id}`"
+                          class="badge bg-warning text-dark small"
+                        >
+                          Chưa thanh toán
+                        </router-link>
+                      </div>
                       <div
                         class="d-flex align-items-center gap-4 text-muted small"
                       >
@@ -224,53 +235,269 @@ export default {
 <style scoped>
 .container-fluid {
   max-width: 1400px;
+  margin: 0 auto;
 }
 
+/* Card styling */
 .card {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 12px !important;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+
+.card-body {
+  padding: 1.75rem !important;
+}
+
+/* Button styling */
+.btn {
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-secondary {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
 
 .btn-light {
-  background-color: #f8f9fa;
-  border-color: #dee2e6;
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #4b5563;
 }
 
 .btn-light:hover {
-  background-color: #e9ecef;
-  border-color: #dee2e6;
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+  color: #111827;
 }
 
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Table styling */
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+  background-color: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.table tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Company logo container */
+.company-logo-container {
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+}
+
+.company-logo-container img {
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Badge styling */
 .badge {
-  font-weight: normal;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.3px;
+}
+
+.badge.bg-success {
+  background-color: #10b981 !important;
+}
+
+.badge.bg-danger {
+  background-color: #ef4444 !important;
+}
+
+/* Typography */
+h4 {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-weight: 600;
+  color: #111827;
+  font-size: 1.25rem;
 }
 
 .fw-500 {
-  font-weight: 500;
+  font-weight: 600;
+  color: #111827;
 }
 
-.bg-light {
-  background-color: #f8f9fa !important;
+.text-muted {
+  color: #6b7280 !important;
 }
 
-.table th,
-.table td {
-  vertical-align: middle;
-}
-
+/* Pagination */
 .pagination {
-  margin-top: 20px;
+  margin-top: 2rem;
+}
+
+.page-item .page-link {
+  border-radius: 6px;
+  margin: 0 0.25rem;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  transition: all 0.15s ease-in-out;
+  padding: 0.5rem 1rem;
+}
+
+.page-item .page-link:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+  border-color: #d1d5db;
 }
 
 .page-item.active .page-link {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
 }
 
-.page-link {
-  cursor: pointer;
+.page-item.disabled .page-link {
+  color: #9ca3af;
+  background-color: #f9fafb;
+  border-color: #f3f4f6;
 }
 
+/* Loading state */
+.fa-spinner {
+  color: #3b82f6;
+  font-size: 1.5rem;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  transition: color 0.15s ease-in-out;
+}
+
+a.text-primary {
+  color: #3b82f6 !important;
+  font-weight: 500;
+}
+
+a.text-primary:hover {
+  color: #2563eb !important;
+}
+
+a.text-muted {
+  color: #6b7280 !important;
+}
+
+a.text-muted:hover {
+  color: #4b5563 !important;
+}
+
+/* Icons */
+.fa-solid,
+.fas {
+  color: #6b7280;
+}
+
+/* Job item details */
+.job-details-container {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* Error message */
 .text-danger {
-  font-size: 0.875rem;
+  color: #ef4444 !important;
+  font-weight: 500;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 3rem 0;
+  text-align: center;
+  color: #6b7280;
+}
+
+@media (max-width: 992px) {
+  .btn-sm {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1.25rem !important;
+  }
+
+  .company-logo-container {
+    width: 50px;
+    height: 50px;
+    padding: 0.5rem;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn {
+    padding: 0.375rem 0.75rem;
+  }
+
+  .badge {
+    padding: 0.375rem 0.75rem;
+  }
 }
 </style>

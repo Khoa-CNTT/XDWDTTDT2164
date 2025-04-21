@@ -89,6 +89,21 @@ router.get(
 router.get("/:slug", jobsController.getJobBySlug);
 
 /**
+ * @route GET/jobs/:id
+ * @desc Lấy chi tiết bài đăng công việc cho nhà tuyển dụng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute("employer"): Kiểm tra quyền truy cập nhà tuyển dụng
+ * @controller JobsController.getJobBySlug: Lấy chi tiết bài đăng công việc
+ */
+router.get(
+  "/get-job-employer/:id",
+  protectedRoute,
+  authorizedRoute("employer"),
+  jobsController.getJobDetailForEmployer
+);
+
+/**
  * @route PUT/jobs/:id
  * @desc Cập nhật bài đăng công việc
  * @access Private
