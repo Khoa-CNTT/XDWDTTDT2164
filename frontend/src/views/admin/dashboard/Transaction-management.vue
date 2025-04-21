@@ -13,7 +13,7 @@
     </div>
 
     <!-- Card doanh thu -->
-    <div class="row">
+    <div class="row mb-4">
       <div class="col-lg-3 col-md-6">
         <div class="card">
           <div class="card-body">
@@ -35,13 +35,9 @@
           <div class="card-body">
             <h5>Tổng số giao dịch</h5>
             <div>
-              <span class="text-success"
-                >Thành công: {{ transactionStats.success }}</span
-              >
+              <span class="text-success">Thành công: {{ transactionStats.success }}</span>
               /
-              <span class="text-danger"
-                >Thất bại: {{ transactionStats.failed }}</span
-              >
+              <span class="text-danger">Thất bại: {{ transactionStats.failed }}</span>
             </div>
           </div>
         </div>
@@ -64,12 +60,8 @@
         <div class="card p-3">
           <div class="d-flex justify-content-between align-items-center">
             <h5>Doanh thu theo thời gian</h5>
-            <select
-              v-model="selectedRevenueFilter"
-              @change="updateRevenueChart"
-              class="form-select"
-              style="width: 100px"
-            >
+            <select v-model="selectedRevenueFilter" @change="updateRevenueChart" class="form-select"
+              style="width: 100px">
               <option value="day">Theo ngày</option>
               <option value="month">Theo tháng</option>
               <option value="year">Theo năm</option>
@@ -82,12 +74,7 @@
         <div class="card p-3">
           <div class="d-flex justify-content-between align-items-center">
             <h5>Phân bổ doanh thu</h5>
-            <select
-              v-model="selectedPieFilter"
-              @change="updatePieChart"
-              class="form-select"
-              style="width: 100px"
-            >
+            <select v-model="selectedPieFilter" @change="updatePieChart" class="form-select" style="width: 100px">
               <option value="day">Theo ngày</option>
               <option value="month">Theo tháng</option>
               <option value="year">Theo năm</option>
@@ -114,39 +101,23 @@
           </tr>
         </thead>
         <tbody class="text-center align-middle">
-          <tr
-            v-for="(transaction, index) in transactions"
-            :key="transaction.id"
-          >
+          <tr v-for="(transaction, index) in transactions" :key="transaction.id">
             <td>{{ index + 1 }}</td>
             <td>{{ transaction.transactionId }}</td>
             <td>{{ transaction.companyName }}</td>
             <td>{{ transaction.transactionType }}</td>
             <td>{{ formatCurrency(transaction.amount) }}</td>
             <td>
-              <button
-                :class="
-                  transaction.status === 'Thành công'
-                    ? 'badge bg-success'
-                    : 'badge bg-danger'
-                "
-              >
+              <button :class="transaction.status === 'Thành công' ? 'badge bg-success text-light': 'badge bg-danger text-light'">
                 {{ transaction.status }}
               </button>
             </td>
             <td>{{ formatDate(transaction.paymentDate) }}</td>
-            <td>
-              <button
-                class="btn btn-success me-2"
-                data-bs-toggle="modal"
-                data-bs-target="#update-modal"
-              >
+            <td class="d-flex justify-content-center">
+              <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal">
                 Xem chi tiết
               </button>
-              <button
-                class="btn btn-danger me-2"
-                @click="handleRefund(transaction.id)"
-              >
+              <button class="btn btn-danger me-2" @click="handleRefund(transaction.id)">
                 Hoàn Tiền
               </button>
             </td>
@@ -351,8 +322,8 @@ export default {
                   selectedRevenueFilter.value === "day"
                     ? "Ngày"
                     : selectedRevenueFilter.value === "month"
-                    ? "Tháng"
-                    : "Năm",
+                      ? "Tháng"
+                      : "Năm",
               },
             },
           },
@@ -443,13 +414,13 @@ export default {
 };
 </script>
 
-<
-<style scoped>
+< <style scoped>
 /* General container */
 .transaction-management {
   padding: 30px;
   max-width: 100%;
-  background: #f8fafc; /* Light background for depth */
+  background: #f8fafc;
+  /* Light background for depth */
   border-radius: 12px;
   min-height: 100vh;
 }
@@ -458,13 +429,15 @@ export default {
 h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b; /* Dark slate for contrast */
+  color: #1e293b;
+  /* Dark slate for contrast */
   margin-bottom: 10px;
 }
 
 a[href="blank"] {
   font-size: 0.95rem;
-  color: #2563eb; /* Vibrant blue */
+  color: #2563eb;
+  /* Vibrant blue */
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -473,12 +446,15 @@ a[href="blank"] {
 }
 
 a[href="blank"]:hover {
-  color: #1e40af; /* Darker blue on hover */
-  transform: translateX(-3px); /* Subtle shift */
+  color: #1e40af;
+  /* Darker blue on hover */
+  transform: translateX(-3px);
+  /* Subtle shift */
 }
 
 a[href="blank"]::before {
-  content: "\f060"; /* Font Awesome arrow-left */
+  content: "\f060";
+  /* Font Awesome arrow-left */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.9rem;
@@ -498,7 +474,8 @@ a[href="blank"]::before {
 }
 
 .btn-success {
-  background: #10b981; /* Green */
+  background: #10b981;
+  /* Green */
   border: none;
   padding: 10px 20px;
   font-size: 0.95rem;
@@ -518,7 +495,8 @@ a[href="blank"]::before {
 }
 
 .btn-danger {
-  background: #ef4444; /* Red */
+  background: #ef4444;
+  /* Red */
   border: none;
   padding: 8px 12px;
   font-size: 0.85rem;
@@ -532,7 +510,8 @@ a[href="blank"]::before {
 
 /* Revenue cards */
 .row.mt-5 {
-  gap: 20px; /* Add gap for better spacing */
+  gap: 20px;
+  /* Add gap for better spacing */
 }
 
 .col-lg-3.col-md-6 {
@@ -540,13 +519,15 @@ a[href="blank"]::before {
 }
 
 .col-lg-3.col-md-6:hover {
-  transform: translateY(-5px); /* Lift effect on hover */
+  transform: translateY(-5px);
+  /* Lift effect on hover */
 }
 
 .card {
   border: none;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  /* Soft shadow */
   background: #ffffff;
   overflow: hidden;
 }
@@ -568,13 +549,15 @@ a[href="blank"]::before {
 .card-body span.text-success {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #065f46; /* Dark green */
+  color: #065f46;
+  /* Dark green */
 }
 
 .card-body span.text-danger {
   font-size: 1rem;
   font-weight: 500;
-  color: #991b1b; /* Dark red */
+  color: #991b1b;
+  /* Dark red */
 }
 
 /* Chart cards */
@@ -604,11 +587,13 @@ a[href="blank"]::before {
 }
 
 .form-select {
-  border: 1px solid #d1d5db; /* Light gray */
+  border: 1px solid #d1d5db;
+  /* Light gray */
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 0.9rem;
-  width: 120px; /* Slightly wider */
+  width: 120px;
+  /* Slightly wider */
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -643,12 +628,15 @@ canvas {
 .table td {
   vertical-align: middle;
   padding: 12px 15px;
-  border-color: #e2e8f0; /* Light border */
+  border-color: #e2e8f0;
+  /* Light border */
 }
 
 .table th {
-  background: #d1fae5; /* Light green header */
-  color: #065f46; /* Dark green text */
+  background: #d1fae5;
+  /* Light green header */
+  color: #065f46;
+  /* Dark green text */
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.85rem;
@@ -656,12 +644,14 @@ canvas {
 }
 
 .table-hover tbody tr:hover {
-  background: #f8fafc; /* Subtle hover effect */
+  background: #f8fafc;
+  /* Subtle hover effect */
   transition: background 0.2s ease;
 }
 
 .table td {
-  color: #334155; /* Dark slate text */
+  color: #334155;
+  /* Dark slate text */
 }
 
 /* Badges */
@@ -675,17 +665,20 @@ canvas {
 }
 
 .badge.bg-success {
-  background: #d1fae5; /* Light green */
+  background: #d1fae5;
+  /* Light green */
   color: #065f46;
 }
 
 .badge.bg-danger {
-  background: #fee2e2; /* Light red */
+  background: #fee2e2;
+  /* Light red */
   color: #991b1b;
 }
 
 /* Responsive */
 @media (max-width: 992px) {
+
   .row.mt-5,
   .row.mt-4 {
     gap: 15px;
@@ -693,13 +686,15 @@ canvas {
 
   .col-lg-3.col-md-6 {
     flex: 0 0 100%;
-    max-width: 100%; /* Full-width cards on medium screens */
+    max-width: 100%;
+    /* Full-width cards on medium screens */
   }
 
   .col-lg-7.col-md-12,
   .col-lg-5.col-md-12 {
     flex: 0 0 100%;
-    max-width: 100%; /* Full-width charts on medium screens */
+    max-width: 100%;
+    /* Full-width charts on medium screens */
   }
 }
 
@@ -719,7 +714,8 @@ canvas {
   }
 
   .btn-success {
-    width: 100%; /* Full-width button on mobile */
+    width: 100%;
+    /* Full-width button on mobile */
   }
 
   .table th,
@@ -737,7 +733,8 @@ canvas {
   }
 
   .form-select {
-    width: 100%; /* Full-width select on mobile */
+    width: 100%;
+    /* Full-width select on mobile */
   }
 }
 
@@ -762,4 +759,4 @@ canvas {
   }
 }
 </style>
->
+  >
