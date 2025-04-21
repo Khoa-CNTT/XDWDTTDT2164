@@ -450,8 +450,18 @@ class JobsService {
           model: db.Salaries,
           as: "Salaries",
         },
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
       ],
-      attributes: ["address", "expire", "jobName", "numberOfRecruits"],
+      attributes: [
+        "address",
+        "expire",
+        "jobName",
+        "numberOfRecruits",
+        "description",
+      ],
     });
 
     return job;
