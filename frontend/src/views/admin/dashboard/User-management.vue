@@ -29,7 +29,7 @@
                 <td>Nam</td>
                 <td>22/12/2003</td>
                 <td>admin</td>
-                <td><span class="badge bg-success">Đã kích hoạt</span></td>
+                <td><span class="badge bg-success text-light">Đã kích hoạt</span></td>
                 <td>
                   <button
                     class="btn btn-warning me-2"

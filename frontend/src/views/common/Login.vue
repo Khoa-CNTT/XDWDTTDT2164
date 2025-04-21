@@ -128,7 +128,7 @@ export default defineComponent({
         // Lấy đường dẫn chuyển hướng nếu có
         const redirectPath =
           this.$route.query.redirect ||
-          (userInfo?.role === "admin" ? "/admin-dashboard" : "/");
+          (userInfo?.role === "admin" ? "/admin-dashboard/admin-starter" : "/");
 
         // Điều hướng người dùng
         await this.$router.push(redirectPath);

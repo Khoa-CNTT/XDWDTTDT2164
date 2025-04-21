@@ -132,7 +132,7 @@ const routes = [
     meta: { layout: "admin", requiresAuth: true, role: "admin" },
     children: [
       {
-        path: "",
+        path: "admin-starter",
         component: () => import("@/views/admin/dashboard/Starter-admin.vue"),
       },
       {
