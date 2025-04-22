@@ -46,7 +46,7 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        <div class="container mt-5">
             <div class="row">
                 <div class="col-lg-4">
                     <h2><b>4M</b></h2>
@@ -62,7 +62,7 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        <div class="container mt-5 mb-3">
             <div class="row">
                 <div style="margin-left: 70px;" class="col-lg-11">
                     <h3 class="text-start"><b>Về Superio</b></h3>
