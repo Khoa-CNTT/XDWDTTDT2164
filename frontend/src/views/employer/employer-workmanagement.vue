@@ -119,7 +119,7 @@
                     Xem CV đã nộp
                   </router-link>
                   <router-link
-                    :to="`/employer-dashboard/edit-job/${job.id}`"
+                    :to="`/employer-dashboard/employer-update-job/${job.id}`"
                     class="btn btn-sm btn-light me-2 px-3"
                   >
                     <i class="fas fa-edit"></i>

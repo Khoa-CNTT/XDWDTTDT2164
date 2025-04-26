@@ -94,7 +94,18 @@ module.exports = (sequelize, DataTypes) => {
         field: "job_slug",
       },
       description: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
+      },
+      candidateRequirements: {
+        type: DataTypes.TEXT,
+        field: "candidate_requirements",
+      },
+      benefit: {
+        type: DataTypes.TEXT,
+      },
+      workTime: {
+        type: DataTypes.TEXT,
+        field: "work_time",
       },
       categoryId: {
         type: DataTypes.UUID,
@@ -130,6 +141,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       expire: {
         type: DataTypes.DATE,
+      },
+      isExpired: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: "is_expired",
       },
       address: {
         type: DataTypes.STRING,

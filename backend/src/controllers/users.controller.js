@@ -211,6 +211,32 @@ class UserController {
   }
 
   /**
+   * Lấy thông tin chi tiết nhà tuyển dụng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getEmployerDetail(req, res) {
+    try {
+      const { slug } = req.params;
+
+      const employer = await userService.getEmployerDetail(slug);
+
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data: employer,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Lấy danh sách nhà tuyển dụng
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -218,13 +244,7 @@ class UserController {
    */
   async getEmployerList(req, res) {
     try {
-      const { page, limit, search } = req.query;
-
-      const employers = await userService.getEmployerList({
-        page,
-        limit,
-        search,
-      });
+      const employers = await userService.getEmployerList(req.query);
 
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
@@ -383,6 +403,53 @@ class UserController {
         status: ResponseStatus.SUCCESS,
         message: result.message,
         data: result.data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy ra danh sách người dùng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getUsers(req, res) {
+    try {
+      const data = await userService.getUsers(req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Thêm mới người dùng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async updateUserByAdmin(req, res) {
+    try {
+      const { userId } = req.params;
+      const data = await userService.updateUser(userId, req.body);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
       });
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({

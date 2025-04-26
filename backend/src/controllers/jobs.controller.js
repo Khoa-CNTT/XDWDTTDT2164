@@ -177,6 +177,29 @@ class JobsController {
   }
 
   /**
+   * Lấy danh sách bài đăng theo thời gian
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Danh sách bài đăng theo thời gian
+   */
+  async getJobsForTime(req, res) {
+    try {
+      const data = await jobsService.getJobsForTime();
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
    * Cập nhật bài đăng công việc
    * @param {Object} req - Request object
    * @param {Object} res - Response object

@@ -5,7 +5,12 @@ import {
   getJobsForAdminAPi,
   getJobsForEmployerApi,
 } from "@apis/job";
-import { getJobDetailForEmployerApi, paymentJobApi } from "../apis/job";
+import {
+  getJobDetailForEmployerApi,
+  getJobsApi,
+  paymentJobApi,
+  updateJobApi,
+} from "../apis/job";
 
 export const useJobStore = defineStore("job", {
   state: () => ({
@@ -70,6 +75,26 @@ export const useJobStore = defineStore("job", {
       }
     },
 
+    async fetchJobs(query) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await getJobsApi(query);
+        if (!response || !response.data) {
+          throw new Error("Dữ liệu bài đăng không hợp lệ");
+        }
+
+        this.jobs = response.data.jobs;
+        this.totalPages = response.data.totalJobs;
+        this.currentPage = response.data.page;
+        this.pageSize = response.data.limit;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi lấy danh sách bài đăng");
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
     async fetchJobDetailForEmployer(id) {
       this.setLoadingState(true);
       this.resetError();
@@ -126,6 +151,23 @@ export const useJobStore = defineStore("job", {
         return response;
       } catch (error) {
         this.handleError(error, "Lỗi khi thanh toán bài đăng");
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async updateJob(id, data) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await updateJobApi(id, data);
+        if (!response) {
+          throw new Error("Phản hổi từ API không hợp lệ");
+        }
+        return response;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi chỉnh sửa bài đăng");
+        throw error;
       } finally {
         this.setLoadingState(false);
       }

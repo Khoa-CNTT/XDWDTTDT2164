@@ -1,4 +1,4 @@
-const { ResponseStatus, StatusCode } = require("../libs/enum");
+const { StatusCode, ResponseStatus } = require("../libs/enum");
 const saveJobsService = require("../services/saveJobs.service");
 
 /**
@@ -62,11 +62,11 @@ class SaveJobsController {
    * @param {Object} res - Response
    * @returns {Promise<Object>} - Danh sách jobs
    */
-  async getJobs() {
+  async getJobs(req, res) {
     try {
       const { id } = req.user;
       const result = await saveJobsService.getJobs(req.query, id);
-      return res.status(ResponseStatus.OK).json({
+      return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,
         data: result,

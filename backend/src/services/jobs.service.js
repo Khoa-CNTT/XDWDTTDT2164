@@ -4,6 +4,9 @@ const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
 const { redisClient } = require("../config/redis.config");
 const { moderateJob } = require("../libs/geminiClient");
+const { fn, col, literal, Op } = require("sequelize");
+const { parse } = require("dotenv");
+const { sendMailToEmployer } = require("../libs/sendMail");
 
 /**
  * Service xử lý login nghiệp vụ liên quan đến bài đăng công việc
@@ -35,6 +38,9 @@ class JobsService {
           jobName: jobData.jobName,
           jobSlug,
           description: jobData.description,
+          candidateRequirements: jobData.candidateRequirements,
+          benefit: jobData.benefit,
+          workTime: jobData.workTime,
           categoryId: jobData.categoryId,
           jobTypeId: jobData.jobTypeId,
           salaryId: jobData.salaryId,
@@ -133,6 +139,7 @@ class JobsService {
           paymentDate: new Date(),
           jobId,
           userId,
+          transaction_type: "Thanh toán",
         },
         { transaction }
       );
@@ -152,10 +159,10 @@ class JobsService {
 
       // Gọi kiểm duyệt với Gemini
       const moderationResult = await moderateJob(job);
+      const result = parse(moderationResult);
+      console.log(result);
 
-      console.log(moderationResult);
-
-      if (moderationResult.startsWith("REJECTED")) {
+      if (result.result === "Không duyệt") {
         // Cập nhật status job "Không kiểm duyệt"
         // await db.Jobs.update(
         //   {
@@ -178,7 +185,7 @@ class JobsService {
       } else {
         // nếu ok thì đánh dấu đã duyệt
         await db.Jobs.update(
-          { status: "Đã được duyệt" },
+          { isApproved: "Đã được duyệt" },
           { where: { id: jobId }, transaction }
         );
       }
@@ -252,7 +259,8 @@ class JobsService {
     const jobs = await db.Jobs.findAndCountAll({
       where: {
         ...whereClause,
-        status: "Đã kiểm duyệt",
+        isApproved: "Đã được duyệt",
+        isExpired: false,
         isVisible: true,
         deletedAt: null,
       },
@@ -264,6 +272,18 @@ class JobsService {
           model: db.Employers,
           as: "Employers",
           attributes: ["companyName", "companySlug", "companyLogo"],
+        },
+        {
+          model: db.Ranks,
+          as: "Ranks",
+        },
+        {
+          model: db.Salaries,
+          as: "Salaries",
+        },
+        {
+          model: db.JobTypes,
+          as: "JobTypes",
         },
       ],
     });
@@ -368,7 +388,7 @@ class JobsService {
     const job = await db.Jobs.findOne({
       where: {
         jobSlug: slug,
-        status: "Đã kiểm duyệt",
+        isApproved: "Đã được duyệt",
         isVisible: true,
         deletedAt: null,
       },
@@ -392,6 +412,10 @@ class JobsService {
         {
           model: db.Experiences,
           as: "Experiences",
+        },
+        {
+          model: db.Ranks,
+          as: "Ranks",
         },
       ],
     });
@@ -418,7 +442,6 @@ class JobsService {
         {
           model: db.Categories,
           as: "Categories",
-          attributes: ["categoryName"],
         },
         {
           model: db.JobSkills,
@@ -427,24 +450,20 @@ class JobsService {
             {
               model: db.Skills,
               as: "Skills",
-              attributes: ["skillName"],
             },
           ],
         },
         {
           model: db.JobTypes,
           as: "JobTypes",
-          attributes: ["jobTypeName"],
         },
         {
           model: db.Experiences,
           as: "Experiences",
-          attributes: ["experienceName"],
         },
         {
           model: db.Ranks,
           as: "Ranks",
-          attributes: ["rankName"],
         },
         {
           model: db.Salaries,
@@ -461,10 +480,60 @@ class JobsService {
         "jobName",
         "numberOfRecruits",
         "description",
+        "candidateRequirements",
+        "benefit",
+        "workTime",
       ],
     });
 
     return job;
+  }
+
+  /**
+   * Lấy danh sách bài đăng theo thời gian
+   * @returns {Promise<Object>} Danh sách bài đăng theo thời gian
+   */
+  async getJobsForTime({ period = "month", startDate, endDate }) {
+    try {
+      const formatByPeriod = {
+        day: "%Y-%m-%d",
+        month: "%Y-%m",
+        year: "%Y",
+        weekday: "%W", // thêm vào để lấy theo tên thứ (Monday, Tuesday,...)
+      };
+
+      const format = formatByPeriod[period];
+      if (!format) {
+        throw new Error("Invalid period. Use day, month, year or weekday");
+      }
+
+      const where = {};
+      if (startDate) {
+        where.createdAt = { [Op.gte]: new Date(startDate) };
+      }
+      if (endDate) {
+        where.createdAt = where.createdAt || {};
+        where.createdAt[Op.lte] = new Date(endDate);
+      }
+
+      const data = await db.Job.findAll({
+        where,
+        attributes: [
+          [fn("DATE_FORMAT", col("createdAt"), format), "period"],
+          [fn("COUNT", col("id")), "count"],
+        ],
+        group: [literal(`DATE_FORMAT(createdAt, '${format}')`)],
+        order: [[literal(`DATE_FORMAT(createdAt, '${format}')`), "ASC"]],
+        raw: true,
+      });
+
+      return data.reduce((acc, { period, count }) => {
+        acc[period] = Number(count);
+        return acc;
+      }, {});
+    } catch (error) {
+      throw new Error(`Error fetching job counts: ${error.message}`);
+    }
   }
 
   /**
@@ -474,45 +543,90 @@ class JobsService {
    * @returns {Promise<Object>} Bài đăng công việc được cập nhật
    */
   async updateJob(id, jobData) {
-    const job = await this.getJobById(id);
+    const transaction = await db.sequelize.transaction();
+    try {
+      const job = await this.findJobById(id);
 
-    if (!job) {
-      throw new ApiError(
-        StatusCode.NOT_FOUND,
-        "Bài đăng công việc không tồn tại."
+      if (!job) {
+        throw new ApiError(
+          StatusCode.NOT_FOUND,
+          "Bài đăng công việc không tồn tại."
+        );
+      }
+
+      const jobSlug = slugify(jobData.jobName, { lower: true });
+      const existingJob = await this.findJobBySlug(jobSlug, job.employerId);
+
+      if (existingJob && existingJob.id !== job.id) {
+        throw new ApiError(
+          StatusCode.BAD_REQUEST,
+          "Bài đăng công việc đã tồn tại."
+        );
+      }
+
+      // Cập nhật thông tin job
+      await job.update(
+        {
+          jobName: jobData.jobName,
+          jobSlug,
+          description: jobData.description,
+          candidateRequirements: jobData.candidateRequirements,
+          benefit: jobData.benefit,
+          workTime: jobData.workTime,
+          categoryId: jobData.categoryId,
+          jobTypeId: jobData.jobTypeId,
+          salaryId: jobData.salaryId,
+          experienceId: jobData.experienceId,
+          numberOfRecruits: jobData.numberOfRecruits,
+          rank: jobData.rank,
+          address: jobData.address,
+        },
+        { transaction }
       );
+
+      // Gọi kiểm duyệt AI
+      const moderationResult = await moderateJob(job);
+      const result = parse(moderationResult);
+      console.log(result);
+
+      if (result.result === "Không duyệt") {
+        // Cập nhật trạng thái bị từ chối
+        await db.Jobs.update(
+          { isApproved: "Đã bị từ chối" },
+          { where: { id: job.id }, transaction }
+        );
+
+        // Thông báo cho admin
+        const admins = await this.getAdminList({ transaction });
+
+        const notifications = admins.map((admin) => ({
+          userId: admin.id,
+          message: `Bài đăng "${job.jobName}" đã bị AI từ chối kiểm duyệt. Vui lòng kiểm tra lại.`,
+          type: "moderation",
+        }));
+
+        await db.Notifications.bulkCreate(notifications, { transaction });
+      } else {
+        // Cập nhật trạng thái được duyệt
+        await db.Jobs.update(
+          { isApproved: "Đã được duyệt" },
+          { where: { id: job.id }, transaction }
+        );
+      }
+
+      // Commit transaction sau khi xong mọi việc
+      await transaction.commit();
+
+      // Xóa cache
+      const keys = await redisClient.keys("jobs:*");
+      if (keys.length > 0) await redisClient.del(keys);
+
+      return job;
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      throw error;
     }
-
-    // Kiểm tra xem bài đăng công việc đã tồn tại chưa
-    const jobSlug = slugify(jobData.jobTitle, { lower: true });
-    const existingJob = await this.findJobBySlug(jobSlug, job.employerId);
-
-    if (existingJob) {
-      throw new ApiError(
-        StatusCode.BAD_REQUEST,
-        "Bài đăng công việc đã tồn tại."
-      );
-    }
-
-    // Cập nhật bài đăng công việc
-    await job.update({
-      jobName: jobData.jobTitle,
-      jobSlug,
-      description: jobData.description,
-      categoryId: jobData.categoryId,
-      jobTypeId: jobData.jobTypeId,
-      salaryId: jobData.salaryId,
-      experienceId: jobData.experienceId,
-      numberOfRecruits: jobData.numberOfRecruits,
-      rank: jobData.rank,
-      address: jobData.address,
-    });
-
-    // Xóa cache cũ
-    const keys = await redisClient.keys("jobs:*"); // Lấy tất cả cache liên quan đến jobs
-    await redisClient.del(keys);
-
-    return job;
   }
 
   /**
@@ -560,6 +674,17 @@ class JobsService {
       // Cập nhật trạng thái bài đăng
       if (data.status === "Đã được duyệt") {
         job.isApproved = "Đã được duyệt";
+
+        // Tạo thông báo cho nhà tuyển dụng
+        await db.Notifications.create(
+          {
+            userId: job.employerId,
+            message: `Bài đăng công việc ${job.jobName} đã được ${job.isApproved}.`,
+            type: "job",
+            isRead: false,
+          },
+          { transaction }
+        );
       } else {
         job.isApproved = "Không được duyệt";
         job.rejectionReason = data.rejectionReason;
@@ -636,21 +761,19 @@ class JobsService {
         // }
       }
 
-      // Lưu thay đổi trạng thái bài đăng
+      // lưu bài đăng
       await job.save({ transaction });
-      console.log(`Updated job ${job.id} status to: ${job.status}`);
 
       // Tạo thông báo cho nhà tuyển dụng
       await db.Notifications.create(
         {
           userId: job.employerId,
-          message: `Bài đăng công việc ${job.jobName} đã được ${status}.`,
+          message: `Bài đăng công việc ${job.jobName} đã  ${job.isApproved}. Vui lòng cập nhật lại`,
           type: "job",
           isRead: false,
         },
         { transaction }
       );
-      console.log(`Created notification for employer ${job.employerId}`);
 
       // Xóa cache liên quan đến bài đăng cụ thể
       const cacheKeys = [
@@ -667,6 +790,50 @@ class JobsService {
       await transaction.rollback();
       console.error("Error in verifyJob:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Kiểm tra bìa đăng đã hết hạn
+   * @param {Promise<void>}
+   */
+  async handleExpiredJobs() {
+    const today = new Date();
+
+    const expiredJobs = await db.Jobs.findAll({
+      where: { expire: { [Op.lt]: today }, isExpired: false },
+      include: [
+        {
+          model: db.Employers,
+          as: "Employers",
+          include: [
+            {
+              model: db.Users,
+              as: "Users",
+              attributes: ["email"],
+            },
+          ],
+        },
+      ],
+    });
+
+    for (const job of expiredJobs) {
+      job.status = "Đã hết hạn";
+      job.isExpired = true;
+
+      await job.save();
+
+      await sendMailToEmployer(job.Employers.Users.email, job);
+
+      await redisClient.del([
+        `jobs:${job.id}`,
+        `jobs:employer:${job.employerId}`,
+        "jobs:visible",
+      ]);
+
+      console.log(
+        `[CRON] Đã kiểm tra và cập nhật ${expiredJobs.length} bài đăng hết hạn`
+      );
     }
   }
 

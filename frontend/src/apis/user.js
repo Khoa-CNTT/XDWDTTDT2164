@@ -5,15 +5,22 @@ export const getInfoApi = async () => {
   return response.data;
 };
 
-export const getUsersByAdminApi = async () => {
-  const response = await api.get("/api/users/users-admin");
+export const getUsersByAdminApi = async (page, limit) => {
+  const response = await api.get("/api/users/get-users-admin", {
+    params: { page, limit },
+  });
   return response.data;
 };
 
-export const getEmployersApi = async (page, limit) => {
+export const getEmployersApi = async (query = {}) => {
   const response = await api.get("/api/users/employers", {
-    params: { page, limit },
+    params: query,
   });
+  return response.data;
+};
+
+export const getDetailEmployerApi = async (slug) => {
+  const response = await api.get(`/api/users/employer-detail/${slug}`);
   return response.data;
 };
 
@@ -38,5 +45,41 @@ export const getEmployerInfoApi = async () => {
 
 export const changePassword = async (data) => {
   const response = await api.put("/api/users/change-password", data);
+  return response.data;
+};
+
+export const forgotPasswordApi = async (data) => {
+  const response = await api.post("/api/users/forgot-password", data);
+  return response.data;
+};
+
+export const resetPasswordApi = async (data) => {
+  const response = await api.post("/api/users/reset-password", data);
+  return response.data;
+};
+
+export const updateUserApi = async (userId, data) => {
+  const response = await api.put(
+    `/api/users/update-user-admin/${userId}`,
+    data
+  );
+  return response.data;
+};
+
+export const createEmployerProfile = async (data) => {
+  const response = await api.post("/api/users/create-employer-profile", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const createCandidateProfile = async (data) => {
+  const response = await api.post("/api/users/create-candidate-profile", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };

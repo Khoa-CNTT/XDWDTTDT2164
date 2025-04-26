@@ -77,6 +77,57 @@ class ApplyJobController {
       });
     }
   }
+
+  /**
+   * Lấy danh sách công việc đã ứng tuyển
+   * @param {req}
+   * @param {res}
+   * @returns {Promise<void>}
+   */
+  async getJobApply(req, res) {
+    try {
+      const { candidateId } = req.params;
+      const data = await applyJobService.getJobApply(candidateId, req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Đánh giá ứng viên từ nhà tuyển dụng
+   * @param {req}
+   * @param {res}
+   * @returns {Promise<void>}
+   */
+  async reviewCandidate(req, res) {
+    try {
+      const { applicationId } = req.params;
+      const data = await applyJobService.reviewCandidate(
+        applicationId,
+        req.body
+      );
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
 }
 
 module.exports = new ApplyJobController();

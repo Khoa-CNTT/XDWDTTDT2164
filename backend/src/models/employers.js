@@ -61,6 +61,9 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: false,
         field: "is_approved",
       },
+      industry: {
+        type: DataTypes.STRING,
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",

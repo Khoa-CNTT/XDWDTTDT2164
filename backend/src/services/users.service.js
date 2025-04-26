@@ -26,6 +26,32 @@ class UserService {
         {
           model: db.Candidates,
           as: "Candidates",
+          include: [
+            {
+              model: db.Users,
+              as: "Users",
+              attributes: ["fullName", "phoneNumber"],
+            },
+            {
+              model: db.CandidateSkills,
+              as: "CandidateSkills",
+              attributes: ["id"],
+              include: [
+                {
+                  model: db.Skills,
+                  as: "Skills",
+                  attributes: ["skillName"],
+                  include: [
+                    {
+                      model: db.Categories,
+                      as: "Categories",
+                      attributes: ["categoryName"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
         {
           model: db.EmployerUsers,
@@ -245,6 +271,49 @@ class UserService {
   }
 
   /**
+   * Lấy thông tin chi tiết nhà tuyển dụng
+   * @param {string} slug - slug của nhà tuyển dụng
+   * @returns {Promise<Object>} - Thông tin nhà tuyển dụng
+   */
+  async getEmployerDetail(slug) {
+    const employer = await db.Employers.findOne({
+      where: { companySlug: slug },
+    });
+
+    if (!employer) {
+      throw new ApiError(StatusCode.NOT_FOUND, "Công ty không tồn tại");
+    }
+
+    const jobs = await db.Jobs.findAll({
+      where: {
+        employerId: employer.id,
+        isVisible: true,
+        isApproved: "Đã được duyệt",
+        isExpired: false,
+      },
+      include: [
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
+        {
+          model: db.Ranks,
+          as: "Ranks",
+        },
+        {
+          model: db.Salaries,
+          as: "Salaries",
+        },
+        {
+          model: db.JobTypes,
+          as: "JobTypes",
+        },
+      ],
+    });
+    return { employer, jobs };
+  }
+
+  /**
    * Lấy danh sách nhà tuyển dụng
    * @returns {Promise<Object>} - Danh sách nhà tuyển dụng
    */
@@ -252,7 +321,9 @@ class UserService {
     const page = Math.max(parseInt(query.page) || 1, 1);
     const limit = Math.max(parseInt(query.limit) || 10, 1);
     const offset = (page - 1) * limit;
-    const search = query.search || ""; // Tìm kiếm theo tên công ty (nếu có)
+    const search = query.search || ""; // Tìm kiếm theo tên công ty
+    const address = query.address || ""; // Tìm kiếm theo đỉa chỉ
+    const industry = query.industry || ""; // Tìm kiếm theo ngành nghề
 
     const whereClause = {
       isApproved: true,
@@ -264,17 +335,31 @@ class UserService {
       };
     }
 
+    if (address) {
+      whereClause.companyAddress = {
+        [db.Sequelize.Op.like]: `%${address}%`,
+      };
+    }
+
+    if (industry) {
+      whereClause.industry = industry;
+    }
+
     const { count: totalEmployers, rows: employers } =
       await db.Employers.findAndCountAll({
         where: whereClause,
         offset,
         limit,
-        attributes: ["id", "companyName", "companySlug", "companyLogo"],
       });
 
-    return { page, limit, totalEmployers, employers };
+    return {
+      page,
+      limit,
+      totalCount: totalEmployers,
+      totalPages: Math.ceil(totalEmployers / limit),
+      employers,
+    };
   }
-
   /**
    * Lấy danh sách nhà tuyển dụng cho admin
    * @returns {Promise<Object>} - Danh sách nhà tuyển dụng cho admin
@@ -484,6 +569,59 @@ class UserService {
 
       throw error;
     }
+  }
+
+  /**
+   * Lấy danh sách người dùng
+   * @param {Object} query
+   * @returns {Promise<Object>}
+   */
+  async getUsers(query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count: totalUsers, rows: users } = await db.Users.findAndCountAll({
+      limit,
+      offset,
+      attributes: [
+        "id",
+        "fullName",
+        "phoneNumber",
+        "email",
+        "role",
+        "emailVerify",
+      ],
+    });
+
+    return {
+      page,
+      limit,
+      totalUsers,
+      users,
+    };
+  }
+
+  /**
+   * Cập nhật thông tin người dùng bởi admin
+   * @param {Object} userData - Dữ liệu cập nhật
+   * @param {string} id - Mã người dùng
+   * @returns {Promise<Object>}
+   */
+  async updateUser(userId, userData) {
+    // Kiểm tra xem user có tồn tại không
+    const userExist = await db.Users.findByPk(userId);
+    if (!userExist) {
+      throw new ApiError(StatusCode.BAD_REQUEST, "Không tìm thấy người dùng");
+    }
+
+    // cập nhật người dùng
+    userExist.fullName = userData.fullName;
+    userExist.role = userData.role;
+
+    await userExist.save();
+
+    return userExist;
   }
 }
 
