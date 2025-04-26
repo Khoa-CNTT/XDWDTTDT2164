@@ -96,7 +96,7 @@ router.get(
 );
 
 /**
- * @route GET /api/user/employer/:companySlug
+ * @route GET /api/user/employer/
  * @desc Lấy thông tin nhà tuyển dụng
  * @access Public
  * @controller UserController.getEmployerProfile
@@ -107,6 +107,14 @@ router.get(
   authorizedRoute("employer"),
   userController.getEmployerProfile
 );
+
+/**
+ * @route GET /api/user/employer/:slug
+ * @desc Lấy thông tin nhà tuyển dụng
+ * @access Public
+ * @controller UserController.getEmployerProfile
+ */
+router.get("/employer-detail/:slug", userController.getEmployerDetail);
 
 /**
  * @route GET /api/user/employers
@@ -195,6 +203,36 @@ router.post(
   validateCreateCandidateProfile,
   handleValidationErrors,
   userController.createCandidateProfile
+);
+
+/**
+ * @route GET /api/users/get-users-admin
+ * @desc Lấy danh sách người dùng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
+ * @middleware authorizedRoute("admin"): Kiểm tra xem user có phải là admin không
+ * @controller UserController.getUsers
+ */
+router.get(
+  "/get-users-admin",
+  protectedRoute,
+  authorizedRoute("admin"),
+  userController.getUsers
+);
+
+/**
+ * @route GET /api/users/get-users-admin
+ * @desc Lấy danh sách người dùng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
+ * @middleware authorizedRoute("admin"): Kiểm tra xem user có phải là admin không
+ * @controller UserController.getUsers
+ */
+router.put(
+  "/update-user-admin/:userId",
+  protectedRoute,
+  authorizedRoute("admin"),
+  userController.updateUserByAdmin
 );
 
 module.exports = router;

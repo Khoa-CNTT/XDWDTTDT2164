@@ -62,8 +62,20 @@ const parseGeminiResult = (resultText) => {
   };
 };
 
+const parseGeminiResultMatch = (resultText) => {
+  const match = resultText.match(
+    /^Kiểm duyệt:\s*(Duyệt|Không duyệt)\.?(?:\s*Lý do:\s*(.*))?$/i
+  );
+
+  return {
+    result: match[1],
+    reason: match[2] || null,
+  };
+};
+
 module.exports = {
   caculatePromotionAmount,
   convertPdfToText,
   parseGeminiResult,
+  parseGeminiResultMatch,
 };

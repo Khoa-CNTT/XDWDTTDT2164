@@ -1,9 +1,7 @@
 <template>
   <div class="company-management">
     <h2>Danh Sách Công Ty</h2>
-    <router-link to="/" class="mb-3 d-inline-block"
-      >Quay trở lại trang chủ?</router-link
-    >
+    <router-link to="/" class="mb-3 d-inline-block"> Quay trở lại trang chủ?</router-link>
     <div class="card mt-5">
       <div class="card-header">
         <h5 class="title-header">Danh Sách Công Ty</h5>
@@ -36,10 +34,7 @@
               </tr>
             </thead>
             <tbody class="text-center align-middle">
-              <tr
-                v-for="(employer, index) in userStore.employers"
-                :key="employer.id"
-              >
+              <tr v-for="(employer, index) in userStore.employers" :key="employer.id">
                 <td>
                   {{
                     (userStore.currentPage - 1) * userStore.pageSize + index + 1
@@ -49,22 +44,18 @@
                 <td>{{ employer.companyName || "N/A" }}</td>
                 <td>{{ employer.phoneNumber || "N/A" }}</td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      employer.deletedAt ? 'bg-danger' : 'bg-success',
-                    ]"
-                  >
+                  <span :class="[
+                    'badge',
+                    employer.deletedAt ? 'bg-danger text-light' : 'bg-success text-light',
+                  ]">
                     {{ employer.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                   </span>
                 </td>
                 <td>
-                  <span
-                    :class="[
-                      'badge',
-                      employer.isApproved ? 'bg-success' : 'bg-warning',
-                    ]"
-                  >
+                  <span :class="[
+                    'badge',
+                    employer.isApproved ? 'bg-success' : 'bg-warning',
+                  ]">
                     {{
                       employer.isApproved ? "Đã kiểm duyệt" : "Chưa kiểm duyệt"
                     }}
@@ -78,30 +69,20 @@
           <!-- Phân trang -->
           <nav v-if="userStore.totalPages > 1" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-              <li
-                class="page-item"
-                :class="{ disabled: userStore.currentPage === 1 }"
-              >
+              <li class="page-item" :class="{ disabled: userStore.currentPage === 1 }">
                 <button class="page-link" @click="previousPage">
                   Trang trước
                 </button>
               </li>
-              <li
-                v-for="page in userStore.totalPages"
-                :key="page"
-                class="page-item"
-                :class="{ active: userStore.currentPage === page }"
-              >
+              <li v-for="page in userStore.totalPages" :key="page" class="page-item"
+                :class="{ active: userStore.currentPage === page }">
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li
-                class="page-item"
-                :class="{
-                  disabled: userStore.currentPage === userStore.totalPages,
-                }"
-              >
+              <li class="page-item" :class="{
+                disabled: userStore.currentPage === userStore.totalPages,
+              }">
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
             </ul>
@@ -161,7 +142,8 @@ export default {
 .company-management {
   padding: 30px;
   max-width: 100%;
-  background: #f8fafc; /* Light background for depth */
+  background: #f8fafc;
+  /* Light background for depth */
   border-radius: 12px;
   min-height: 100vh;
 }
@@ -170,13 +152,15 @@ export default {
 h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b; /* Dark slate for contrast */
+  color: #1e293b;
+  /* Dark slate for contrast */
   margin-bottom: 15px;
 }
 
 .mb-3.d-inline-block {
   font-size: 0.95rem;
-  color: #2563eb; /* Vibrant blue */
+  color: #2563eb;
+  /* Vibrant blue */
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -185,12 +169,15 @@ h2 {
 }
 
 .mb-3.d-inline-block:hover {
-  color: #1e40af; /* Darker blue on hover */
-  transform: translateX(-3px); /* Subtle shift */
+  color: #1e40af;
+  /* Darker blue on hover */
+  transform: translateX(-3px);
+  /* Subtle shift */
 }
 
 .mb-3.d-inline-block::before {
-  content: "\f060"; /* Font Awesome arrow-left */
+  content: "\f060";
+  /* Font Awesome arrow-left */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.9rem;
@@ -200,14 +187,16 @@ h2 {
 .card {
   border: none;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  /* Soft shadow */
   background: #ffffff;
   margin-top: 20px;
   overflow: hidden;
 }
 
 .card-header {
-  background: #eff6ff; /* Light blue header */
+  background: #eff6ff;
+  /* Light blue header */
   border-bottom: 1px solid #e2e8f0;
   padding: 20px;
 }
@@ -227,7 +216,8 @@ h2 {
 /* Loading and empty states */
 .text-center {
   padding: 30px;
-  color: #64748b; /* Muted slate */
+  color: #64748b;
+  /* Muted slate */
 }
 
 .text-center i {
@@ -237,7 +227,8 @@ h2 {
 
 .text-danger {
   font-size: 0.95rem;
-  color: #dc2626; /* Bright red */
+  color: #dc2626;
+  /* Bright red */
   padding: 30px;
 }
 
@@ -257,11 +248,13 @@ h2 {
 .table td {
   vertical-align: middle;
   padding: 12px 15px;
-  border-color: #e2e8f0; /* Light border */
+  border-color: #e2e8f0;
+  /* Light border */
 }
 
 .table th {
-  background: #f1f5f9; /* Light slate header */
+  background: #f1f5f9;
+  /* Light slate header */
   color: #475569;
   font-weight: 600;
   text-transform: uppercase;
@@ -270,12 +263,14 @@ h2 {
 }
 
 .table-hover tbody tr:hover {
-  background: #f8fafc; /* Subtle hover effect */
+  background: #f8fafc;
+  /* Subtle hover effect */
   transition: background 0.2s ease;
 }
 
 .table td {
-  color: #334155; /* Dark slate text */
+  color: #334155;
+  /* Dark slate text */
 }
 
 /* Badges */
@@ -287,17 +282,20 @@ h2 {
 }
 
 .badge.bg-success {
-  background: #d1fae5; /* Light green */
+  background: #d1fae5;
+  /* Light green */
   color: #065f46;
 }
 
 .badge.bg-danger {
-  background: #fee2e2; /* Light red */
+  background: #fee2e2;
+  /* Light red */
   color: #991b1b;
 }
 
 .badge.bg-warning {
-  background: #fef3c7; /* Light yellow */
+  background: #fef3c7;
+  /* Light yellow */
   color: #92400e;
 }
 

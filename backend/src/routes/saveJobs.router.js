@@ -33,7 +33,8 @@ router.post(
 router.get(
   "/",
   protectedRoute,
-  authorizedRoute("candidate", saveJobsController.getJobs)
+  authorizedRoute("candidate"),
+  saveJobsController.getJobs
 );
 
 /**
@@ -47,7 +48,8 @@ router.get(
 router.delete(
   "/:jobId",
   protectedRoute,
-  authorizedRoute("candidate", saveJobsController.delJob)
+  authorizedRoute("candidate"),
+  saveJobsController.delJob
 );
 
 module.exports = router;

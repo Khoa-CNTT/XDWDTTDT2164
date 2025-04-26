@@ -4,7 +4,19 @@
     <router-link to="/admin-dashboard/post-management">
       <div>Quay trở lại?</div>
     </router-link>
-    <div class="card mt-5">
+
+    <!-- Loading state -->
+    <div v-if="jobStore.isLoading" class="text-center mt-5">
+      <i class="fas fa-spinner fa-spin"></i> Đang tải chi tiết bài đăng...
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="jobStore.error" class="text-center text-danger mt-5">
+      {{ jobStore.error }}
+    </div>
+
+    <!-- Job details -->
+    <div v-else-if="jobStore.job" class="card mt-5">
       <div class="card-header text-center">
         <h1><b>Mô Tả Chi Tiết Công Việc</b></h1>
       </div>
@@ -12,35 +24,46 @@
         <div class="d-flex align-items-center">
           <img
             class="img-logo me-3"
-            style="border: 1px solid black; border-radius: 30px"
-            src="https://m.media-amazon.com/images/S/stores-image-uploads-na-prod/b/AmazonStores/ATVPDKIKX0DER/2cd67b908ca9f725c502916b6c93e507.w750.h432._CR0%2C0%2C750%2C432_SX3000_.png"
+            :src="
+              jobStore.job.Employers.companyLogo ||
+              'https://via.placeholder.com/200x120'
+            "
             alt="logo-company"
           />
           <div>
-            <h4 class="mt-2"><b>Công Ty Superio</b></h4>
+            <h4 class="mt-2">
+              <b>{{ jobStore.job.Employers.companyName || "N/A" }}</b>
+            </h4>
             <p>
               Địa chỉ:
-              <span class="text-secondary"
-                >239 Tố Hữu, Phường Khuê Trung, Quận Cẩm Lệ, TP Đà Nẵng</span
-              >
+              <span class="text-secondary">{{
+                jobStore.job.Employers.companyAddress || "N/A"
+              }}</span>
             </p>
-            <p>Phone: <span class="text-secondary"> 0909090909</span></p>
-            <p>Email: <span class="text-secondary"> superio@gmail.com</span></p>
+            <p>
+              Phone:
+              <span class="text-secondary">{{
+                jobStore.job.Employers.companyPhone || "N/A"
+              }}</span>
+            </p>
+            <p>
+              Email:
+              <span class="text-secondary">{{
+                jobStore.job.Employers.companyEmail || "N/A"
+              }}</span>
+            </p>
           </div>
         </div>
         <hr />
         <div class="mt-4">
           <h4>Tiêu Đề Công Việc:</h4>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-            quos.
-          </p>
+          <p>{{ jobStore.job.jobName || "N/A" }}</p>
         </div>
         <div class="mt-4">
           <h4>Mô Tả Công Việc:</h4>
-          <textarea class="form-control" rows="5">
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</textarea
-          >
+          <textarea class="form-control" rows="5" readonly>{{
+            jobStore.job.description || "N/A"
+          }}</textarea>
         </div>
         <hr />
         <div class="mt-4">
@@ -51,25 +74,29 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</textar
               <input
                 type="text"
                 class="form-control mt-2"
-                placeholder="Điền danh mục việc làm"
+                :value="jobStore.job.Categories.categoryName || 'N/A'"
+                readonly
               />
               <label>Mức lương</label>
               <input
                 type="text"
                 class="form-control mt-2"
-                placeholder="30-45 triệu"
+                :value="jobStore.job.Salaries.salaryName || 'N/A'"
+                readonly
               />
               <label>Kỹ năng</label>
               <input
                 type="text"
                 class="form-control mt-2"
-                placeholder="React, Vue, Angular"
+                :value="jobStore.job.JobSkills?.join(',') || 'N/A'"
+                readonly
               />
               <label>Cấp bậc</label>
               <input
                 type="text"
                 class="form-control mt-2"
-                placeholder="Fresher, Junior, Senior"
+                :value="jobStore.job.Ranks.rankName || 'N/A'"
+                readonly
               />
             </div>
             <div class="col-6 mt-2">
@@ -77,37 +104,105 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</textar
               <input
                 type="text"
                 class="form-control mt-2"
-                placeholder="Full-time, Part-time, Freelance"
+                :value="jobStore.job.JobTypes.jobTypeName || 'N/A'"
+                readonly
               />
               <label>Số lượng người tuyển</label>
-              <input type="text" class="form-control mt-2" placeholder="4" />
+              <input
+                type="text"
+                class="form-control mt-2"
+                :value="jobStore.job.numberOfRecruits || 'N/A'"
+                readonly
+              />
               <label>Kinh nghiệm</label>
               <input
                 type="text"
                 class="form-control mt-2"
-                placeholder="1 năm"
+                :value="jobStore.job.Experiences.experienceName || 'N/A'"
+                readonly
               />
               <label>Ngày hết hạn ứng tuyển</label>
               <input
                 type="date"
                 class="form-control mt-2"
-                placeholder="01-07-2025"
+                :value="formatDate(jobStore.job.expire)"
+                readonly
               />
             </div>
           </div>
         </div>
       </div>
       <div class="card-footer text-end">
-        <button class="btn btn-outline-success me-2">Duyệt</button>
-        <button class="btn btn-outline-danger">Từ chối</button>
+        <button
+          class="btn btn-outline-success me-2"
+          @click="approveJob"
+          :disabled="jobStore.isLoading || jobStore.job.isApproved"
+        >
+          Duyệt
+        </button>
+        <button
+          class="btn btn-outline-danger"
+          @click="rejectJob"
+          :disabled="jobStore.isLoading || jobStore.job.isApproved"
+        >
+          Từ chối
+        </button>
       </div>
     </div>
+
+    <!-- Empty state -->
+    <div v-else class="text-center mt-5">Không có dữ liệu bài đăng.</div>
   </div>
 </template>
 
 <script>
+import { useJobStore } from "@stores/useJobStore";
+import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue3-toastify";
+
 export default {
   name: "JobDetailView",
+  setup() {
+    const jobStore = useJobStore();
+    const route = useRoute();
+    const router = useRouter();
+    return { jobStore, route, router };
+  },
+  async mounted() {
+    const jobId = this.route.params.jobId;
+    if (jobId) {
+      await this.jobStore.fetchJobDetailForEmployer(jobId);
+    } else {
+      this.jobStore.error = "Không tìm thấy ID bài đăng";
+    }
+  },
+  methods: {
+    formatDate(date) {
+      if (!date) return "";
+      const d = new Date(date);
+      return d.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    },
+    async approveJob() {
+      if (!confirm("Xác nhận duyệt bài đăng này?")) return;
+      try {
+        await this.jobStore.approveJob(this.route.params.id);
+        toast.success("Bài đăng đã được duyệt!");
+        this.router.push("/admin-dashboard/post-management");
+      } catch (error) {
+        toast.error("Lỗi khi duyệt bài đăng.");
+      }
+    },
+    async rejectJob() {
+      if (!confirm("Xác nhận từ chối bài đăng này?")) return;
+      try {
+        await this.jobStore.rejectJob(this.route.params.id);
+        toast.success("Bài đăng đã bị từ chối.");
+        this.router.push("/admin-dashboard/post-management");
+      } catch (error) {
+        toast.error("Lỗi khi từ chối bài đăng.");
+      }
+    },
+  },
 };
 </script>
 
@@ -295,6 +390,12 @@ label {
   box-shadow: 0 3px 6px rgba(16, 185, 129, 0.2);
 }
 
+.btn-outline-success:disabled {
+  border-color: #94a3b8;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
 .btn-outline-danger {
   border-color: #ef4444; /* Red */
   color: #ef4444;
@@ -305,6 +406,28 @@ label {
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 3px 6px rgba(239, 68, 68, 0.2);
+}
+
+.btn-outline-danger:disabled {
+  border-color: #94a3b8;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Loading and error states */
+.text-center {
+  padding: 30px;
+  color: #64748b; /* Muted slate */
+}
+
+.text-center i {
+  font-size: 1.5rem;
+  color: #2563eb;
+}
+
+.text-danger {
+  font-size: 0.95rem;
+  color: #dc2626; /* Bright red */
 }
 
 /* Responsive */

@@ -1,43 +1,44 @@
+// router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@stores/useAuthStore";
 
 const routes = [
+  // Auth routes
   {
-    //Login
     path: "/login",
     component: () => import("@/views/common/Login.vue"),
-    meta: { layout: "auth" },
+    meta: { layout: "auth", guestOnly: true },
   },
   {
-    //Register
     path: "/register",
     component: () => import("@/views/common/Sign_up.vue"),
-    meta: { layout: "auth" },
+    meta: { layout: "auth", guestOnly: true },
   },
   {
-    //Forgot password
     path: "/forgot-password",
     component: () => import("@/views/common/Forgot_password.vue"),
-    meta: { layout: "auth" },
+    meta: { layout: "auth", guestOnly: true },
   },
   {
-    //Reset password
-    path: "/reset-password",
+    path: "/reset-password/:token",
     component: () => import("@/views/common/Reset_password.vue"),
-    meta: { layout: "auth" },
+    meta: { layout: "auth", guestOnly: true },
   },
   {
-    //OTP
     path: "/otp",
     component: () => import("@/views/common/OTP.vue"),
-    meta: { layout: "auth" },
+    meta: { layout: "auth", guestOnly: true },
   },
 
-  // Candidate
+  // Candidate dashboard
   {
     path: "/candidate-dashboard",
-    meta: { layout: "candidate" },
+    meta: { layout: "candidate", requiresAuth: true, role: "candidate" },
     children: [
+      {
+        path: "",
+        component: () => import("@/views/candidate/candidate-test.vue"),
+      },
       {
         path: "candidate-test",
         component: () => import("@/views/candidate/candidate-test.vue"),
@@ -57,14 +58,14 @@ const routes = [
     ],
   },
 
-  // Employer
+  // Employer dashboard
   {
     path: "/employer-dashboard",
-    meta: { layout: "employer" },
+    meta: { layout: "employer", requiresAuth: true, role: "employer" },
     children: [
       {
-        path: "", // Mặc định khi vào /admin-dashboard
-        redirect: "employer-dashboard", // Chuyển hướng sang trang con mặc định
+        path: "",
+        component: () => import("@/views/employer/employer-info.vue"),
       },
       {
         path: "employer-newjob",
@@ -83,32 +84,33 @@ const routes = [
         component: () => import("@/views/employer/employer-list.vue"),
       },
       {
+        path: "employer-update-job/:jobId",
+        component: () => import("@/views/employer/employer-update-job.vue"),
+      },
+      {
         path: "employer-recharge",
         component: () => import("@/views/employer/employer-recharge.vue"),
       },
       {
         path: "employer-depositinformation",
         component: () =>
-          import("../views/employer/employer-depositinformation.vue"),
+          import("@/views/employer/employer-depositinformation.vue"),
       },
       {
         path: "employer-paymentpost",
-        component: () => import("../views/employer/employer-paymentpost.vue"),
+        component: () => import("@/views/employer/employer-paymentpost.vue"),
       },
       {
         path: "employer-paymenthistory",
-        component: () =>
-          import("../views/employer/employer-paymenthistory.vue"),
+        component: () => import("@/views/employer/employer-paymenthistory.vue"),
       },
       {
         path: "employer-deposithistory",
-        component: () =>
-          import("../views/employer/employer-deposithistory.vue"),
+        component: () => import("@/views/employer/employer-deposithistory.vue"),
       },
       {
         path: "employer-workmanagement",
-        component: () =>
-          import("../views/employer/employer-workmanagement.vue"),
+        component: () => import("@/views/employer/employer-workmanagement.vue"),
       },
       {
         path: "employer-candidates/:jobId",
@@ -126,13 +128,13 @@ const routes = [
     ],
   },
 
-  // Admin routes
+  // Admin dashboard
   {
     path: "/admin-dashboard",
     meta: { layout: "admin", requiresAuth: true, role: "admin" },
     children: [
       {
-        path: "",
+        path: "admin-starter",
         component: () => import("@/views/admin/dashboard/Starter-admin.vue"),
       },
       {
@@ -183,105 +185,107 @@ const routes = [
         component: () =>
           import("@/views/admin/dashboard/Transaction-management.vue"),
       },
-      {
-        path: "hierarchy-management",
-        component: () =>
-          import("@/views/admin/dashboard/Hierarchy-management.vue"),
-      },
-      {
-        path: "formofwork-list",
-        component: () => import("@/views/admin/dashboard/FormofWork-list.vue"),
-      },
-      {
-        path: "expjob-list",
-        component: () => import("@/views/admin/dashboard/Expjob-list.vue"),
-      },
-      {
-        path: "salary-management",
-        component: () =>
-          import("@/views/admin/dashboard/Salary-management.vue"),
-      },
-      {
-        path: "description-job",
-        component: () => import("@/views/admin/dashboard/Description-job.vue"),
-      },
-      {
-        path: "transaction-management",
-        component: () =>
-          import("@/views/admin/dashboard/Transaction-management.vue"),
-      },
     ],
   },
-  // Guest
+
+  // Guest routes
   {
     path: "/",
     meta: { layout: "guest" },
     children: [
+      { path: "", component: () => import("@/views/common/index.vue") },
       {
-        path: "/",
-        component: () => import("@/views/common/index.vue"),
-      },
-      {
-        path: "/job_details",
+        path: "job/:slug",
         component: () => import("@/views/common/Job_details.vue"),
       },
       {
-        path: "/conditions",
-        component: () => import("../views/common/Conditions.vue"),
+        path: "condition",
+        component: () => import("@/views/common/Conditions.vue"),
+      },
+      { path: "about", component: () => import("@/views/common/Abouts.vue") },
+      {
+        path: "company/:slug",
+        component: () => import("@/views/common/Companydetails.vue"),
       },
       {
-        path: "/abouts",
-        component: () => import("../views/common/Abouts.vue"),
+        path: "page-not-found",
+        component: () => import("@/views/common/Pagenotfound.vue"),
+      },
+      { path: "list", component: () => import("@/views/common/List.vue") },
+      {
+        path: "list-company",
+        component: () => import("@/views/common/ListCompany.vue"),
       },
       {
-        path: "/company-details",
-        component: () => import("../views/common/Companydetails.vue"),
-      },
-      {
-        path: "/page-not-found",
-        component: () => import("../views/common/Pagenotfound.vue"),
-      },
-      {
-        path: "/list",
-        component: () => import("../views/common/List.vue"),
-      },
-      {
-        path: "/list-company",
-        component: () => import("../views/common/ListCompany.vue"),
+        path: "create-candidate",
+        component: () => import("@/views/candidate/create-candidate.vue"),
       },
     ],
   },
+
+  // 404 fallback
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/page-not-found",
+  },
 ];
 
-// Khởi tạo router
+// Init router
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
+// Navigation Guard
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  const isAuthenticated = authStore.isAuthenticated;
 
-  // Nếu đã đăng nhập và cố gắng truy cập vào trang login, chuyển hướng đến trang dashboard hoặc trang chủ
-  if (
-    isAuthenticated &&
-    (to.path === "/login" ||
-      to.path === "/register" ||
-      to.path === "/forgot-password" ||
-      to.path === "/reset-password" ||
-      to.path === "/otp")
-  ) {
-    next({ path: "/" }); // Chuyển hướng tới trang chủ hoặc trang dashboard
-  } else if (to.meta.requiresAuth && !isAuthenticated) {
-    // Nếu yêu cầu đăng nhập nhưng người dùng chưa đăng nhập, chuyển hướng đến trang login
-    next({ path: "/login" });
-  } else if (to.meta.role && to.meta.role !== authStore.user?.role) {
-    // Kiểm tra quyền nếu có yêu cầu role
-    next({ path: "/" });
+  // Đợi khởi tạo trạng thái đăng nhập nếu chưa hoàn tất
+  if (!authStore.isAuthResolved) {
+    await authStore.initAuth();
+  }
+
+  const isAuthenticated = authStore.isAuthenticated;
+  const userRole = authStore.user?.role;
+
+  // Các trang chỉ dành cho khách (guest)
+  const isGuestOnly = to.meta.guestOnly;
+
+  // Redirect theo vai trò
+  const redirectByRole = {
+    admin: "/admin-dashboard",
+    employer: "/employer-dashboard",
+    candidate: "/candidate-dashboard",
+  };
+
+  // Xử lý các trường hợp
+  if (isAuthenticated) {
+    // Ngăn truy cập các trang guest (login, register, v.v.) khi đã đăng nhập
+    console.log(to.meta);
+    if (isGuestOnly) {
+      next({ path: redirectByRole[userRole] || "/" });
+    }
+    // Kiểm tra quyền vai trò cho các trang yêu cầu đăng nhập
+    else if (
+      to.meta.requiresAuth &&
+      to.meta.role &&
+      to.meta.role !== userRole
+    ) {
+      next({ path: redirectByRole[userRole] || "/" });
+    }
+    // Cho phép truy cập nếu không có vấn đề
+    else {
+      next();
+    }
   } else {
-    // Nếu không có vấn đề gì, tiếp tục điều hướng
-    next();
+    // Chuyển hướng đến login nếu trang yêu cầu đăng nhập
+    if (to.meta.requiresAuth) {
+      next({ path: "/login", query: { redirect: to.fullPath } });
+    }
+    // Cho phép truy cập các trang không yêu cầu đăng nhập
+    else {
+      next();
+    }
   }
 });
 

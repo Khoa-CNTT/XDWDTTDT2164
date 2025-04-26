@@ -27,3 +27,20 @@ export const getCandidateDetailApi = async (applyId) => {
   const response = await api.get(`/api/apply-jobs/get-candidate/${applyId}`);
   return response.data;
 };
+
+/**
+ * Lấy danh sách bài đằng đã ứng tuyển
+ * @param {string} page
+ * @param {string} limit
+ * @returns {Promise<void>}
+ */
+export const getJobApplyApi = async (candidateId, page, limit) => {
+  const response = await api.get(
+    `/api/apply-jobs/get-job-apply/${candidateId}`,
+    {
+      params: { page, limit },
+    }
+  );
+
+  return response.data;
+};

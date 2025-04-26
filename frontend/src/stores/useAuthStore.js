@@ -8,6 +8,7 @@ export const useAuthStore = defineStore("auth", {
     user: null,
     token: localStorage.getItem("token") || null,
     isLoading: false,
+    isAuthResolved: false, // ✅ Thêm trạng thái xác định đã init xong
   }),
   getters: {
     isAuthenticated: (state) => !!state.token && !!state.user,
@@ -19,7 +20,6 @@ export const useAuthStore = defineStore("auth", {
         this.isLoading = true;
         const response = await loginApi(credentials);
 
-        // Điều chỉnh theo cấu trúc response API của bạn
         const token = response?.data?.accessToken;
         if (!token) {
           throw new Error("Token không hợp lệ từ API");
@@ -28,7 +28,6 @@ export const useAuthStore = defineStore("auth", {
         this.token = token;
         localStorage.setItem("token", token);
 
-        // Fetch thông tin người dùng sau khi đăng nhập thành công
         await this.fetchUserInfo();
         toast.success("Đăng nhập thành công!");
         return this.user;
@@ -65,15 +64,17 @@ export const useAuthStore = defineStore("auth", {
       toast.success("Đã đăng xuất thành công!");
     },
 
-    // Phương thức để khởi tạo trạng thái khi refresh trang
+    // Khởi tạo auth khi F5 hoặc load lại trang
     async initAuth() {
+      this.isAuthResolved = false; // ✅ Reset trước
       if (this.token && !this.user) {
         try {
-          await this.fetchUserInfo(); // Fetch lại thông tin người dùng nếu có token
+          await this.fetchUserInfo();
         } catch (error) {
-          // Không cần xử lý gì ở đây, lỗi đã được xử lý trong fetchUserInfo
+          // lỗi đã được xử lý trong fetchUserInfo
         }
       }
+      this.isAuthResolved = true; // ✅ Đánh dấu đã xong
     },
   },
 });

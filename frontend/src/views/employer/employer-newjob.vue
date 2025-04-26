@@ -66,6 +66,87 @@
             />
           </div>
 
+          <!-- Yêu cầu ứng viên -->
+          <div class="form-group mb-4">
+            <label for="candidateRequirements">Yêu cầu ứng viên</label>
+            <QuillEditor
+              v-model:content="form.candidateRequirements"
+              content-type="html"
+              theme="snow"
+              :toolbar="[
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                [{ font: [] }],
+                [{ size: ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ color: [] }, { background: [] }],
+                [{ script: 'sub' }, { script: 'super' }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ align: [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean'],
+              ]"
+              placeholder="Yêu cầu ứng viên..."
+              class="quill-editor"
+              aria-required="true"
+            />
+          </div>
+
+          <!-- Quyền lợi -->
+          <div class="form-group mb-4">
+            <label for="benefit">Quyền lợi</label>
+            <QuillEditor
+              v-model:content="form.benefit"
+              content-type="html"
+              theme="snow"
+              :toolbar="[
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                [{ font: [] }],
+                [{ size: ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ color: [] }, { background: [] }],
+                [{ script: 'sub' }, { script: 'super' }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ align: [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean'],
+              ]"
+              placeholder="Quyền lợi..."
+              class="quill-editor"
+              aria-required="true"
+            />
+          </div>
+
+          <!-- Thời gian làm việc -->
+          <div class="form-group mb-4">
+            <label for="workTime">Thời gian làm việc</label>
+            <QuillEditor
+              v-model:content="form.workTime"
+              content-type="html"
+              theme="snow"
+              :toolbar="[
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                [{ font: [] }],
+                [{ size: ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ color: [] }, { background: [] }],
+                [{ script: 'sub' }, { script: 'super' }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ align: [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean'],
+              ]"
+              placeholder="Thời gian làm việc..."
+              class="quill-editor"
+              aria-required="true"
+            />
+          </div>
+
           <!-- Các trường nhập liệu -->
           <div class="row g-4">
             <!-- Danh mục việc làm -->
@@ -318,6 +399,9 @@ export default {
       form: {
         jobName: "",
         description: "",
+        candidateRequirements: "",
+        benefit: "",
+        workTime: "",
         categoryId: "",
         salaryId: "",
         skillIds: [],
@@ -399,6 +483,33 @@ export default {
         !this.form.description ||
         this.form.description === "<p><br></p>" ||
         this.form.description.trim() === ""
+      ) {
+        toast.error("Vui lòng nhập mô tả công việc!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (
+        !this.form.candidateRequirements ||
+        this.form.candidateRequirements === "<p><br></p>" ||
+        this.form.candidateRequirements.trim() === ""
+      ) {
+        toast.error("Vui lòng nhập mô tả công việc!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (
+        !this.form.benefit ||
+        this.form.benefit === "<p><br></p>" ||
+        this.form.benefit.trim() === ""
+      ) {
+        toast.error("Vui lòng nhập mô tả công việc!");
+        this.isSubmitting = false;
+        return;
+      }
+      if (
+        !this.form.workTime ||
+        this.form.workTime === "<p><br></p>" ||
+        this.form.workTime.trim() === ""
       ) {
         toast.error("Vui lòng nhập mô tả công việc!");
         this.isSubmitting = false;

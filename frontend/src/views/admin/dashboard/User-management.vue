@@ -1,46 +1,81 @@
 <template>
-  <div>
-    <div class="user-management mt-3">
-      <h2>Danh Sách Người Dùng</h2>
-      <a href="blank">Quay trở lại trang chủ?</a>
-      <div class="card mt-5">
-        <div class="card-header">
-          <h5 class="title-header">Danh Sách Người Dùng</h5>
+  <div class="user-management mt-3">
+    <h2>Danh Sách Người Dùng</h2>
+    <router-link to="/" class="back-link">
+      <i class="fas fa-arrow-left me-1"></i>Quay trở lại trang chủ
+    </router-link>
+
+    <!-- Thông báo lỗi -->
+    <div v-if="userStore.error" class="alert alert-danger mt-3" role="alert">
+      {{ userStore.error }}
+    </div>
+
+    <!-- Card bảng người dùng -->
+    <div class="card mt-5">
+      <div class="card-header">
+        <h5 class="title-header">Danh Sách Người Dùng</h5>
+      </div>
+      <div class="card-body">
+        <!-- Trạng thái tải -->
+        <div v-if="userStore.isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
         </div>
-        <div class="card-body">
+        <!-- Bảng người dùng -->
+        <div v-else class="table-responsive">
           <table class="table table-bordered table-hover">
             <thead>
               <tr class="text-center align-middle">
                 <th>STT</th>
                 <th>Họ và Tên</th>
+                <th>Email</th>
                 <th>Số điện thoại</th>
-                <th>Giới tính</th>
-                <th>Ngày sinh</th>
                 <th>Quyền</th>
                 <th>Trạng thái</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody class="text-center align-middle">
-              <tr>
-                <td>1</td>
-                <td>Thái Mai Quang</td>
-                <td>012345567</td>
-                <td>Nam</td>
-                <td>22/12/2003</td>
-                <td>admin</td>
-                <td><span class="badge bg-success">Đã kích hoạt</span></td>
+              <tr v-for="(user, index) in userStore.users" :key="user.id">
+                <td>
+                  {{
+                    (userStore.currentPage - 1) * userStore.pageSize + index + 1
+                  }}
+                </td>
+                <td>{{ user.fullName }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phoneNumber }}</td>
+                <td>{{ translateRole(user.role) }}</td>
+                <td>
+                  <span
+                    :class="[
+                      'badge',
+                      user.emailVerify
+                        ? 'bg-success text-light'
+                        : 'bg-danger text-light',
+                    ]"
+                  >
+                    {{ user.emailVerify ? "Đã kích hoạt" : "Chưa kích hoạt" }}
+                  </span>
+                </td>
                 <td>
                   <button
                     class="btn btn-warning me-2"
                     data-bs-toggle="modal"
                     data-bs-target="#update-modal"
+                    @click="selectUser(user)"
                   >
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button class="btn btn-danger">
-                    <i class="fa-solid fa-user-xmark"></i>
+                  <button class="btn btn-danger" @click="blockUser(user.id)">
+                    <i class="fa-solid fa-ban"></i>
                   </button>
+                </td>
+              </tr>
+              <tr v-if="!userStore.users.length">
+                <td colspan="7" class="text-center py-3">
+                  Không có người dùng nào
                 </td>
               </tr>
             </tbody>
@@ -49,18 +84,59 @@
       </div>
     </div>
 
+    <!-- Phân trang -->
+    <nav class="mt-4" v-if="userStore.totalPages > 1">
+      <ul class="pagination justify-content-center">
+        <li
+          class="page-item"
+          :class="{ disabled: userStore.currentPage === 1 }"
+        >
+          <button
+            class="page-link"
+            @click="fetchUsers(userStore.currentPage - 1, userStore.pageSize)"
+          >
+            Trước
+          </button>
+        </li>
+        <li
+          class="page-item"
+          v-for="page in userStore.totalPages"
+          :key="page"
+          :class="{ active: userStore.currentPage === page }"
+        >
+          <button
+            class="page-link"
+            @click="fetchUsers(page, userStore.pageSize)"
+          >
+            {{ page }}
+          </button>
+        </li>
+        <li
+          class="page-item"
+          :class="{ disabled: userStore.currentPage === userStore.totalPages }"
+        >
+          <button
+            class="page-link"
+            @click="fetchUsers(userStore.currentPage + 1, userStore.pageSize)"
+          >
+            Sau
+          </button>
+        </li>
+      </ul>
+    </nav>
+
     <!-- Modal cập nhật -->
     <div
       class="modal fade"
       id="update-modal"
       tabindex="-1"
-      aria-labelledby="exampleModalLabel"
+      aria-labelledby="updateModalLabel"
       aria-hidden="true"
     >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">
+            <h1 class="modal-title fs-5" id="updateModalLabel">
               Cập nhật người dùng
             </h1>
             <button
@@ -70,64 +146,48 @@
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body" v-if="selectedUser">
             <div class="row">
-              <div class="col-6">
+              <div class="col-12">
                 <label>Tên người dùng</label>
-                <input class="form-control" type="text" />
+                <input
+                  class="form-control"
+                  type="text"
+                  v-model="selectedUser.fullName"
+                />
               </div>
+            </div>
+            <div class="row mt-2">
               <div class="col-6">
                 <label>Số điện thoại</label>
-                <input class="form-control" type="text" />
-              </div>
-            </div>
-            <div class="mt-2">
-              <label>Địa chỉ</label>
-              <input class="form-control" type="text" />
-            </div>
-            <div class="row mt-2">
-              <div class="col-6">
-                <label for="gioi_tinh" class="form-label">Giới tính</label>
-                <select
-                  class="form-select"
-                  id="gioi_tinh"
-                  name="gioi_tinh"
-                  aria-placeholder="Chọn giới tính..."
-                >
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
-                </select>
+                <input
+                  class="form-control"
+                  type="text"
+                  v-model="selectedUser.phoneNumber"
+                  disabled
+                />
               </div>
               <div class="col-6">
-                <label>Ngày sinh</label>
-                <input class="form-control" type="date" />
+                <label>Email</label>
+                <input
+                  class="form-control"
+                  type="text"
+                  v-model="selectedUser.email"
+                  disabled
+                />
               </div>
             </div>
             <div class="row mt-2">
               <div class="col-6">
-                <label for="gioi_tinh" class="form-label">Quyền</label>
+                <label for="role" class="form-label">Quyền</label>
                 <select
                   class="form-select"
-                  id="gioi_tinh"
-                  name="gioi_tinh"
-                  aria-placeholder="Chọn quyền truy cập"
+                  id="role"
+                  v-model="selectedUser.role"
                 >
-                  <option value="Nam">admin</option>
-                  <option value="Nữ">Ứng viên</option>
-                  <option value="Khác">Công ty</option>
-                </select>
-              </div>
-              <div class="col-6">
-                <label for="gioi_tinh" class="form-label">Trạng thái</label>
-                <select
-                  class="form-select"
-                  id="gioi_tinh"
-                  name="gioi_tinh"
-                  aria-placeholder="Chọn trạng thái..."
-                >
-                  <option value="Nam">Kích hoạt</option>
-                  <option value="Nữ">Dừng hoạt động</option>
+                  <option value="admin">Quản trị viên</option>
+                  <option value="candidate">Ứng viên</option>
+                  <option value="employer">Nhà tuyển dụng</option>
                 </select>
               </div>
             </div>
@@ -143,8 +203,13 @@
             <button
               type="button"
               class="btn btn-primary"
-              data-bs-dismiss="modal"
+              @click="updateUser"
+              :disabled="isUpdating || !selectedUser"
             >
+              <span
+                v-if="isUpdating"
+                class="spinner-border spinner-border-sm me-2"
+              ></span>
               Cập nhật
             </button>
           </div>
@@ -155,8 +220,81 @@
 </template>
 
 <script>
+import { useUserStore } from "@stores/useUserStore";
+
 export default {
   name: "UserManagement",
+  setup() {
+    const userStore = useUserStore();
+    return { userStore };
+  },
+  data() {
+    return {
+      selectedUser: {
+        id: null,
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        role: "candidate",
+      },
+      isUpdating: false,
+    };
+  },
+  created() {
+    this.userStore.fetchUsers(
+      this.userStore.currentPage,
+      this.userStore.pageSize
+    );
+  },
+  methods: {
+    translateRole(role) {
+      const roleMap = {
+        admin: "Quản trị viên",
+        candidate: "Ứng viên",
+        employer: "Nhà tuyển dụng",
+      };
+      return roleMap[role] || role;
+    },
+    selectUser(user) {
+      this.selectedUser = {
+        id: user.id,
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        role: user.role || "candidate",
+      };
+    },
+    async updateUser() {
+      if (!this.selectedUser || !this.selectedUser.id) return;
+      this.isUpdating = true;
+      try {
+        await this.userStore.updateUser(this.selectedUser.id, {
+          fullName: this.selectedUser.fullName,
+          role: this.selectedUser.role,
+        });
+        this.$nextTick(() => {
+          const modal = document.getElementById("update-modal");
+          const bsModal = bootstrap.Modal.getInstance(modal);
+          bsModal.hide();
+        });
+      } catch (error) {
+        // Error handled in store
+      } finally {
+        this.isUpdating = false;
+      }
+    },
+    async blockUser(userId) {
+      if (!confirm("Bạn có chắc muốn chặn người dùng này?")) return;
+      try {
+        await this.userStore.blockUser(userId);
+      } catch (error) {
+        // Error handled in store
+      }
+    },
+    async fetchUsers(page, limit) {
+      await this.userStore.fetchUsers(page, limit);
+    },
+  },
 };
 </script>
 
@@ -179,7 +317,7 @@ h2 {
   margin-bottom: 15px;
 }
 
-a[href="blank"] {
+.back-link {
   font-size: 0.95rem;
   color: #2563eb; /* Vibrant blue */
   text-decoration: none;
@@ -189,16 +327,9 @@ a[href="blank"] {
   transition: all 0.2s ease;
 }
 
-a[href="blank"]:hover {
+.back-link:hover {
   color: #1e40af; /* Darker blue on hover */
   transform: translateX(-3px); /* Subtle shift */
-}
-
-a[href="blank"]::before {
-  content: "\f060"; /* Font Awesome arrow-left */
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-size: 0.9rem;
 }
 
 /* Card */
@@ -278,6 +409,11 @@ a[href="blank"]::before {
   color: #065f46;
 }
 
+.badge.bg-danger {
+  background: #fee2e2; /* Light red */
+  color: #991b1b;
+}
+
 /* Buttons */
 .btn {
   border-radius: 8px;
@@ -335,6 +471,34 @@ a[href="blank"]::before {
 .btn-secondary:hover {
   background: #4b5563;
   transform: translateY(-1px);
+}
+
+/* Pagination */
+.pagination .page-link {
+  border-radius: 8px;
+  margin: 0 5px;
+  color: #334155;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #9ca3af;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.pagination .page-link:hover:not(.disabled) {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
 }
 
 /* Modal */
@@ -408,6 +572,11 @@ a[href="blank"]::before {
   outline: none;
 }
 
+.form-control:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
 .row {
   margin-bottom: 15px;
 }
@@ -445,7 +614,8 @@ a[href="blank"]::before {
     gap: 15px;
   }
 
-  .col-6 {
+  .col-6,
+  .col-12 {
     width: 100%; /* Full-width inputs on mobile */
   }
 }
@@ -465,6 +635,11 @@ a[href="blank"]::before {
   .btn-secondary {
     padding: 8px 16px;
     font-size: 0.9rem;
+  }
+
+  .pagination .page-link {
+    padding: 6px 10px;
+    font-size: 0.85rem;
   }
 }
 </style>

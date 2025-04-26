@@ -1,213 +1,562 @@
 <template>
-  <div class="p-6 bg-gray-100 min-h-screen">
-    <div>
-      <h2 class="text-2xl font-bold mb-2 mt-4">Công việc đã ứng tuyển</h2>
-      <h6>Trở lại trang chủ</h6>
-    </div>
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div
-        class="d-flex justify-content-between items-center border-b pb-2 mb-2"
-      >
-        <span class="font-semibold">Đã ứng tuyển</span>
-        <select v-model="timeFilter" class="border rounded p-1">
-          <option value="6">6 tháng trước</option>
-          <option value="12">12 tháng trước</option>
-        </select>
+  <div class="main-container">
+    <div class="header">
+      <h2 class="title">Công việc đã ứng tuyển</h2>
+      <div class="back-link" @click="goBack">
+        <i class="fas fa-arrow-left"></i> Trở lại trang chủ
       </div>
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="border-b text-primary">
-            <th class="text-left p-2">Tên công việc</th>
-            <th class="p-2">Hạn nhận CV</th>
-            <th class="p-2">Trạng thái</th>
-            <th class="p-2">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(job, index) in jobs" :key="index" class="border-b">
-            <td class="d-flex items-center p-2">
-              <img :src="job.logo" class="w-10 h-10 mr-2" width="70px" />
-              <div class="ms-3">
-                <div class="font-semibold">{{ job.title }}</div>
-                <div class="d-flex">
-                  <div class="text-gray-500 text-sm me-3">
-                    <i class="fa-solid fa-calendar"></i> {{ job.segment }}
+    </div>
+    <div class="content-card">
+      <div class="table-container">
+        <!-- Loading State -->
+        <div v-if="jobStore.isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+        <!-- Error State -->
+        <div v-else-if="jobStore.error" class="alert alert-danger text-center">
+          {{ jobStore.error }}
+        </div>
+        <!-- Empty State -->
+        <div v-else-if="!jobStore.jobs.length" class="text-center py-5">
+          Không có công việc đã ứng tuyển
+        </div>
+        <!-- Jobs Table -->
+        <table v-else>
+          <thead>
+            <tr>
+              <th>Tên công việc</th>
+              <th>Thời gian nộp</th>
+              <th>Trạng thái</th>
+              <th>Đánh giá</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="job in jobStore.jobs" :key="job.applicationId || job.id">
+              <td class="job-info">
+                <div class="job-logo">
+                  <img
+                    :src="getCompanyLogo(job.Jobs?.Employers?.companyLogo)"
+                    alt="Company logo"
+                    @error="handleImageError"
+                  />
+                </div>
+                <div class="job-details">
+                  <div class="job-title">
+                    {{ job.Jobs?.jobName || "Không có tiêu đề" }}
                   </div>
-                  <div class="text-gray-500 text-sm">
-                    <i class="fa-solid fa-location-dot"></i> {{ job.location }}
+                  <div class="job-meta">
+                    <span class="job-segment" v-if="job.Ranks?.rankName">
+                      <i class="fa-solid fa-calendar"></i>
+                      {{ job.Ranks.rankName }}
+                    </span>
+                    <span class="job-location" v-if="job.Jobs?.address">
+                      <i class="fa-solid fa-location-dot"></i>
+                      {{ job.Jobs.address }}
+                    </span>
                   </div>
                 </div>
-              </div>
-            </td>
-            <td class="p-2 text-start">{{ job.deadline }}</td>
-            <td class="p-2 text-green-500 text-success">{{ job.status }}</td>
-            <td class="p-2">
-              <button class="mr-2 text-blue-500 me-3">
-                <i class="fa-solid fa-eye"></i>
-              </button>
-              <button @click="removeJob(index)" class="text-red-500">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="job-deadline">{{ formatDate(job.Jobs?.expire) }}</td>
+              <td>
+                <span
+                  :class="[
+                    'status-badge',
+                    job.status === 'Đã xem' ? 'approved' : 'not-approved',
+                  ]"
+                >
+                  {{ job.status || "Chưa cập nhật" }}
+                </span>
+              </td>
+              <td>
+                <span
+                  :class="[
+                    'status-badge',
+                    job.rating === 'Phù hợp' ? 'approved' : 'not-approved',
+                  ]"
+                >
+                  {{ job.rating || "Chưa đánh giá" }}
+                </span>
+              </td>
+              <td class="action-buttons">
+                <button
+                  class="action-btn view-btn"
+                  title="Xem chi tiết"
+                  @click="viewJob(job.Jobs?.jobSlug)"
+                  :disabled="!job.Jobs?.jobSlug"
+                >
+                  <i class="fa-solid fa-eye"></i> Xem
+                </button>
+                <button
+                  class="action-btn cv-btn"
+                  title="Xem CV đã nộp"
+                  @click="viewCV(job.cvUpload || job.Candidates?.cvUrl)"
+                  :disabled="!(job.cvUpload || job.Candidates?.cvUrl)"
+                >
+                  <i class="fa-solid fa-file-pdf"></i> CV
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination -->
+      <nav v-if="jobStore.totalPages > 1" class="mt-4">
+        <ul class="pagination justify-content-center">
+          <li
+            class="page-item"
+            :class="{ disabled: jobStore.currentPage === 1 }"
+          >
+            <button
+              class="page-link"
+              @click="fetchJobs(jobStore.currentPage - 1)"
+              :disabled="jobStore.currentPage === 1"
+            >
+              Trước
+            </button>
+          </li>
+          <li
+            class="page-item"
+            v-for="page in paginationRange"
+            :key="page"
+            :class="{ active: jobStore.currentPage === page }"
+          >
+            <button class="page-link" @click="fetchJobs(page)">
+              {{ page }}
+            </button>
+          </li>
+          <li
+            class="page-item"
+            :class="{ disabled: jobStore.currentPage === jobStore.totalPages }"
+          >
+            <button
+              class="page-link"
+              @click="fetchJobs(jobStore.currentPage + 1)"
+              :disabled="jobStore.currentPage === jobStore.totalPages"
+            >
+              Sau
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from "vue";
+import { computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useApplyStore } from "@/stores/useApplyStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { toast } from "vue3-toastify";
 
 export default {
+  name: "AppliedJobs",
   setup() {
-    const timeFilter = ref(6);
-    const jobs = ref([
-      {
-        title: "Software Engineer (Android), Libraries",
-        segment: "Phân đoạn",
-        location: "Đà Nẵng",
-        deadline: "Tháng 3, 03, 2025",
-        status: "Hoạt động",
-        logo: "https://careers.techvify.com.vn/wp-content/uploads/2022/07/vuejs-la-gi-2.jpg",
-      },
-      {
-        title: "Software Engineer (Android), Libraries",
-        segment: "Phân đoạn",
-        location: "Đà Nẵng",
-        deadline: "Tháng 3, 03, 2025",
-        status: "Hoạt động",
-        logo: "https://careers.techvify.com.vn/wp-content/uploads/2022/07/vuejs-la-gi-2.jpg",
-      },
-      {
-        title: "Software Engineer (Android), Libraries",
-        segment: "Phân đoạn",
-        location: "Đà Nẵng",
-        deadline: "Tháng 3, 03, 2025",
-        status: "Hoạt động",
-        logo: "https://careers.techvify.com.vn/wp-content/uploads/2022/07/vuejs-la-gi-2.jpg",
-      },
-    ]);
+    const router = useRouter();
+    const jobStore = useApplyStore();
+    const authStore = useAuthStore();
 
-    const removeJob = (index) => {
-      jobs.value.splice(index, 1);
+    const formatDate = (date) => {
+      if (!date) return "N/A";
+      try {
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return "N/A";
+        return `${d.getDate()} Tháng ${d.getMonth() + 1}, ${d.getFullYear()}`;
+      } catch (e) {
+        return "N/A";
+      }
     };
 
+    const getCompanyLogo = (logo) => {
+      if (!logo) return "/images/default-company-logo.png";
+      return `https://res.cloudinary.com/dh1i7su2f/image/upload/${logo}`;
+    };
+
+    const handleImageError = (event) => {
+      event.target.src = "/images/default-company-logo.png";
+    };
+
+    const paginationRange = computed(() => {
+      const range = [];
+      const maxVisible = 5;
+      const total = Math.max(1, jobStore.totalPages);
+      const leftSide = Math.floor(maxVisible / 2);
+      const rightSide = maxVisible - leftSide;
+
+      let startPage = Math.max(jobStore.currentPage - leftSide, 1);
+      let endPage = Math.min(startPage + maxVisible - 1, total);
+
+      if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(endPage - maxVisible + 1, 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        range.push(i);
+      }
+
+      return range;
+    });
+
+    const fetchJobs = async (page = 1) => {
+      if (!authStore.user?.Candidates?.id) {
+        toast.error("Vui lòng đăng nhập để xem công việc đã ứng tuyển");
+        router.push("/login");
+        return;
+      }
+
+      if (page < 1 || (jobStore.totalPages > 0 && page > jobStore.totalPages)) {
+        page = 1;
+      }
+
+      try {
+        await jobStore.fetchJobApply(
+          authStore.user.Candidates.id,
+          page,
+          jobStore.pageSize
+        );
+      } catch (err) {
+        toast.error(err.message || "Có lỗi xảy ra khi tải dữ liệu");
+      }
+    };
+
+    const viewJob = (jobSlug) => {
+      if (!jobSlug) {
+        toast.error("Thông tin công việc không hợp lệ");
+        return;
+      }
+      router.push(`/job/${jobSlug}`);
+    };
+
+    const viewCV = (cvUrl) => {
+      if (!cvUrl || typeof cvUrl !== "string") {
+        toast.error("Không tìm thấy CV hoặc CV không hợp lệ");
+        return;
+      }
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+      window.open(`${baseUrl}/uploads/${encodeURIComponent(cvUrl)}`, "_blank");
+    };
+
+    const goBack = () => {
+      router.push("/");
+    };
+
+    // Redirect to login if not authenticated
+    watch(
+      () => authStore.isAuthenticated,
+      (isAuthenticated) => {
+        if (!isAuthenticated) {
+          router.push("/login");
+        } else if (
+          authStore.user?.Candidates?.id &&
+          !jobStore.jobs.length &&
+          !jobStore.isLoading
+        ) {
+          fetchJobs(1);
+        }
+      },
+      { immediate: true }
+    );
+
     return {
-      timeFilter,
-      jobs,
-      removeJob,
+      jobStore,
+      formatDate,
+      getCompanyLogo,
+      handleImageError,
+      paginationRange,
+      fetchJobs,
+      viewJob,
+      viewCV,
+      goBack,
     };
   },
 };
 </script>
 
 <style scoped>
-/* Table base style */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
+.main-container {
+  padding: 2rem;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-th,
-td {
-  padding: 12px 16px;
-  text-align: left;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
-thead th {
-  background-color: #f4f6f8;
-  font-weight: 600;
-  color: #374151;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  border-bottom: 2px solid #e5e7eb;
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
 }
 
-tbody tr:hover {
-  background-color: #f9fafb;
-  transition: background-color 0.2s ease-in-out;
-}
-
-tbody td {
+.back-link {
+  color: #4a5568;
   font-size: 0.95rem;
-  color: #4b5563;
-  vertical-align: middle;
-}
-
-/* Job title cell */
-td .font-semibold {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-td img {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-td .text-sm {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-/* Buttons */
-button {
-  background: transparent;
-  border: none;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
 }
 
-button:hover {
-  transform: scale(1.1);
-}
-
-.text-blue-500:hover {
-  color: #2563eb;
-}
-
-.text-red-500:hover {
-  color: #dc2626;
-}
-
-/* Filter select */
-select {
-  padding: 6px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background-color: #fff;
-  font-size: 0.9rem;
-  outline: none;
-}
-
-select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-/* Section titles */
-h2 {
-  color: #1f2937;
-}
-
-h6 {
-  color: #6b7280;
-  cursor: pointer;
-}
-
-h6:hover {
+.back-link:hover {
+  color: #3182ce;
   text-decoration: underline;
 }
 
-/* Status color */
-.text-success {
-  color: #10b981;
+.back-link i {
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.content-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.table-container {
+  padding: 0;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  background-color: #f7fafc;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #edf2f7;
+}
+
+tbody tr {
+  border-bottom: 1px solid #edf2f7;
+  transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+tbody td {
+  padding: 1.25rem 1.5rem;
+  color: #4a5568;
+  vertical-align: middle;
+}
+
+.job-info {
+  display: flex;
+  align-items: center;
+}
+
+.job-logo {
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.job-logo img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.job-details {
+  flex-grow: 1;
+}
+
+.job-title {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+}
+
+.job-meta {
+  display: flex;
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.job-segment {
+  margin-right: 1.25rem;
+}
+
+.job-segment i,
+.job-location i {
+  margin-right: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.job-deadline {
+  white-space: nowrap;
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.status-badge {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.status-badge.approved {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #38a169;
+}
+
+.status-badge.not-approved {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: capitalize;
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.view-btn {
+  background-color: #4299e1;
+  color: white;
+}
+
+.view-btn:hover:not(:disabled) {
+  background-color: #3182ce;
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+  transform: translateY(-2px);
+}
+
+.cv-btn {
+  background-color: #10b981;
+  color: white;
+}
+
+.cv-btn:hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+
+.action-btn i {
+  font-size: 0.9rem;
+}
+
+.pagination .page-link {
+  border-radius: 8px;
+  margin: 0 5px;
+  color: #334155;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #9ca3af;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.pagination .page-link:hover:not(.disabled):not([disabled]) {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .back-link {
+    margin-top: 0.5rem;
+  }
+
+  .job-meta {
+    flex-direction: column;
+  }
+
+  .job-segment {
+    margin-right: 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

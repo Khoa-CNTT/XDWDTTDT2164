@@ -11,6 +11,13 @@ const validateCreateJob = [
   body("description")
     .notEmpty()
     .withMessage("Mô tả bài đăng công việc không được để trống"),
+  body("candidateRequirements")
+    .notEmpty()
+    .withMessage("Yêu càu ứng viên không được để trống"),
+  body("benefit").notEmpty().withMessage("Quyền lợi không được để trống"),
+  body("workTime")
+    .notEmpty()
+    .withMessage("Thời gian làm việc không được để trống"),
   body("categoryId")
     .notEmpty()
     .withMessage("Danh mục bài đăng công việc không được để trống"),
