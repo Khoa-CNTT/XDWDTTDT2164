@@ -7,7 +7,7 @@ const { StatusCode } = require("../libs/enum");
 const db = require("../models");
 const { caculatePromotionAmount } = require("../libs/helper");
 const dotenv = require("dotenv").config();
-const { Op } = require("sequelize");
+const { Op, fn, col, literal } = require("sequelize");
 
 const config = {
   app_id: "2553",
@@ -504,6 +504,53 @@ class WalletsService {
       total: history.count,
       payments: history.rows,
     };
+  }
+
+  /**
+   * Lấy ra doanh thu theo thời gian
+   * @returns {Promise<void>} - Trả về doanh thu theo thời gian
+   */
+  async getPaymentTime({ period = "month", startDate, endDate }) {
+    try {
+      const periodFormats = {
+        day: "%Y-%m-%d",
+        month: "%Y-%m",
+        year: "%Y",
+        weekday: "%W",
+      };
+
+      const format = periodFormats[period];
+      if (!format) {
+        throw new Error("Invalid period. Use day, month, year or weekday");
+      }
+
+      const where = {};
+      if (startDate) {
+        where.createdAt = { [Op.gte]: new Date(startDate) };
+      }
+      if (endDate) {
+        where.createdAt = where.createdAt || {};
+        where.createdAt[Op.lte] = new Date(endDate);
+      }
+
+      const data = await db.Payments.findAll({
+        where,
+        attributes: [
+          [fn("DATE_FORMAT", col("createdAt"), format), "period"],
+          [fn("SUM", col("amount")), "revenue"],
+        ],
+        group: [literal(`DATE_FORMAT(createdAt, '${format}')`)],
+        order: [[literal(`DATE_FORMAT(createdAt, '${format}')`), "ASC"]],
+        raw: true,
+      });
+
+      return data.reduce((acc, { period, revenue }) => {
+        acc[period] = parseFloat(revenue);
+        return acc;
+      }, {});
+    } catch (error) {
+      throw new Error(`Lỗi lấy doanh thu theo thời gian: ${error.message}`);
+    }
   }
 }
 

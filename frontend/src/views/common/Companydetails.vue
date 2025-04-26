@@ -1,304 +1,474 @@
 <template>
-    <div class="job-detail-container">
-        <!-- Job Header Section -->
-        <section class="job-header mb-5" style="background-color: #f3f6fd;">
-            <div class="container d-flex">
-                <img src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
-                    style="width: 150px; border-radius: 50%;">
-                <div class="ms-3">
-                    <h5 class="job-title mb-4">Software Engineer (Android), Libraries</h5>
-                    <div class="job-tags mb-4 d-flex">
-                        <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-location-dot me-2"></i> Đà
-                                Nẵng</span></h5>
-                        <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-briefcase me-2"></i> Phần
-                                mềm</span></h5>
-                        <h5><span class="badge bg-light text-dark me-2"><i class="fa-solid fa-users me-2"></i> 22 Nhân
-                                viên</span></h5>
-                    </div>
-                    <div class="salary-badge d-flex">
-                        <h5><span class="badge text-dark me-3" style="background-color: #e0e4fe;">Công việc - 10</span>
-                        </h5>
-                    </div>
-                </div>
+  <div class="company-page">
+    <!-- Company Header -->
+    <div class="company-card">
+      <div class="company-header">
+        <div class="company-info">
+          <img
+            :src="getCompanyLogo(employer?.companyLogo)"
+            @error="handleImageError"
+            alt="Company Logo"
+            class="company-logo"
+          />
+          <div>
+            <h4 class="company-name">{{ employer?.companyName }}</h4>
+            <div class="company-meta">
+              <span
+                ><i class="fa-solid fa-location-dot me-1"></i
+                >{{ employer?.companyAddress }}</span
+              >
+              <span
+                ><i class="fa-solid fa-clock me-1"></i
+                >{{ employer?.industry }}</span
+              >
+              <span
+                ><i class="fa-solid fa-users me-1"></i
+                >{{ employer?.companySize }} nhân viên</span
+              >
             </div>
-        </section>
-
-
-        <!-- Job Description Section -->
-        <section class="job-description mb-5">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8">
-                        <h2 class="section-title mb-4">Về Công Ty</h2>
-                        <ul class="responsibilities-list">
-                            <li>Moody's Corporation, often referred to as Moody's, is an American business and financial
-                                services company. It is the holding company for Moody's Investors Service (MIS), an
-                                American credit rating agency, and Moody's Analytics (MA), an American provider of
-                                financial analysis software and services.
-                            </li>
-                            <li>Moody's was founded by John Moody in 1909 to produce manuals of statistics related to
-                                stocks and bonds and bond ratings. Moody's was acquired by Dun & Bradstreet in 1962. In
-                                2000, Dun & Bradstreet spun off Moody's Corporation as a separate company that was
-                                listed on the NYSE under MCO. In 2007, Moody's Corporation was split into two operating
-                                divisions, Moody's Investors Service, the rating agency, and Moody's Analytics, with all
-                                of its other products.</li>
-                            <li>Moody's Corporation, often referred to as Moody's, is an American business and financial
-                                services company. It is the holding company for Moody's Investors Service (MIS), an
-                                American credit rating agency, and Moody's Analytics (MA), an American provider of
-                                financial analysis software and services.</li>
-                            <li>Moody's was founded by John Moody in 1909 to produce manuals of statistics related to
-                                stocks and bonds and bond ratings. Moody's was acquired by Dun & Bradstreet in 1962. In
-                                2000, Dun & Bradstreet spun off Moody's Corporation as a separate company that was
-                                listed on the NYSE under MCO. In 2007, Moody's Corporation was split into two operating
-                                divisions, Moody's Investors Service, the rating agency, and Moody's Analytics, with all
-                                of its other products.</li>
-                        </ul>
-                        <hr>
-
-                        <!--Card công việc liên quan -->
-                        <h3 class="section-title mb-3 mt-5">Công việc liên quan</h3>
-                        <div class=" card mb-3">
-                            <div class="card-body">
-                                <section class=" mt-3">
-                                    <div class="container d-flex justify-content-between">
-                                        <div class="d-flex">
-                                            <img class="me-3 mt-3"
-                                                src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
-                                                style="width: 100px;  height: 100px; border-radius: 50%;">
-                                            <div class="ms-3">
-                                                <a href="#">
-                                                    <h5 class="mb-3">Software Engineer (Android), Libraries</h5>
-                                                </a>
-                                                <div class="mb-3 d-flex">
-                                                    <h5><span class="badge bg-light text-dark me-3"><i
-                                                                class="fa-solid fa-briefcase me-2"></i>
-                                                            Phân
-                                                            đoạn</span></h5>
-                                                    <h5><span class="badge bg-light text-dark me-3"><i
-                                                                class="fa-solid fa-location-dot me-2"></i>
-                                                            Đà
-                                                            Nẵng</span></h5>
-                                                    <h5><span class="badge bg-light text-dark me-3"><i
-                                                                class="fa-solid fa-clock me-2"></i> 11 giờ
-                                                            trước</span></h5>
-                                                    <h5><span class="badge bg-light text-dark me-3"><i
-                                                                class="fa-solid fa-money-bill me-2"></i> 35
-                                                            -
-                                                            45 Triệu</span></h5>
-                                                </div>
-                                                <div class="salary-badge d-flex">
-                                                    <h5><span class="badge text-dark me-2"
-                                                            style="background-color: #e0e4fe;">Toàn thời
-                                                            gian</span>
-                                                    </h5>
-                                                    <h5><span class="badge text-dark"
-                                                            style="background-color: #fdf2df;">Cấp bách</span></h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-4">
-                                            <button class="btn btn-outline-primary btn-sm me-2"
-                                                style="padding: 10px 10px;"><i class="fa-solid fa-bookmark"></i>
-                                                Lưu</button>
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4">
-                        <div class="card job-overview-card mb-4">
-                            <div class="card-body">
-                                <h4 class="card-title">Thông tin về công ty</h4>
-                                <div class=" d-flex mb-3">
-                                    <img class="me-3"
-                                        src="https://d1coqmn8qm80r4.cloudfront.net/bwesyjd8klsnvm22n5yj3rvufveq"
-                                        style="width: 50px; height: 50px; border-radius: 50%;">
-                                    <div>
-                                        <h5>Segment</h5>
-                                        <a href="/Pagenotfound" class="me-2">Xem chi tiết công ty</a>
-                                    </div>
-                                </div>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Ngành chính:</span>
-                                        <span class="text-muted">Phần mềm</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Quy mô:</span>
-                                        <span class="text-muted">501 - 1000</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Năm thành lập:</span>
-                                        <span class="text-muted">2011</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Điện thoại:</span>
-                                        <span class="text-muted">0123456780</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Email:</span>
-                                        <span class="text-muted">info@gmail.com</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Địa chỉ:</span>
-                                        <span class="text-muted">Đà Nẵng</span>
-                                    </li>
-                                    <div class="text-center align-items-center">
-                                        <a href="/Pagenotfound" class="text-primary fw-bold">https://segment.com</a>
-                                    </div>
-                                </ul>
-                            </div>
-                        </div>
-                        <!-- Save Job Button -->
-                        <button class="btn btn-outline-secondary w-100 mb-4 py-3">
-                            <i class="far fa-heart me-2"></i> Lưu công việc
-                        </button>
-                    </div>
-                </div>
+            <div class="company-status">
+              <span class="badge">Đang tuyển - {{ jobs.length }}</span>
             </div>
-        </section>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Company Details -->
+    <div class="container">
+      <div class="row mt-5">
+        <div class="col-lg-8 col-md-6 mb-4">
+          <h4 class="section-title">Về công ty</h4>
+          {{ employer?.companyDescription }}
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="info-card">
+            <div class="info-item">
+              <span class="label">Ngành chính:</span>
+              <span class="value">{{ employer?.industry }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Quy mô công ty:</span>
+              <span class="value">{{ employer?.companySize }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Thành lập:</span>
+              <span class="value">{{ employer?.companyTaxCode }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Địa chỉ:</span>
+              <span class="value">{{ employer?.companyAddress }}</span>
+            </div>
+            <a :href="employer?.companyWebsite" class="website-link">{{
+              employer?.companyWebsite
+            }}</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job Listings -->
+      <h3 class="section-title mt-5">Công việc đang tuyển</h3>
+      <div class="row mt-4">
+        <div
+          v-for="(job, index) in jobs"
+          :key="job.id || index"
+          class="col-lg-8 mb-4"
+          :class="{ 'mt-3': index > 0 }"
+        >
+          <div class="job-card">
+            <div class="job-header">
+              <div class="job-info">
+                <img
+                  :src="getCompanyLogo(employer?.companyLogo)"
+                  @error="handleImageError"
+                  alt="Company Logo"
+                  class="job-logo"
+                />
+                <div>
+                  <h5 class="job-title">{{ job.jobName }}</h5>
+                  <div class="job-meta">
+                    <span
+                      ><i class="fa-solid fa-bag-shopping me-1"></i
+                      >{{ job.JobTypes.jobTypeName }}</span
+                    >
+                    <span
+                      ><i class="fa-solid fa-location-dot me-1"></i
+                      >{{ job.address }}</span
+                    >
+                    <span
+                      ><i class="fa-solid fa-clock me-1"></i
+                      >{{ formatPostedAt(job.createdAt) }}</span
+                    >
+                    <span
+                      ><i class="fa-solid fa-camera-retro me-1"></i
+                      >{{ job.Salaries.salaryName }}</span
+                    >
+                  </div>
+                  <div class="job-status">
+                    <span class="badge">{{ job.JobTypes.jobTypeName }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="bookmark">
+                <i class="fa-regular fa-bookmark fa-lg"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Show message if no jobs available -->
+      <div v-if="jobs.length === 0" class="row mt-4">
+        <div class="col-12 text-center">
+          <p>Không có công việc nào đang được tuyển dụng.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
+import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "@/stores/useUserStore";
+import { onMounted, ref } from "vue";
 export default {
-    name: 'JobDetail',
-    data() {
-        return {
-            relatedJobs: [
-                {
-                    title: 'Software Engineer (Android), Libraries',
-                    tags: ['Plain draw', 'Go hiking', 'Trip git inside', 'Team help gear', 'Clip bitch'],
-                    salary: '35 - 45 Triệu'
-                },
-                {
-                    title: 'Software Engineer (Android), Libraries',
-                    tags: ['Plain draw', 'Go hiking', 'Trip git inside', 'Team help gear', 'Clip bitch'],
-                    salary: '35 - 45 Triệu'
-                },
-                {
-                    title: 'Software Engineer (Android), Libraries',
-                    tags: ['Plain draw', 'Go hiking', 'Trip git inside', 'Team help gear', 'Clip bitch'],
-                    salary: '35 - 45 Triệu'
-                }
-            ]
-        }
-    }
-}
+  name: "companyDetail",
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const userStore = useUserStore();
+
+    const employer = ref(null);
+    const jobs = ref([]);
+
+    const getCompanyLogo = (logo) => {
+      if (!logo) return "/images/default-company-logo.png";
+      return `https://res.cloudinary.com/dh1i7su2f/image/upload/${logo}`;
+    };
+
+    const handleImageError = (event) => {
+      event.target.src = "/images/default-company-logo.png";
+    };
+
+    const formatPostedAt = (postedAt) => {
+      if (!postedAt) return "Mới đăng";
+
+      const date = new Date(postedAt);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      if (diffHours < 24) return `${diffHours} giờ trước`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} ngày trước`;
+    };
+
+    onMounted(async () => {
+      const slug = route.params.slug;
+      try {
+        await userStore.fetchDetailEmployer(slug);
+        employer.value = userStore.employer.employer;
+        jobs.value = userStore.employer.jobs;
+
+        console.log({
+          employer: employer.value,
+          jobs: jobs.value,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    return {
+      jobs,
+      employer,
+      getCompanyLogo,
+      handleImageError,
+      formatPostedAt,
+    };
+  },
+};
 </script>
 
 <style scoped>
-.job-detail-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap");
+
+.company-page {
+  font-family: "Poppins", Arial, sans-serif;
+  background-color: #f8f9fa;
+  padding: 40px 0;
+}
+
+/* Company Card */
+.company-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 0 20px;
+  overflow: hidden;
+}
+
+.company-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #f1f3f5;
+}
+
+.company-info {
+  display: flex;
+  align-items: center;
+}
+
+.company-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.company-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333333;
+  margin: 0;
+}
+
+.company-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-top: 10px;
+}
+
+.company-meta span {
+  display: flex;
+  align-items: center;
+}
+
+.company-status .badge {
+  background: #007bff;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+.bookmark {
+  margin-left: auto;
+  color: #007bff;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.bookmark:hover {
+  color: #0056b3;
+}
+
+/* Company Details */
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 20px;
+}
+
+.section-text {
+  font-size: 1rem;
+  color: #555555;
+  line-height: 1.8;
+  margin-bottom: 15px;
+}
+
+/* Info Card */
+.info-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  text-align: center;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.info-item .label {
+  font-weight: 600;
+  color: #333333;
+}
+
+.info-item .value {
+  color: #555555;
+}
+
+.website-link {
+  display: block;
+  color: #007bff;
+  font-size: 1rem;
+  text-decoration: none;
+  margin-top: 20px;
+  transition: color 0.3s ease;
+}
+
+.website-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Job Card */
+.job-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
 }
 
 .job-header {
-    padding: 2rem 0;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #f1f3f5;
+}
+
+.job-info {
+  display: flex;
+  align-items: center;
+}
+
+.job-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
 }
 
 .job-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #212529;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333333;
+  margin: 0;
 }
 
-.section-title {
+.job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 10px;
+}
+
+.job-meta span {
+  display: flex;
+  align-items: center;
+}
+
+.job-status .badge {
+  background: #007bff;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-right: 10px;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+.job-status .badge-urgent {
+  background: #ffc107;
+  color: #333333;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .company-card,
+  .job-card {
+    margin: 0 15px;
+  }
+
+  .section-title {
     font-size: 1.5rem;
-    font-weight: 600;
-    color: #212529;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #0d6efd;
-    display: inline-block;
-}
+  }
 
-.job-description-text,
-.responsibilities-list,
-.skills-list {
+  .section-text {
+    font-size: 0.9rem;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .job-title {
     font-size: 1.1rem;
-    line-height: 1.6;
-    color: #495057;
+  }
 }
 
-.responsibilities-list li,
-.skills-list li {
-    margin-bottom: 0.5rem;
+@media (max-width: 768px) {
+  .company-header,
+  .job-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bookmark {
+    margin-left: 0;
+    margin-top: 15px;
+  }
+
+  .company-meta,
+  .job-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .info-item {
+    font-size: 0.9rem;
+  }
+
+  .company-card,
+  .job-card {
+    margin: 0 10px;
+  }
 }
 
-.job-overview-card {
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
+@media (max-width: 576px) {
+  .company-name {
+    font-size: 1.25rem;
+  }
 
-.job-overview-card .card-title {
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #212529;
-}
+  .company-meta,
+  .job-meta {
+    font-size: 0.8rem;
+  }
 
-.contact-card {
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: none;
-}
+  .job-title {
+    font-size: 1rem;
+  }
 
-.contact-card .card-title {
-    font-weight: 600;
-    color: #212529;
-}
+  .info-card {
+    padding: 15px;
+  }
 
-.contact-phone {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #0d6efd;
-}
-
-.address {
-    font-style: normal;
-    color: #6c757d;
-}
-
-.social-share .btn {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.related-jobs .card {
-    transition: transform 0.2s;
-    border-radius: 0.5rem;
-}
-
-.related-jobs .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.related-jobs .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.company-details p {
-    margin-bottom: 0.8rem;
-}
-
-/* Style cho thẻ a */
-a {
-    color: #000;
-    /* Màu đen */
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-a:hover {
-    color: #0066cc;
-    /* Xanh dương */
+  .info-item {
+    font-size: 0.85rem;
+  }
 }
 </style>
+

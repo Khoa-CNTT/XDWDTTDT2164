@@ -46,7 +46,7 @@ const initialRoutes = (app) => {
   app.use("/api/jobs", jobsRoutes);
 
   // Định tuyến cho lưu job vào danh sách
-  app.use("/api/save-job", saveJobsRoutes);
+  app.use("/api/save-jobs", saveJobsRoutes);
 
   //Định tuyến cho cấp bậc
   app.use("/api/ranks", rankRoutes);

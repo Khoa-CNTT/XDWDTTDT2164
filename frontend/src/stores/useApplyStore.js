@@ -4,11 +4,13 @@ import {
   applyToJobApi,
   getCandidateDetailApi,
   getCandidatesApi,
+  getJobApplyApi,
 } from "../apis/applyJob";
 
 export const useApplyStore = defineStore("apply-job", {
   state: () => ({
     candidates: [],
+    jobs: [],
     isLoading: false,
     error: null,
     totalPages: 0,
@@ -75,6 +77,30 @@ export const useApplyStore = defineStore("apply-job", {
         return response.data;
       } catch (error) {
         this.handleError(error, "Lỗi khi lấy thông tin ứng viên");
+        throw error;
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async fetchJobApply(candidateId, page, limit) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await getJobApplyApi(candidateId, page, limit);
+
+        if (!response || !response.data) {
+          throw new Error(
+            "Dữ liệu danh sách bài đăng tuyển dụng không hợp lệ."
+          );
+        }
+
+        this.jobs = response.data.jobs;
+        this.currentPage = response.data.page;
+        this.pageSize = response.data.pageSize;
+        this.totalPages = response.data.totalPages;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi lấy dánh sách bài đăng đã ứng tuyển");
         throw error;
       } finally {
         this.setLoadingState(false);

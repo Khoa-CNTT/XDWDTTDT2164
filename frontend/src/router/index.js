@@ -20,7 +20,7 @@ const routes = [
     meta: { layout: "auth", guestOnly: true },
   },
   {
-    path: "/reset-password",
+    path: "/reset-password/:token",
     component: () => import("@/views/common/Reset_password.vue"),
     meta: { layout: "auth", guestOnly: true },
   },
@@ -82,6 +82,10 @@ const routes = [
       {
         path: "employer-list",
         component: () => import("@/views/employer/employer-list.vue"),
+      },
+      {
+        path: "employer-update-job/:jobId",
+        component: () => import("@/views/employer/employer-update-job.vue"),
       },
       {
         path: "employer-recharge",
@@ -191,16 +195,16 @@ const routes = [
     children: [
       { path: "", component: () => import("@/views/common/index.vue") },
       {
-        path: "job_details",
+        path: "job/:slug",
         component: () => import("@/views/common/Job_details.vue"),
       },
       {
-        path: "conditions",
+        path: "condition",
         component: () => import("@/views/common/Conditions.vue"),
       },
-      { path: "abouts", component: () => import("@/views/common/Abouts.vue") },
+      { path: "about", component: () => import("@/views/common/Abouts.vue") },
       {
-        path: "company-details",
+        path: "company/:slug",
         component: () => import("@/views/common/Companydetails.vue"),
       },
       {
@@ -211,6 +215,10 @@ const routes = [
       {
         path: "list-company",
         component: () => import("@/views/common/ListCompany.vue"),
+      },
+      {
+        path: "create-candidate",
+        component: () => import("@/views/candidate/create-candidate.vue"),
       },
     ],
   },
@@ -253,6 +261,7 @@ router.beforeEach(async (to, from, next) => {
   // Xử lý các trường hợp
   if (isAuthenticated) {
     // Ngăn truy cập các trang guest (login, register, v.v.) khi đã đăng nhập
+    console.log(to.meta);
     if (isGuestOnly) {
       next({ path: redirectByRole[userRole] || "/" });
     }

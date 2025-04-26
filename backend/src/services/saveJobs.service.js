@@ -77,13 +77,38 @@ class SaveJobsService {
     const limit = parseInt(query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const jobs = await db.SaveJobs.findAndCountAll({
+    const { count: totalJobs, rows: jobs } = await db.SaveJobs.findAndCountAll({
       where: { userId },
+      include: [
+        {
+          model: db.Jobs,
+          as: "Jobs",
+          attributes: [
+            "id",
+            "jobName",
+            "jobSlug",
+            "expire",
+            "isApproved",
+            "address",
+          ],
+          include: [
+            {
+              model: db.Employers,
+              as: "Employers",
+            },
+            {
+              model: db.Ranks,
+              as: "Ranks",
+              attributes: ["rankName"],
+            },
+          ],
+        },
+      ],
       limit,
       offset,
     });
 
-    return jobs;
+    return { page, limit, totalJobs, jobs };
   }
 }
 

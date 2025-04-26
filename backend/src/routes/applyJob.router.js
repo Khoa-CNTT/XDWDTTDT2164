@@ -38,4 +38,28 @@ router.get(
   applyJobsController.getCandidateDetail
 );
 
+/**
+ * @route GET /apply-jobs/get-job-apply/:candidateId
+ * @desc Lấy danh sách bài đăng đã ứng tuyển
+ * @access Private
+ */
+router.get(
+  "/get-job-apply/:candidateId",
+  protectedRoute,
+  authorizedRoute("candidate"),
+  applyJobsController.getJobApply
+);
+
+/**
+ * @route PUT /apply-jobs/review-candidate/:applicationId
+ * @desc Đánh giá ứng viên ứng tuyển
+ * @access Private
+ */
+router.get(
+  "/review-candidate/:applicationId",
+  protectedRoute,
+  authorizedRoute("employer"),
+  applyJobsController.reviewCandidate
+);
+
 module.exports = router;

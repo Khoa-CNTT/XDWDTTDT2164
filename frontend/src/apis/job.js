@@ -4,8 +4,19 @@ import api from "@utils/axios.config";
  * Lấy ra danh sách bài đăng công việc
  * @returns {Promise<void>} - Danh sách bài đăng công việc
  */
-export const getJobs = async () => {
-  const response = await api.get("/api/jobs");
+export const getJobsApi = async (query = {}) => {
+  const response = await api.get("/api/jobs", {
+    params: { query },
+  });
+  return response.data;
+};
+
+/**
+ * Lấy ra thông tin chi tiết bài đăng công việc
+ * @returns {Promise<void>} - chi tiết bài đăng công việc
+ */
+export const getDetailJob = async (slug) => {
+  const response = await api.get(`/api/jobs/${slug}`);
   return response.data;
 };
 
@@ -58,5 +69,16 @@ export const paymentJobApi = async (data) => {
  */
 export const getJobDetailForEmployerApi = async (id) => {
   const response = await api.get(`/api/jobs/get-job-employer/${id}`);
+  return response.data;
+};
+
+/**
+ * Cập nhật bài đăng
+ * @param {string} id
+ * @param {Object} data
+ * @returns {Promise<void>}
+ */
+export const updateJobApi = async (id, data) => {
+  const response = await api.put(`/api/jobs/${id}`, data);
   return response.data;
 };

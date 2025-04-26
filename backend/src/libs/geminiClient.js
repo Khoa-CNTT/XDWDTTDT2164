@@ -6,31 +6,32 @@ async function moderateJob(job) {
   const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
-Bạn là một chuyên gia kiểm duyệt nội dung tuyển dụng. Hãy đọc kỹ bài đăng dưới đây và đánh giá dựa trên 5 tiêu chí:
-
-1. Trong mô tả thì phải có mô tả công việc, yêu cầu ứng viên, quyền lợi.
-2. Có nội dung phân biệt giới tính, vùng miền, tôn giáo không?
-3. Có yêu cầu trái luật hoặc phi lý không?
-4. Ngôn ngữ có lịch sự, chuyên nghiệp, rõ ràng không?
-5. Có sai chính tả hoặc lỗi nghiêm trọng nào không?
-6. Có dấu hiệu spam, quảng cáo hoặc gây hiểu nhầm không?
-
-Thông tin bài đăng:
----
-Tiêu đề: ${job.jobName}
-Mô tả: ${job.description}
-Địa chỉ: ${job.address}
-Yêu cầu: ${job.requirements || "Không có"}
----
-
-Nếu bài viết **phù hợp**, hãy trả lời: APPROVED
-
-Nếu **không phù hợp**, hãy trả lời:
-REJECTED - Lý do: [ghi rõ lý do từ 5 tiêu chí trên]
-
-Chỉ trả lời duy nhất 1 dòng theo định dạng trên.
-`;
-
+  Bạn là một chuyên gia kiểm duyệt nội dung tuyển dụng. Hãy đánh giá bài đăng dưới đây dựa trên các tiêu chí sau:
+  
+  1. Mô tả phải bao gồm: mô tả công việc, yêu cầu ứng viên, quyền lợi.
+  2. Không được chứa nội dung phân biệt giới tính, vùng miền, tôn giáo.
+  3. Không có yêu cầu trái luật hoặc phi lý.
+  4. Ngôn ngữ phải lịch sự, chuyên nghiệp, rõ ràng.
+  5. Không có lỗi chính tả hoặc lỗi nghiêm trọng.
+  6. Không chứa nội dung spam, quảng cáo hoặc gây hiểu lầm.
+  
+  Thông tin bài đăng:
+  ---
+  Tiêu đề: ${job.jobName}
+  Mô tả công việc: ${job.description}
+  Yêu cầu ứng viên: ${job.candidateRequirements}
+  Quyền lợi: ${job.benefit}
+  Thời gian làm việc: ${job.workTime}
+  Địa chỉ làm việc: ${job.address}
+  Yêu cầu khác: ${job.requirements || "Không có"}
+  ---
+  
+  Hãy trả lời theo đúng định dạng sau:
+  Kiểm duyệt: [Duyệt/Không duyệt]
+  Nếu là **Không duyệt**, hãy đưa ra lý do (5–7 câu, giải thích rõ vấn đề).
+  
+  Chỉ trả lời duy nhất 1 dòng theo định dạng trên.
+  `;
   const result = await model.generateContent(prompt);
   const response = result.response.text().trim();
 
@@ -61,7 +62,7 @@ Yêu cầu công việc:
 
 Hãy trả lời theo định dạng sau:
 
-Điểm đánh giá: [số điểm /10]  
+Điểm đánh giá (theo %): [số điểm /100%]  
 Mức độ phù hợp: [Phù hợp / Không phù hợp / Cần xem xét]  
 Nhận xét: [viết nhận xét chi tiết, khoảng 5-7 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên]
 

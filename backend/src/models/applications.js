@@ -61,6 +61,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         field: "moderator_review",
       },
+      employerReview: {
+        type: DataTypes.ENUM("Phù hợp", "Chưa phù hợp"),
+        field: "employer_review",
+        allowNull: true,
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",
