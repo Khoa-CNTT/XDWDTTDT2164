@@ -33,6 +33,21 @@
                 class="img-fluid image-item"
                 alt="Workstation"
               />
+        </div>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h2><b>4M</b></h2>
+                    <p>4 triệu người dùng hoạt động hằng ngày</p>
+                </div>
+                <div class="col-lg-4">
+                    <h2><b>12k</b></h2>
+                    <p>hơn 12k vị trí công việc mở</p>
+                </div>
+                <div class="col-lg-4">
+                    <h2><b>20M</b></h2>
+                    <p>hơn 20 triệu câu chuyện được chia sẻ</p>
+                </div>
             </div>
           </div>
         </div>
