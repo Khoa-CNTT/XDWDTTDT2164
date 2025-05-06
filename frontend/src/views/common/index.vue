@@ -242,7 +242,7 @@ export default {
 /* Banner Section */
 .banner-section {
   background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-  padding: 60px 0;
+  padding: 60px 10;
 }
 
 .banner-title {
