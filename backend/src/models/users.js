@@ -15,10 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "Candidates",
       });
 
-      Users.hasMany(models.EmployerUsers, {
+      Users.hasOne(models.Employers, {
         sourceKey: "id",
         foreignKey: "userId",
-        as: "EmployerUsers",
+        as: "Employers",
       });
 
       Users.hasMany(models.Jobs, {
@@ -92,6 +92,11 @@ module.exports = (sequelize, DataTypes) => {
         field: "password_reset_expire",
       },
       role: DataTypes.ENUM("admin", "candidate", "employer"),
+      isBlocked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: "is_blocked",
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",

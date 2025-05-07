@@ -75,12 +75,6 @@
                   >
                     Xem chi tiết CV
                   </router-link>
-                  <button
-                    class="btn btn-link text-decoration-none p-0"
-                    @click="rateApplicant(applicant.id)"
-                  >
-                    Đánh Giá
-                  </button>
                 </td>
               </tr>
             </tbody>

@@ -10,6 +10,8 @@ const {
   sendTemporaryPasswordEmail,
 } = require("../libs/sendMail");
 const { hashPassword, verifyPassword } = require("../libs/hashPassword");
+const { cloudinary } = require("../config/cloudinary.config");
+
 /**
  * Service xử lý logic nghiệp vụ liên quan đến user
  */
@@ -54,14 +56,8 @@ class UserService {
           ],
         },
         {
-          model: db.EmployerUsers,
-          as: "EmployerUsers",
-          include: [
-            {
-              model: db.Employers,
-              as: "Employers",
-            },
-          ],
+          model: db.Employers,
+          as: "Employers",
         },
       ],
       attributes: {
@@ -213,13 +209,7 @@ class UserService {
 
       // Tạo mới thông tin nhà tuyển dụng
       const employer = await db.Employers.create(
-        { ...updateData, companySlug: slug },
-        { transaction }
-      );
-
-      // Cập nhật thông tin employer user
-      await db.EmployerUsers.create(
-        { employerId: employer.id, userId, employerRole: "owner" },
+        { ...updateData, companySlug: slug, userId },
         { transaction }
       );
 
@@ -342,7 +332,9 @@ class UserService {
     }
 
     if (industry) {
-      whereClause.industry = industry;
+      whereClause.industry = {
+        [db.Sequelize.Op.like]: `%${industry}%`,
+      };
     }
 
     const { count: totalEmployers, rows: employers } =
@@ -381,107 +373,6 @@ class UserService {
       totalEmployers,
       employers,
     };
-  }
-
-  /**
-   * Thêm nhân viên vào công ty
-   * @param {string} employerId - ID của nhà tuyển dụng
-   * @param {Object} employeeData - Dữ liệu nhân viên
-   * @returns {Promise<Object>} - Thông tin nhân viên
-   */
-  async addEmployeeToEmployer(employerId, employeeData) {
-    const transaction = await db.sequelize.transaction();
-    try {
-      // Kiểm tra nhà tuyển dụng có tồn tại không
-      const employer = await db.Employers.findByPk(employerId, { transaction });
-      if (!employer) {
-        throw new ApiError(StatusCode.NOT_FOUND, "Công ty không tồn tại");
-      }
-
-      // Kiểm tra xem email hoặc số điện thoại đã tồn tại trong db không
-      const existingUser = await db.Users.findOne({
-        where: {
-          [db.Sequelize.Op.or]: [
-            { email: employeeData.email },
-            { phoneNumber: employeeData.phoneNumber },
-          ],
-        },
-        transaction,
-      });
-
-      if (existingUser) {
-        throw new ApiError(
-          StatusCode.BAD_REQUEST,
-          "Email hoặc số điện thoại đã tồn tại"
-        );
-      }
-
-      // Tạo mật khẩu tạm thời
-      const tempPassword = Math.random().toString(36).slice(-8);
-      const hashedPassword = await hashPassword(tempPassword);
-
-      // Tạo mới nhân viên
-      const user = await db.Users.create(
-        {
-          email: employeeData.email,
-          fullName: employeeData.fullName,
-          phoneNumber: employeeData.phoneNumber,
-          address: employeeData.address,
-          role: "employer",
-          password: hashedPassword,
-        },
-        { transaction }
-      );
-
-      // Tạo mới thông tin nhân viên trong EmployerUsers
-      await db.EmployerUsers.create(
-        {
-          employerId,
-          userId: user.id,
-          employerRole: employeeData.employerRole,
-        },
-        { transaction }
-      );
-
-      // Gửi mail tài khoản và mật khẩu
-      await sendTemporaryPasswordEmail(user.email, tempPassword);
-
-      // Commit transaction khi mọi thứ thành công
-      await transaction.commit();
-
-      return {
-        message: "Nhân viên đã được thêm vào công ty thành công",
-      };
-    } catch (error) {
-      // Rollback nếu có lỗi
-      await transaction.rollback();
-      throw error;
-    }
-  }
-
-  /**
-   * Lấy danh sách nhân viên của nhà tuyển dụng
-   * @param {string} employerId - ID của nhà tuyển dụng
-   * @returns {Promise<Object>} - Danh sách nhân viên
-   */
-  async getEmployerEmployees(employerId) {
-    const employees = await db.EmployerUsers.findAll({
-      where: { employerId },
-      include: [
-        {
-          model: db.Users,
-          as: "Users",
-          attributes: ["id", "fullName", "email", "phoneNumber"],
-        },
-        {
-          model: db.EmployerUsers,
-          as: "EmployerUsers",
-          attributes: ["employerRole"],
-        },
-      ],
-    });
-
-    return employees;
   }
 
   /**
@@ -591,6 +482,7 @@ class UserService {
         "email",
         "role",
         "emailVerify",
+        "isBlocked",
       ],
     });
 
@@ -622,6 +514,96 @@ class UserService {
     await userExist.save();
 
     return userExist;
+  }
+
+  /**
+   * Cập nhật thông tin nhà tuyển dụng
+   * @param {Object} employerData - Dữ liệu cập nhật
+   * @param {string} id - Mã nhà tuyển dụng
+   * @returns {Promise<Object>}
+   */
+  async updateEmployerProfile(id, employeeData) {
+    const employer = await db.Employers.findOne({
+      where: { id },
+    });
+
+    if (!employer) {
+      throw new ApiError(
+        StatusCode.BAD_REQUEST,
+        "Không tìm thấy hồ sơ công ty"
+      );
+    }
+
+    if (
+      employeeData.companyLogo &&
+      employer.companyLogo &&
+      employer.companyLogo !== employeeData.companyLogo
+    ) {
+      await cloudinary.uploader.destroy(employer.companyLogo);
+    }
+
+    Object.assign(employer, employeeData); // Cập nhật dữ liệu
+    await employer.save(); // Lưu lại
+
+    return employer; // employer đã cập nhật
+  }
+
+  /**
+   * Cập nhật thông tin ứng viên
+   * @param {Object} candidateData - Dữ liệu cập nhật
+   * @param {string} id - Mã ứng viên
+   * @returns {Promise<void>}
+   */
+  async updateCandidateProfile(id, candidateData) {
+    const candidate = await db.Candidates.findOne({
+      where: { id },
+    });
+
+    if (!candidate) {
+      throw new ApiError(
+        StatusCode.BAD_REQUEST,
+        "Không tìm thấy hồ sơ ứng viên"
+      );
+    }
+
+    if (candidateData.cvUrl && candidate.cvUrl) {
+      const oldCvPath = path.join(__dirname, "../uploads", candidate.cvUrl);
+      if (fs.existsSync(oldCvPath)) {
+        fs.unlinkSync(oldCvPath);
+      }
+    }
+
+    Object.assign(candidate, candidateData);
+    await candidate.save();
+
+    return candidate;
+  }
+
+  /**
+   * Cập nhật trạng thái khóa của người dùng
+   * @param {string} id - Mã người dùng
+   * @param {boolean} isBlocked - Trạng thái khóa (true = khóa, false = mở)
+   */
+  async setBlockStatus(id, isBlocked) {
+    const user = await db.Users.findByPk(id);
+    if (!user) {
+      throw new ApiError(StatusCode.BAD_REQUEST, "Không tìm thấy người dùng");
+    }
+
+    if (user.isBlocked === isBlocked) {
+      throw new ApiError(
+        StatusCode.BAD_REQUEST,
+        isBlocked ? "Người dùng đã bị khóa" : "Người dùng đang mở khóa"
+      );
+    }
+    user.isBlocked = isBlocked;
+    await user.save();
+
+    return {
+      message: isBlocked
+        ? "Khóa người dùng thành công"
+        : "Mở khóa người dùng thành công",
+    };
   }
 }
 

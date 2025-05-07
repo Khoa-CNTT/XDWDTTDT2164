@@ -57,22 +57,4 @@ const authorizedRoute = (...roles) => {
   };
 };
 
-/**
- * Middleware Kiểm tra quyền truy cập của nhân viên
- *@param {...string} employerRoles - Danh sách các vai trò được phép truy cập
- *@returns {Function} - Middleware function
- */
-const authorizedEmployer = (...employerRoles) => {
-  return (req, res, next) => {
-    if (!employerRoles.includes(req.user.employerRole)) {
-      return res.status(403).json({
-        statusCode: 403,
-        status: ResponseStatus.ERROR,
-        message: "Bạn không có quyền truy cập vào trang này",
-      });
-    }
-    next();
-  };
-};
-
-module.exports = { protectedRoute, authorizedRoute, authorizedEmployer };
+module.exports = { protectedRoute, authorizedRoute };

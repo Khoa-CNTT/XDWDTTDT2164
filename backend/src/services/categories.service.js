@@ -38,6 +38,13 @@ class CategoryService {
   async getCategories() {
     const categories = await db.Categories.findAll({
       where: { deletedAt: null },
+      include: [
+        {
+          model: db.Jobs,
+          as: "Jobs",
+          attributes: ["id"],
+        },
+      ],
     });
     return categories;
   }

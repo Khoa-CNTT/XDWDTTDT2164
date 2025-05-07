@@ -9,6 +9,15 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
       },
+      userId: {
+        type: Sequelize.UUID,
+        field: "user_id",
+        onDelete: "CASCADE",
+        references: {
+          model: "users",
+          key: "id",
+        },
+      },
       companyName: {
         type: Sequelize.STRING,
         field: "company_name",

@@ -13,7 +13,15 @@ class ApplyJobController {
    */
   async applyJob(req, res) {
     try {
-      const result = await applyJobService.applyJob(req.body);
+      console.log(req.file);
+      const applyData = {
+        jobId: req.body.jobId,
+        candidateId: req.body.candidateId,
+        cvUpload: req.file.filename,
+        coverLetter: req.body.coverLetter,
+      };
+      const result = await applyJobService.applyJob(applyData);
+
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,

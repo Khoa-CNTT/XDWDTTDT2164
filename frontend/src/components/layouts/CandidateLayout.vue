@@ -27,7 +27,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@/css/common.css";
 import "@/style.css";
 
-import TopSuperio from "@/components/admin/TopSuperio.vue";
+import TopSuperio from "@/components/guest/Top-guest.vue";
 import BotSuperio from "@/components/admin/BotSuperio.vue";
 import CandidateProfile from "@/components/candidate/SidebarCandidate.vue";
 

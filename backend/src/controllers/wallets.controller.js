@@ -53,6 +53,24 @@ class WalletsController {
     }
   }
 
+  async checkPaymentStatusZalopay(req, res) {
+    try {
+      const { app_trans_id } = req.params;
+      const data = await walletsService.checkPaymentStatusZalopay(app_trans_id);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message,
+      });
+    }
+  }
+
   /**
    * Nạp tiền vào tài khoản với MoMo
    * @param {Object} req - Request object
@@ -166,6 +184,78 @@ class WalletsController {
         status: ResponseStatus.SUCCESS,
         data,
       });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy ra doanh thu theo thời gian
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getPaymentTime(req, res) {
+    try {
+      const { period, startDate, endDate } = req.query;
+      const data = await walletsService.getPaymentTime({
+        period,
+        startDate,
+        endDate,
+      });
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Lấy ra danh sách giao dịch
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getPayments(req, res) {
+    try {
+      const data = await walletsService.getPayments(req.query);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Xuất giao dịch sang file csv
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async exportPaymentToCsv(req, res) {
+    try {
+      const data = await walletsService.exportPaymentsToCsv();
+      res.header("Content-Type", "text/csv; charset=utf-8");
+      res.attachment("danh-sach-thanh-toan.csv");
+      res.send("\uFEFF" + data);
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
         statusCode: error.statusCode || StatusCode.SERVER_ERROR,

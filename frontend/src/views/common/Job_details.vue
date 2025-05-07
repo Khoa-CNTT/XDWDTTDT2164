@@ -24,6 +24,10 @@
             />
             <div class="header-info">
               <h1 class="job-title">{{ job.jobName || "Không có tiêu đề" }}</h1>
+              <div class="job-company-name">
+                <i class="fa-solid fa-building me-2"></i>
+                {{ job.Employers?.companyName || "Không có thông tin" }}
+              </div>
               <div class="job-tags">
                 <span class="tag" v-if="job.Ranks?.rankName">
                   <i class="fa-solid fa-briefcase me-1"></i
@@ -36,7 +40,7 @@
                   <i class="fa-solid fa-clock me-1"></i
                   >{{ formatDate(job.expire) }}
                 </span>
-                <span class="tag" v-if="job.Salaries?.salaryName">
+                <span class="tag salary-tag" v-if="job.Salaries?.salaryName">
                   <i class="fa-solid fa-money-bill me-1"></i
                   >{{ job.Salaries.salaryName }}
                 </span>
@@ -61,70 +65,104 @@
             <div class="col-lg-8">
               <h2 class="section-title">Chi tiết tin tuyển dụng</h2>
 
-              <h3 class="subsection-title">Mô tả công việc</h3>
-              <div
-                class="description-text"
-                v-html="job.description || 'Không có mô tả'"
-              ></div>
+              <div class="description-card">
+                <h3 class="subsection-title">
+                  <i class="fa-solid fa-file-alt me-2"></i>Mô tả công việc
+                </h3>
+                <div
+                  class="description-text"
+                  v-html="job.description || 'Không có mô tả'"
+                ></div>
+              </div>
 
-              <h3 class="subsection-title">Yêu cầu ứng viên</h3>
-              <div
-                class="description-text"
-                v-html="job.candidateRequirements || 'Không có mô tả'"
-              ></div>
+              <div class="description-card">
+                <h3 class="subsection-title">
+                  <i class="fa-solid fa-user-check me-2"></i>Yêu cầu ứng viên
+                </h3>
+                <div
+                  class="description-text"
+                  v-html="job.candidateRequirements || 'Không có mô tả'"
+                ></div>
+              </div>
 
-              <h3 class="subsection-title">Quyền lợi</h3>
-              <div
-                class="description-text"
-                v-html="job.benefit || 'Không có mô tả'"
-              ></div>
+              <div class="description-card">
+                <h3 class="subsection-title">
+                  <i class="fa-solid fa-gift me-2"></i>Quyền lợi
+                </h3>
+                <div
+                  class="description-text"
+                  v-html="job.benefit || 'Không có mô tả'"
+                ></div>
+              </div>
 
-              <h3 class="subsection-title">Thời gian làm việc</h3>
-              <div
-                class="description-text"
-                v-html="job.workTime || 'Không có mô tả'"
-              ></div>
+              <div class="description-card">
+                <h3 class="subsection-title">
+                  <i class="fa-solid fa-calendar-week me-2"></i>Thời gian làm
+                  việc
+                </h3>
+                <div
+                  class="description-text"
+                  v-html="job.workTime || 'Không có mô tả'"
+                ></div>
+              </div>
             </div>
 
             <div class="col-lg-4">
               <!-- Job Overview Card -->
               <div class="overview-card">
-                <h4 class="card-title">Tổng quan về công việc</h4>
+                <h4 class="card-title">
+                  <i class="fa-solid fa-info-circle me-2"></i>Tổng quan về công
+                  việc
+                </h4>
                 <ul class="overview-list">
                   <li>
-                    <span
-                      ><i class="fa-solid fa-calendar-days me-2"></i>Ngày
-                      đăng:</span
-                    >
-                    <span>{{ formatDate(job.createdAt) }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-calendar-days me-2"></i>Ngày đăng:
+                    </span>
+                    <span class="info-value">{{
+                      formatDate(job.createdAt)
+                    }}</span>
                   </li>
                   <li>
-                    <span
-                      ><i class="fa-solid fa-clock me-2"></i>Ngày hết hạn:</span
-                    >
-                    <span>{{ formatDate(job.expire) }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-clock me-2"></i>Ngày hết hạn:
+                    </span>
+                    <span class="info-value">{{ formatDate(job.expire) }}</span>
                   </li>
                   <li>
-                    <span
-                      ><i class="fa-solid fa-location-dot me-2"></i>Địa
-                      chỉ:</span
-                    >
-                    <span>{{ job.address || "N/A" }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-location-dot me-2"></i>Địa chỉ:
+                    </span>
+                    <span class="info-value">{{ job.address || "N/A" }}</span>
                   </li>
                   <li>
-                    <span
-                      ><i class="fa-solid fa-briefcase me-2"></i>Công việc tuyển
-                      dụng:</span
-                    >
-                    <span>{{ job.jobName || "N/A" }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-briefcase me-2"></i>Vị trí:
+                    </span>
+                    <span class="info-value">{{ job.jobName || "N/A" }}</span>
                   </li>
                   <li>
-                    <span
-                      ><i class="fa-solid fa-money-bill me-2"></i>Mức
-                      lương:</span
-                    >
-                    <span class="highlight">{{
+                    <span class="info-label">
+                      <i class="fa-solid fa-ranking-star me-2"></i>Cấp bậc:
+                    </span>
+                    <span class="info-value">{{
+                      job.Ranks?.rankName || "N/A"
+                    }}</span>
+                  </li>
+                  <li>
+                    <span class="info-label">
+                      <i class="fa-solid fa-money-bill me-2"></i>Mức lương:
+                    </span>
+                    <span class="info-value highlight">{{
                       job.Salaries?.salaryName || "N/A"
+                    }}</span>
+                  </li>
+                  <li>
+                    <span class="info-label">
+                      <i class="fa-solid fa-briefcase me-2"></i>Loại công việc:
+                    </span>
+                    <span class="info-value">{{
+                      job.JobTypes?.jobTypeName || "N/A"
                     }}</span>
                   </li>
                 </ul>
@@ -132,7 +170,9 @@
 
               <!-- Company Info Card -->
               <div class="company-card">
-                <h4 class="card-title">Thông tin về công ty</h4>
+                <h4 class="card-title">
+                  <i class="fa-solid fa-building me-2"></i>Thông tin về công ty
+                </h4>
                 <div class="company-info">
                   <img
                     :src="getCompanyLogo(job.Employers?.companyLogo)"
@@ -148,30 +188,45 @@
                       :to="`/company/${job.Employers?.id}`"
                       class="company-link"
                     >
-                      Xem chi tiết công ty
+                      <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>Xem
+                      chi tiết công ty
                     </router-link>
                   </div>
                 </div>
                 <ul class="company-list">
                   <li>
-                    <span>Ngành chính:</span>
-                    <span>{{ job.Employers?.companyTaxCode || "N/A" }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-industry me-2"></i>Ngành chính:
+                    </span>
+                    <span class="info-value">{{
+                      job.Employers?.companyTaxCode || "N/A"
+                    }}</span>
                   </li>
                   <li>
-                    <span>Quy mô:</span>
-                    <span>{{ job.Employers?.companySize || "N/A" }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-users me-2"></i>Quy mô:
+                    </span>
+                    <span class="info-value">{{
+                      job.Employers?.companySize || "N/A"
+                    }}</span>
                   </li>
                   <li>
-                    <span>Địa chỉ:</span>
-                    <span>{{ job.Employers?.companyAddress || "N/A" }}</span>
+                    <span class="info-label">
+                      <i class="fa-solid fa-map-marker-alt me-2"></i>Địa chỉ:
+                    </span>
+                    <span class="info-value">{{
+                      job.Employers?.companyAddress || "N/A"
+                    }}</span>
                   </li>
                 </ul>
                 <a
                   :href="job.Employers?.companyWebsite || '#'"
                   class="website-link"
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {{ job.Employers?.companyWebsite || "N/A" }}
+                  <i class="fa-solid fa-globe me-2"></i
+                  >{{ job.Employers?.companyWebsite || "N/A" }}
                 </a>
               </div>
 
@@ -180,8 +235,6 @@
                 class="apply-button"
                 @click="openApplyModal"
                 :disabled="saveJobStore.isLoading || applyLoading"
-                data-bs-toggle="modal"
-                data-bs-target="#applyJobModal"
                 aria-label="Ứng tuyển ngay cho công việc"
               >
                 <i class="fas fa-paper-plane me-2"></i>Ứng tuyển ngay
@@ -201,29 +254,35 @@
 
               <!-- Social Share -->
               <div class="social-share">
-                <p class="share-title">Chia sẻ công việc:</p>
+                <p class="share-title">
+                  <i class="fa-solid fa-share-alt me-2"></i>Chia sẻ công việc:
+                </p>
                 <div class="share-buttons">
                   <button
                     class="share-button facebook"
                     @click="share('facebook')"
+                    aria-label="Chia sẻ trên Facebook"
                   >
                     <i class="fab fa-facebook-f"></i>
                   </button>
                   <button
                     class="share-button twitter"
                     @click="share('twitter')"
+                    aria-label="Chia sẻ trên Twitter"
                   >
                     <i class="fab fa-twitter"></i>
                   </button>
                   <button
                     class="share-button linkedin"
                     @click="share('linkedin')"
+                    aria-label="Chia sẻ trên LinkedIn"
                   >
                     <i class="fab fa-linkedin-in"></i>
                   </button>
                   <button
                     class="share-button whatsapp"
                     @click="share('whatsapp')"
+                    aria-label="Chia sẻ qua WhatsApp"
                   >
                     <i class="fab fa-whatsapp"></i>
                   </button>
@@ -237,7 +296,9 @@
       <!-- Related Jobs Section -->
       <section class="related-jobs" v-if="relatedJobs.length">
         <div class="container">
-          <h2 class="section-title">Công việc liên quan</h2>
+          <h2 class="section-title">
+            <i class="fa-solid fa-briefcase me-2"></i>Công việc liên quan
+          </h2>
           <div class="row">
             <div
               class="col-md-4 mb-4"
@@ -254,33 +315,31 @@
                   />
                   <div>
                     <router-link
-                      :to="`/jobs/${relatedJob.slug}`"
+                      :to="`/jobs/${relatedJob.jobSlug}`"
                       class="job-title"
                     >
                       {{ relatedJob.jobName }}
                     </router-link>
+                    <p class="company-name-small">
+                      <i class="fa-solid fa-building me-1"></i>
+                      {{ relatedJob.Employers?.companyName || "N/A" }}
+                    </p>
                     <div class="job-tags">
-                      <span class="tag" v-if="relatedJob.address">{{
-                        relatedJob.address
-                      }}</span>
-                      <span class="tag" v-if="relatedJob.postedAt">{{
-                        formatPostedAt(relatedJob.postedAt)
-                      }}</span>
+                      <span class="tag" v-if="relatedJob.address">
+                        <i class="fa-solid fa-location-dot me-1"></i>
+                        {{ relatedJob.address }}
+                      </span>
+                      <span class="tag" v-if="relatedJob.postedAt">
+                        <i class="fa-solid fa-calendar me-1"></i>
+                        {{ formatPostedAt(relatedJob.postedAt) }}
+                      </span>
                       <span
-                        class="tag"
+                        class="tag salary-tag"
                         v-if="relatedJob.Salaries?.salaryName"
-                        >{{ relatedJob.Salaries.salaryName }}</span
                       >
-                    </div>
-                    <div class="job-badges">
-                      <span class="badge badge-type">{{
-                        relatedJob.JobTypes?.jobTypeName || "N/A"
-                      }}</span>
-                      <span
-                        class="badge badge-urgent"
-                        v-if="relatedJob.status"
-                        >{{ relatedJob.status }}</span
-                      >
+                        <i class="fa-solid fa-money-bill me-1"></i>
+                        {{ relatedJob.Salaries.salaryName }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -288,11 +347,16 @@
                   class="save-job-button"
                   :class="{
                     saved: saveJobStore.jobs.some(
-                      (job) => job.id === relatedJob.id
+                      (job) => job.jobId === relatedJob.id
                     ),
                   }"
                   @click="toggleSaveJob(relatedJob.id)"
                   :disabled="saveJobStore.isLoading"
+                  :aria-label="
+                    saveJobStore.jobs.some((job) => job.id === relatedJob.id)
+                      ? 'Bỏ lưu công việc'
+                      : 'Lưu công việc'
+                  "
                 >
                   <i
                     :class="
@@ -301,11 +365,6 @@
                         : 'far fa-bookmark'
                     "
                   ></i>
-                  {{
-                    saveJobStore.jobs.some((job) => job.id === relatedJob.id)
-                      ? "Đã lưu"
-                      : "Lưu"
-                  }}
                 </button>
               </div>
             </div>
@@ -325,7 +384,8 @@
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="applyJobModalLabel">
-                Ứng tuyển: {{ job.jobName || "Công việc" }}
+                <i class="fa-solid fa-paper-plane me-2"></i>Ứng tuyển:
+                {{ job.jobName || "Công việc" }}
               </h5>
               <button
                 type="button"
@@ -335,7 +395,49 @@
               ></button>
             </div>
             <div class="modal-body">
-              <form @submit.prevent>
+              <form @submit.prevent="submitApplication">
+                <!-- Thông tin cá nhân -->
+                <div class="personal-info">
+                  <h6 class="personal-info__title">
+                    <i class="fa-solid fa-user me-2"></i>Thông tin cá nhân
+                  </h6>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="userName" class="form-label">Họ và tên</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="userName"
+                        :value="authStore.user?.name || 'Chưa cung cấp'"
+                        readonly
+                      />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="userEmail" class="form-label">Email</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="userEmail"
+                        :value="authStore.user?.email || 'Chưa cung cấp'"
+                        readonly
+                      />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="userPhone" class="form-label"
+                        >Số điện thoại</label
+                      >
+                      <input
+                        type="tel"
+                        class="form-control"
+                        id="userPhone"
+                        :value="authStore.user?.phone || 'Chưa cung cấp'"
+                        readonly
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Giới thiệu bản thân -->
                 <div class="mb-3">
                   <label for="introduction" class="form-label"
                     >Giới thiệu bản thân *</label
@@ -359,6 +461,7 @@
                   </div>
                 </div>
 
+                <!-- Chọn CV -->
                 <div class="mb-3">
                   <label class="form-label">Chọn CV *</label>
                   <div class="form-check">
@@ -409,7 +512,6 @@
                     >
                       {{ applicationForm.errors.cvFile }}
                     </div>
-                    <!-- Link xem CV đã chọn -->
                     <div v-if="applicationForm.previewCvUrl" class="mt-2">
                       <a
                         :href="applicationForm.previewCvUrl"
@@ -468,7 +570,14 @@
                     class="btn btn-secondary"
                     data-bs-dismiss="modal"
                   >
-                    Hủy
+                    <i class="fa-solid fa-times me-1"></i>Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    :disabled="applyLoading"
+                  >
+                    <i class="fa-solid fa-paper-plane me-1"></i>Ứng tuyển
                   </button>
                 </div>
               </form>
@@ -482,16 +591,19 @@
 
 <script>
 import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useSaveJobsStore } from "@/stores/useSaveJobStore";
 import { getDetailJob } from "@/apis/job";
 import { toast } from "vue3-toastify";
+import { Modal } from "bootstrap";
+import { applyToJobApi } from "../../apis/applyJob";
 
 export default {
   name: "JobDetail",
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const authStore = useAuthStore();
     const saveJobStore = useSaveJobsStore();
 
@@ -514,16 +626,116 @@ export default {
     const isJobSaved = computed(
       () =>
         job.value &&
-        saveJobStore.jobs.some((savedJob) => savedJob.id === job.value.id)
+        saveJobStore.jobs.some((savedJob) => savedJob.jobId === job.value.id)
     );
 
-    // Hàm kiểm tra trạng thái đăng nhập
     const checkLoginStatus = () => {
+      console.log("authStore:", {
+        isAuthenticated: authStore.isAuthenticated,
+        user: authStore.user,
+      });
       if (!authStore.isAuthenticated || !authStore.user) {
-        toast.error("Bạn hãy đăng nhập");
+        toast.error("Vui lòng đăng nhập để ứng tuyển", {
+          onClick: () => router.push("/login"),
+        });
         return false;
       }
       return true;
+    };
+
+    const openApplyModal = () => {
+      console.log("checkLoginStatus:", checkLoginStatus());
+      if (!checkLoginStatus()) return;
+
+      // Reset form
+      applicationForm.value = {
+        introduction: "",
+        cvOption: "",
+        cvFile: null,
+        profileCvId: "",
+        previewCvUrl: "",
+        errors: {},
+      };
+
+      // Mở modal
+      const modalElement = document.getElementById("applyJobModal");
+      console.log("modalElement:", modalElement);
+      if (modalElement) {
+        try {
+          const modal = new Modal(modalElement);
+          console.log("Modal instance:", modal);
+          modal.show();
+        } catch (error) {
+          console.error("Lỗi khi khởi tạo modal:", error);
+          toast.error("Lỗi khi mở form ứng tuyển");
+        }
+      } else {
+        console.error("Không tìm thấy modal element với ID 'applyJobModal'");
+        toast.error("Lỗi: Không tìm thấy form ứng tuyển");
+      }
+    };
+
+    const submitApplication = async () => {
+      // Reset errors
+      applicationForm.value.errors = {};
+
+      // Validate form
+      let isValid = true;
+      if (!applicationForm.value.introduction.trim()) {
+        applicationForm.value.errors.introduction =
+          "Vui lòng nhập giới thiệu bản thân";
+        isValid = false;
+      }
+      if (!applicationForm.value.cvOption) {
+        applicationForm.value.errors.cvOption = "Vui lòng chọn một tùy chọn CV";
+        isValid = false;
+      }
+      if (
+        applicationForm.value.cvOption === "upload" &&
+        !applicationForm.value.cvFile
+      ) {
+        applicationForm.value.errors.cvFile = "Vui lòng tải lên CV";
+        isValid = false;
+      }
+      if (
+        applicationForm.value.cvOption === "profile" &&
+        !applicationForm.value.profileCvId
+      ) {
+        applicationForm.value.errors.profileCvId = "Vui lòng chọn một CV";
+        isValid = false;
+      }
+
+      if (!isValid) {
+        return;
+      }
+
+      // Giả lập gửi form
+      applyLoading.value = true;
+      try {
+        const formData = {
+          jobId: job.value?.id,
+          candidateId: authStore.user.Candidates.id,
+          coverLetter: applicationForm.value.introduction,
+          cvOption: applicationForm.value.cvOption,
+          cvUpload: applicationForm.value.cvFile,
+        };
+        console.log("Form data:", formData);
+
+        // TODO: Gọi API gửi ứng tuyển ở đây
+        await applyToJobApi(formData);
+
+        toast.success("Ứng tuyển thành công!");
+        const modalElement = document.getElementById("applyJobModal");
+        if (modalElement) {
+          const modal = Modal.getInstance(modalElement);
+          modal.hide();
+        }
+      } catch (error) {
+        console.error("Lỗi khi gửi ứng tuyển:", error);
+        toast.error("Lỗi khi gửi ứng tuyển");
+      } finally {
+        applyLoading.value = false;
+      }
     };
 
     const formatDate = (date) => {
@@ -573,10 +785,12 @@ export default {
         if (response.status !== "success" || !response.data) {
           throw new Error("Dữ liệu công việc không hợp lệ");
         }
-        job.value = response.data;
-        relatedJobs.value = Array.isArray(response.data.relatedJobs)
-          ? response.data.relatedJobs
+        job.value = response.data.job;
+        relatedJobs.value = Array.isArray(response.data.jobsRelateds)
+          ? response.data.jobsRelateds
           : [];
+
+        console.log(relatedJobs);
       } catch (err) {
         error.value = err.message || "Có lỗi xảy ra khi tải dữ liệu";
         toast.error(error.value);
@@ -585,19 +799,19 @@ export default {
       }
     };
 
-    const openApplyModal = () => {
-      // Kiểm tra trạng thái đăng nhập
-      if (!checkLoginStatus()) return;
+    const fetchProfileCvs = async () => {
+      if (!authStore.isAuthenticated || !authStore.candidateId) return;
 
-      // Reset form khi mở modal
-      applicationForm.value = {
-        introduction: "",
-        cvOption: "",
-        cvFile: null,
-        profileCvId: "",
-        previewCvUrl: "",
-        errors: {},
-      };
+      try {
+        // Giả lập danh sách CV (thay bằng API thực khi có)
+        profileCvs.value = [
+          { id: 1, name: "CV Java Developer", updatedAt: "2025-04-01" },
+          { id: 2, name: "CV Full Stack", updatedAt: "2025-03-15" },
+        ];
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách CV:", error);
+        profileCvs.value = [];
+      }
     };
 
     const handleCvUpload = (event) => {
@@ -617,9 +831,7 @@ export default {
       } else {
         applicationForm.value.cvFile = file;
         applicationForm.value.errors.cvFile = "";
-        // Tạo URL tạm thời để xem file
         if (file) {
-          // Thu hồi URL cũ nếu có
           if (applicationForm.value.previewCvUrl) {
             URL.revokeObjectURL(applicationForm.value.previewCvUrl);
           }
@@ -631,7 +843,6 @@ export default {
     };
 
     const clearCvSelection = () => {
-      // Thu hồi URL tạm thời nếu có
       if (applicationForm.value.previewCvUrl) {
         URL.revokeObjectURL(applicationForm.value.previewCvUrl);
       }
@@ -643,13 +854,13 @@ export default {
     };
 
     const toggleSaveJob = async (jobId) => {
-      if (!authStore.isAuthenticated || !authStore.candidateId) {
+      if (!authStore.isAuthenticated || !authStore.user.Candidates.id) {
         toast.error("Bạn hãy đăng nhập để lưu công việc");
         return;
       }
 
       try {
-        if (saveJobStore.jobs.some((savedJob) => savedJob.id === jobId)) {
+        if (saveJobStore.jobs.some((savedJob) => savedJob.jobId === jobId)) {
           await saveJobStore.delJob(jobId);
         } else {
           await saveJobStore.saveJobs({
@@ -692,7 +903,7 @@ export default {
           return;
       }
 
-      window.open(shareUrl, "_blank");
+      window.open(shareUrl, "_blank", "noopener,noreferrer");
     };
 
     onMounted(async () => {
@@ -706,6 +917,9 @@ export default {
         await fetchJobDetail();
       } catch (error) {
         console.error("Lỗi khi khởi tạo trang:", error);
+      } finally {
+        saveJobStore.isLoading = false;
+        applyLoading.value = false;
       }
     });
 
@@ -714,6 +928,7 @@ export default {
       relatedJobs,
       loading,
       error,
+      authStore,
       saveJobStore,
       applyLoading,
       profileCvs,
@@ -729,11 +944,11 @@ export default {
       clearCvSelection,
       toggleSaveJob,
       share,
+      submitApplication,
     };
   },
 };
 </script>
-
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap");
 
@@ -1317,12 +1532,18 @@ export default {
   padding: 1.75rem;
 }
 
-.form-label {
-  font-weight: 500;
+.form-label.fw-bold {
+  font-size: 1.1rem;
   color: #2d3748;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
+.form-control[readonly] {
+  background-color: #f7fafc;
+  border-color: #e2e8f0;
+  color: #4a5568;
+  cursor: not-allowed;
+}
 .form-control,
 .form-select {
   border-radius: 10px;
