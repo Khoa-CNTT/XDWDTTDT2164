@@ -125,6 +125,7 @@ class UserController {
         companyDescription,
         companySize,
         companyTaxCode,
+        industry,
       } = req.body;
 
       if (!req.file || !req.file.filename) {
@@ -140,6 +141,7 @@ class UserController {
         companyDescription,
         companySize,
         companyTaxCode,
+        industry,
         companyLogo: avatar,
       };
 
@@ -192,7 +194,7 @@ class UserController {
    */
   async getEmployerProfile(req, res) {
     try {
-      const { employerId } = req.user;
+      const { employerId } = req.params;
 
       const employer = await userService.getEmployerProfile(employerId);
 
@@ -446,6 +448,134 @@ class UserController {
     try {
       const { userId } = req.params;
       const data = await userService.updateUser(userId, req.body);
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Cập nhật nhà tuyển dụng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async updateEmployerProfile(req, res) {
+    try {
+      const { id } = req.params;
+      const {
+        companyName,
+        companyAddress,
+        companyWebsite,
+        companyDescription,
+        companySize,
+        companyTaxCode,
+      } = req.body;
+
+      let avatar;
+
+      if (req.file) {
+        avatar = req.file.filename;
+      }
+
+      const updateData = {
+        companyName,
+        companyAddress,
+        companyWebsite,
+        companyDescription,
+        companySize,
+        companyTaxCode,
+        companyLogo: avatar,
+      };
+
+      const result = await userService.updateEmployerProfile(id, updateData);
+
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data: result,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Cập nhật ứng viên
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async updateCandidateProfile(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Lấy dữ liệu từ body request
+      const candidateData = {};
+
+      // Lọc và chỉ lấy các trường có giá trị
+      const fields = [
+        "skillsId",
+        "address",
+        "dateOfBirth",
+        "gender",
+        "salaryId",
+        "workExperience",
+      ];
+
+      fields.forEach((field) => {
+        if (req.body[field] !== undefined) {
+          candidateData[field] = req.body[field];
+        }
+      });
+
+      // Kiểm tra xem có file CV mới không
+      if (req.file) {
+        candidateData.cvUrl = req.file.filename;
+      }
+
+      const result = await userService.updateCandidateProfile(
+        id,
+        candidateData
+      );
+
+      return res.status(StatusCode.OK).json({
+        statusCode: StatusCode.OK,
+        status: ResponseStatus.SUCCESS,
+        data: result,
+      });
+    } catch (error) {
+      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
+        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
+        status: ResponseStatus.ERROR,
+        message: error.message || "Lỗi hệ thống",
+      });
+    }
+  }
+
+  /**
+   * Cập nhật trạng thái khóa người dùng
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async setBlockStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { isBlocked } = req.body;
+      const data = await userService.setBlockStatus(id, isBlocked);
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,

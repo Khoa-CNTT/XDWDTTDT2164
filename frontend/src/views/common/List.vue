@@ -127,6 +127,12 @@
             >
               {{ jobStore.error }}
             </div>
+            <div
+              v-else-if="jobStore.jobs.length === 0"
+              class="alert alert-info text-center"
+            >
+              Không tìm thấy công việc phù hợp. Vui lòng thử các bộ lọc khác.
+            </div>
 
             <div v-else>
               <div class="listings-header">
@@ -143,6 +149,7 @@
                       :src="getCompanyLogo(job.Employers.companyLogo)"
                       :alt="`Logo công ty ${job.Employers.companyName}`"
                       class="job-logo"
+                      @error="handleImageError"
                     />
                     <div class="job-info">
                       <router-link
@@ -169,14 +176,43 @@
                         >
                       </div>
                       <div class="job-badges">
-                        <!-- <span class="badge badge-type">{{
+                        <span class="badge badge-type">{{
                           job.JobTypes.jobTypeName
-                        }}</span> -->
+                        }}</span>
                       </div>
                     </div>
                   </div>
-                  <button class="save-button">
-                    <i class="fa-solid fa-bookmark"></i>Lưu
+                  <button
+                    class="save-button"
+                    :class="{
+                      saved:
+                        saveJobStore.jobs.some(
+                          (savedJob) => savedJob.jobId === job.id
+                        ) && authStore.isAuthenticated,
+                    }"
+                    @click="toggleSaveJob(job.id)"
+                    :disabled="job.isSaving"
+                  >
+                    <i
+                      :class="
+                        job.isSaving
+                          ? 'fa-solid fa-spinner fa-spin'
+                          : saveJobStore.jobs.some(
+                              (savedJob) => savedJob.jobId === job.id
+                            ) && authStore.isAuthenticated
+                          ? 'fa-solid fa-bookmark'
+                          : 'fa-regular fa-bookmark'
+                      "
+                    ></i>
+                    {{
+                      job.isSaving
+                        ? "Đang xử lý..."
+                        : saveJobStore.jobs.some(
+                            (savedJob) => savedJob.jobId === job.id
+                          ) && authStore.isAuthenticated
+                        ? "Đã lưu"
+                        : "Lưu"
+                    }}
                   </button>
                 </div>
               </div>
@@ -238,7 +274,9 @@
 import { useRoute, useRouter } from "vue-router";
 import { useJobStore } from "@stores/useJobStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { ref, watch, computed } from "vue";
+import { useSaveJobsStore } from "@/stores/useSaveJobStore";
+import { ref, watch, computed, onMounted } from "vue";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "JobsList",
@@ -247,6 +285,7 @@ export default {
     const router = useRouter();
     const authStore = useAuthStore();
     const jobStore = useJobStore();
+    const saveJobStore = useSaveJobsStore();
 
     const filters = ref({
       search: "",
@@ -272,7 +311,6 @@ export default {
 
     const updateQueryParams = () => {
       const query = {};
-
       if (filters.value.search) query.search = filters.value.search;
       if (filters.value.address) query.address = filters.value.address;
       if (filters.value.categoryId) query.categoryId = filters.value.categoryId;
@@ -282,7 +320,6 @@ export default {
         query.experienceId = filters.value.experienceId;
       if (filters.value.salaryId) query.salaryId = filters.value.salaryId;
       if (filters.value.page > 1) query.page = filters.value.page.toString();
-
       router.replace({ query });
     };
 
@@ -305,7 +342,53 @@ export default {
           page: filters.value.page,
           limit: jobStore.pageSize,
         });
-      } catch (error) {}
+        // Thêm isSaving cho mỗi job
+        jobStore.jobs = jobStore.jobs.map((job) => ({
+          ...job,
+          isSaving: job.isSaving || false,
+        }));
+      } catch (error) {
+        jobStore.error =
+          error.response?.data?.message || "Lỗi khi lấy danh sách công việc";
+      }
+    };
+
+    const toggleSaveJob = async (jobId) => {
+      if (!authStore.isAuthenticated) {
+        toast.error("Bạn cần phải đăng nhập để lưu công việc", {
+          autoClose: 3000,
+        });
+        return;
+      }
+
+      const job = jobStore.jobs.find((j) => j.id === jobId);
+      if (!job) {
+        console.error("Job not found:", jobId);
+        return;
+      }
+
+      job.isSaving = true;
+      jobStore.jobs = jobStore.jobs.map((j) =>
+        j.id === jobId ? { ...j, isSaving: true } : j
+      );
+
+      try {
+        if (saveJobStore.jobs.some((savedJob) => savedJob.jobId === jobId)) {
+          await saveJobStore.delJob(jobId);
+        } else {
+          await saveJobStore.saveJobs({
+            candidateId: authStore.candidateId,
+            jobId,
+          });
+        }
+      } catch (error) {
+        console.error("Toggle save job failed:", error);
+        toast.error("Lỗi khi lưu/xóa công việc", { autoClose: 3000 });
+      } finally {
+        jobStore.jobs = jobStore.jobs.map((j) =>
+          j.id === jobId ? { ...j, isSaving: false } : j
+        );
+      }
     };
 
     const changePage = (page) => {
@@ -366,15 +449,24 @@ export default {
       { immediate: true }
     );
 
+    onMounted(() => {
+      if (authStore.isAuthenticated) {
+        saveJobStore.fetchSaveJobs();
+      }
+    });
+
     return {
       filters,
       applyFilters,
+      toggleSaveJob,
       changePage,
       paginationPages,
       getCompanyLogo,
       handleImageError,
       jobStore,
+      authStore,
       formatPostedAt,
+      saveJobStore,
     };
   },
 };
@@ -501,28 +593,6 @@ export default {
   font-weight: 600;
 }
 
-.filters {
-  display: flex;
-  gap: 12px;
-}
-
-.filter-select {
-  padding: 10px 15px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  background-color: #ffffff;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  color: #4b5563;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-}
-
 .job-card {
   background: #ffffff;
   border-radius: 16px;
@@ -620,11 +690,6 @@ export default {
   color: #ffffff;
 }
 
-.badge-urgent {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #ffffff;
-}
-
 .save-button {
   background: transparent;
   border: 2px solid #e2e8f0;
@@ -644,6 +709,17 @@ export default {
   border-color: #3b82f6;
   color: #3b82f6;
   background-color: rgba(59, 130, 246, 0.05);
+}
+
+.save-button.saved {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .save-button i {
@@ -735,15 +811,6 @@ export default {
     gap: 15px;
   }
 
-  .filters {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .filter-select {
-    flex: 1;
-  }
-
   .job-card {
     flex-direction: column;
     align-items: flex-start;
@@ -791,16 +858,6 @@ export default {
     font-size: 0.8rem;
   }
 
-  .filter-select {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
-
-  .filters {
-    flex-direction: column;
-    gap: 10px;
-  }
-
   .badge {
     padding: 5px 10px;
     font-size: 0.8rem;
@@ -813,7 +870,6 @@ export default {
 }
 
 /* Extra Enhancements */
-/* Animation for job listings */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -893,7 +949,6 @@ export default {
 /* Focus states for accessibility */
 .sidebar-input:focus,
 .sidebar-select:focus,
-.filter-select:focus,
 .page-link:focus,
 .save-button:focus {
   outline: none;

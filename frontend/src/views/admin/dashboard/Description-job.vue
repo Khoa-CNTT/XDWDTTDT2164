@@ -1,130 +1,142 @@
 <template>
   <div class="description-job">
-    <h2>Xem Chi Tiết Bài Đăng</h2>
-    <router-link to="/admin-dashboard/post-management">
-      <div>Quay trở lại?</div>
-    </router-link>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h2>Xem Chi Tiết Bài Đăng</h2>
+      <router-link to="/admin-dashboard/post-management" class="back-link">
+        <i class="fas fa-arrow-left me-2"></i>Quay trở lại
+      </router-link>
+    </div>
 
     <!-- Loading state -->
     <div v-if="jobStore.isLoading" class="text-center mt-5">
-      <i class="fas fa-spinner fa-spin"></i> Đang tải chi tiết bài đăng...
+      <i class="fas fa-spinner fa-spin me-2"></i>Đang tải chi tiết bài đăng...
     </div>
 
     <!-- Error state -->
-    <div v-else-if="jobStore.error" class="text-center text-danger mt-5">
-      {{ jobStore.error }}
+    <div v-else-if="jobStore.error" class="alert alert-danger mt-5">
+      <i class="fas fa-exclamation-circle me-2"></i>{{ jobStore.error }}
     </div>
 
     <!-- Job details -->
-    <div v-else-if="jobStore.job" class="card mt-5">
+    <div v-else-if="jobStore.job" class="card mt-4">
       <div class="card-header text-center">
-        <h1><b>Mô Tả Chi Tiết Công Việc</b></h1>
+        <h1>Mô Tả Chi Tiết Công Việc</h1>
       </div>
       <div class="card-body">
-        <div class="d-flex align-items-center">
+        <div class="company-info d-flex align-items-center">
           <img
             class="img-logo me-3"
             :src="
-              jobStore.job.Employers.companyLogo ||
+              getCompanyLogo(jobStore.job.Employers.companyLogo) ||
               'https://via.placeholder.com/200x120'
             "
             alt="logo-company"
           />
           <div>
-            <h4 class="mt-2">
-              <b>{{ jobStore.job.Employers.companyName || "N/A" }}</b>
-            </h4>
+            <h4>{{ jobStore.job.Employers.companyName || "N/A" }}</h4>
             <p>
-              Địa chỉ:
-              <span class="text-secondary">{{
-                jobStore.job.Employers.companyAddress || "N/A"
-              }}</span>
+              <i class="fas fa-map-marker-alt me-1"></i>
+              {{ jobStore.job.Employers.companyAddress || "N/A" }}
             </p>
             <p>
-              Phone:
-              <span class="text-secondary">{{
-                jobStore.job.Employers.companyPhone || "N/A"
-              }}</span>
+              <i class="fas fa-phone me-1"></i>
+              {{ jobStore.job.Employers.companyPhone || "N/A" }}
             </p>
             <p>
-              Email:
-              <span class="text-secondary">{{
-                jobStore.job.Employers.companyEmail || "N/A"
-              }}</span>
+              <i class="fas fa-envelope me-1"></i>
+              {{ jobStore.job.Employers.companyEmail || "N/A" }}
             </p>
           </div>
         </div>
         <hr />
-        <div class="mt-4">
-          <h4>Tiêu Đề Công Việc:</h4>
-          <p>{{ jobStore.job.jobName || "N/A" }}</p>
+        <div class="job-details mt-4">
+          <h4>Tiêu Đề Công Việc</h4>
+          <p class="text-muted">{{ jobStore.job.jobName || "N/A" }}</p>
         </div>
-        <div class="mt-4">
-          <h4>Mô Tả Công Việc:</h4>
-          <textarea class="form-control" rows="5" readonly>{{
-            jobStore.job.description || "N/A"
-          }}</textarea>
+        <div class="job-details mt-4">
+          <h4>Mô Tả Công Việc</h4>
+          <p class="description-text">{{ plainDescription }}</p>
+        </div>
+        <div class="job-details mt-4">
+          <h4>Yêu Cầu Ứng Viên</h4>
+          <p class="description-text">{{ plainCandidateRequirements }}</p>
+        </div>
+        <div class="job-details mt-4">
+          <h4>Quyền Lợi</h4>
+          <p class="description-text">{{ plainBenefit }}</p>
+        </div>
+        <div class="job-details mt-4">
+          <h4>Thời Gian Làm Việc</h4>
+          <p class="description-text">{{ jobStore.job.workTime || "N/A" }}</p>
+        </div>
+        <div class="job-details mt-4">
+          <h4>Địa Chỉ Làm Việc</h4>
+          <p class="description-text">{{ jobStore.job.address || "N/A" }}</p>
+        </div>
+        <div class="job-details mt-4">
+          <h4>Yêu Cầu Khác</h4>
+          <p class="description-text">{{ plainRequirements }}</p>
         </div>
         <hr />
-        <div class="mt-4">
-          <h4>Yêu Cầu Công Việc:</h4>
-          <div class="row">
-            <div class="col-6 mt-2">
-              <label>Danh mục việc làm</label>
+        <div class="job-requirements mt-4">
+          <h4>Yêu Cầu Công Việc</h4>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Danh mục việc làm</label>
               <input
                 type="text"
-                class="form-control mt-2"
+                class="form-control"
                 :value="jobStore.job.Categories.categoryName || 'N/A'"
                 readonly
               />
-              <label>Mức lương</label>
+              <label class="form-label">Mức lương</label>
               <input
                 type="text"
-                class="form-control mt-2"
+                class="form-control"
                 :value="jobStore.job.Salaries.salaryName || 'N/A'"
                 readonly
               />
-              <label>Kỹ năng</label>
+              <label class="form-label">Kỹ năng</label>
               <input
                 type="text"
-                class="form-control mt-2"
-                :value="jobStore.job.JobSkills?.join(',') || 'N/A'"
+                class="form-control"
+                :value="jobStore.job.JobSkills?.join(', ') || 'N/A'"
                 readonly
               />
-              <label>Cấp bậc</label>
+              <label class="form-label">Cấp bậc</label>
               <input
                 type="text"
-                class="form-control mt-2"
+                class="form-control"
                 :value="jobStore.job.Ranks.rankName || 'N/A'"
                 readonly
               />
             </div>
-            <div class="col-6 mt-2">
-              <label>Hình thức việc làm</label>
+            <div class="col-md-6">
+              <label class="form-label">Hình thức việc làm</label>
               <input
                 type="text"
-                class="form-control mt-2"
+                class="form-control"
                 :value="jobStore.job.JobTypes.jobTypeName || 'N/A'"
                 readonly
               />
-              <label>Số lượng người tuyển</label>
+              <label class="form-label">Số lượng người tuyển</label>
               <input
                 type="text"
-                class="form-control mt-2"
+                class="form-control"
                 :value="jobStore.job.numberOfRecruits || 'N/A'"
                 readonly
               />
-              <label>Kinh nghiệm</label>
+              <label class="form-label">Kinh nghiệm</label>
               <input
                 type="text"
-                class="form-control mt-2"
+                class="form-control"
                 :value="jobStore.job.Experiences.experienceName || 'N/A'"
                 readonly
               />
-              <label>Ngày hết hạn ứng tuyển</label>
+              <label class="form-label">Ngày hết hạn ứng tuyển</label>
               <input
                 type="date"
-                class="form-control mt-2"
+                class="form-control"
                 :value="formatDate(jobStore.job.expire)"
                 readonly
               />
@@ -132,26 +144,36 @@
           </div>
         </div>
       </div>
-      <div class="card-footer text-end">
+      <div
+        class="card-footer text-end"
+        v-if="jobStore.job.isApproved !== 'Đã được duyệt'"
+      >
         <button
           class="btn btn-outline-success me-2"
           @click="approveJob"
-          :disabled="jobStore.isLoading || jobStore.job.isApproved"
+          :disabled="jobStore.isLoading"
         >
-          Duyệt
+          <i class="fas fa-check me-1"></i>Duyệt
         </button>
         <button
           class="btn btn-outline-danger"
           @click="rejectJob"
-          :disabled="jobStore.isLoading || jobStore.job.isApproved"
+          :disabled="jobStore.isLoading"
         >
-          Từ chối
+          <i class="fas fa-times me-1"></i>Từ chối
         </button>
+      </div>
+      <div class="card-footer text-end" v-else>
+        <span class="text-success">
+          <i class="fas fa-check-circle me-1"></i>Bài đăng đã được duyệt
+        </span>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div v-else class="text-center mt-5">Không có dữ liệu bài đăng.</div>
+    <div v-else class="text-center mt-5">
+      <i class="fas fa-exclamation-triangle me-2"></i>Không có dữ liệu bài đăng.
+    </div>
   </div>
 </template>
 
@@ -159,6 +181,8 @@
 import { useJobStore } from "@stores/useJobStore";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
+import { htmlToText } from "html-to-text";
+import { verifyJobApi } from "../../../apis/job";
 
 export default {
   name: "JobDetailView",
@@ -168,40 +192,83 @@ export default {
     const router = useRouter();
     return { jobStore, route, router };
   },
-  async mounted() {
-    const jobId = this.route.params.jobId;
-    if (jobId) {
-      await this.jobStore.fetchJobDetailForEmployer(jobId);
-    } else {
-      this.jobStore.error = "Không tìm thấy ID bài đăng";
-    }
+  computed: {
+    plainDescription() {
+      const html = this.jobStore.job?.description || "N/A";
+      return this.convertToPlainText(html);
+    },
+    plainCandidateRequirements() {
+      const html = this.jobStore.job?.candidateRequirements || "N/A";
+      return this.convertToPlainText(html);
+    },
+    plainBenefit() {
+      const html = this.jobStore.job?.benefit || "N/A";
+      return this.convertToPlainText(html);
+    },
+    plainRequirements() {
+      const html = this.jobStore.job?.requirements || "N/A";
+      return this.convertToPlainText(html);
+    },
   },
   methods: {
+    getCompanyLogo(logo) {
+      if (!logo) return "/images/default-company-logo.png";
+      return `https://res.cloudinary.com/dh1i7su2f/image/upload/${logo}`;
+    },
+    convertToPlainText(html) {
+      if (html === "N/A") return html;
+      return htmlToText(html, {
+        wordwrap: false,
+        preserveNewlines: true,
+        tags: {
+          ul: {
+            format: "block",
+            options: { leadingLineBreaks: 1, lineBreak: "\n- " },
+          },
+          ol: {
+            format: "block",
+            options: { leadingLineBreaks: 1, lineBreak: "\n1. " },
+          },
+          p: { format: "block", options: { leadingLineBreaks: 1 } },
+          br: { format: "inline", options: { lineBreak: "\n" } },
+        },
+      }).trim();
+    },
     formatDate(date) {
       if (!date) return "";
       const d = new Date(date);
-      return d.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      return d.toISOString().split("T")[0];
     },
     async approveJob() {
       if (!confirm("Xác nhận duyệt bài đăng này?")) return;
       try {
-        await this.jobStore.approveJob(this.route.params.id);
+        await verifyJobApi(this.route.params.jobId, "Đã được duyệt");
         toast.success("Bài đăng đã được duyệt!");
         this.router.push("/admin-dashboard/post-management");
       } catch (error) {
-        toast.error("Lỗi khi duyệt bài đăng.");
+        toast.error("Lỗi khi duyệt bài đăng: " + error.message);
       }
     },
     async rejectJob() {
       if (!confirm("Xác nhận từ chối bài đăng này?")) return;
       try {
-        await this.jobStore.rejectJob(this.route.params.id);
+        await verifyJobApi(this.route.params.jobId, "Đã bị từ chối");
         toast.success("Bài đăng đã bị từ chối.");
         this.router.push("/admin-dashboard/post-management");
       } catch (error) {
-        toast.error("Lỗi khi từ chối bài đăng.");
+        toast.error("Lỗi khi từ chối bài đăng: " + error.message);
       }
     },
+  },
+  async mounted() {
+    const jobId = this.route.params.jobId;
+    if (jobId) {
+      await this.jobStore.fetchJobDetailForEmployer(jobId);
+      console.log(this.jobStore.job);
+    } else {
+      this.jobStore.error = "Không tìm thấy ID bài đăng";
+      toast.error(this.jobStore.error);
+    }
   },
 };
 </script>
@@ -209,10 +276,11 @@ export default {
 <style scoped>
 /* General container */
 .description-job {
-  padding: 30px;
-  max-width: 100%;
-  background: #f8fafc; /* Light background for depth */
-  border-radius: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: "Roboto", sans-serif;
+  background: #f8f9fa;
   min-height: 100vh;
 }
 
@@ -220,228 +288,227 @@ export default {
 h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b; /* Dark slate for contrast */
-  margin-bottom: 15px;
+  color: #1a1a1a;
+  margin: 0;
 }
 
-.description-job a {
+.back-link {
   font-size: 0.95rem;
-  color: #2563eb; /* Vibrant blue */
+  color: #0d6efd;
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.description-job a:hover {
-  color: #1e40af; /* Darker blue on hover */
-  transform: translateX(-3px); /* Subtle shift */
-}
-
-.description-job a::before {
-  content: "\f060"; /* Font Awesome arrow-left */
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-size: 0.9rem;
+.back-link:hover {
+  color: #0a58ca;
+  transform: translateX(-3px);
 }
 
 /* Card */
 .card {
   border: none;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   background: #ffffff;
-  margin-top: 20px;
-  overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px); /* Subtle lift on hover */
+  transform: translateY(-2px);
 }
 
 .card-header {
-  background: #eff6ff; /* Light blue header */
-  border-bottom: 1px solid #e2e8f0;
-  padding: 20px;
+  background: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1.5rem;
 }
 
 .card-header h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #1a1a1a;
   margin: 0;
 }
 
 .card-body {
-  padding: 25px;
+  padding: 2rem;
 }
 
 .card-footer {
-  border-top: 1px solid #e2e8f0;
-  padding: 15px 20px;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
   background: #ffffff;
 }
 
 /* Company info */
-.d-flex.align-items-center {
-  gap: 20px;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+.company-info {
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .img-logo {
-  width: 200px; /* Reduced for better proportionality */
-  height: 120px;
-  object-fit: cover; /* Ensure image fits nicely */
-  border: 1px solid #e2e8f0; /* Light gray border */
-  border-radius: 12px; /* Rounded corners */
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
   transition: transform 0.3s ease;
 }
 
 .img-logo:hover {
-  transform: scale(1.05); /* Subtle zoom on hover */
+  transform: scale(1.03);
 }
 
-.card-body h4 {
+.company-info h4 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 10px;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
 }
 
-.card-body p {
+.company-info p {
   font-size: 0.95rem;
-  color: #475569; /* Slate gray */
-  margin-bottom: 8px;
-}
-
-.card-body p .text-secondary {
-  color: #64748b; /* Muted slate */
+  color: #495057;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Divider */
 hr {
-  border-top: 1px solid #e2e8f0;
-  margin: 20px 0;
+  border-top: 1px solid #dee2e6;
+  margin: 1.5rem 0;
 }
 
 /* Job details */
-.mt-4 {
-  margin-top: 20px;
+.job-details h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
 }
 
-.form-control,
-.form-control:disabled {
-  border: 1px solid #d1d5db; /* Light gray */
+.job-details p {
+  font-size: 1rem;
+  color: #495057;
+  margin-bottom: 0;
+}
+
+.description-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  background: #f8f9fa;
+  padding: 1rem;
   border-radius: 8px;
-  padding: 10px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background: #f8fafc; /* Light background for textarea */
+  border: 1px solid #dee2e6;
 }
 
-.form-control:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  outline: none;
+/* Job requirements */
+.job-requirements .row {
+  margin-top: 1rem;
 }
 
-textarea.form-control {
-  resize: vertical; /* Allow vertical resizing only */
-  min-height: 100px;
-}
-
-/* Form inputs */
-.row {
-  gap: 15px;
-}
-
-.col-6 {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-label {
+.job-requirements .form-label {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #475569;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.job-requirements .form-control {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.job-requirements .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
 }
 
 /* Footer buttons */
 .btn {
   border-radius: 8px;
   font-weight: 500;
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-outline-success {
-  border-color: #10b981; /* Green */
-  color: #10b981;
+  border-color: #28a745;
+  color: #28a745;
 }
 
 .btn-outline-success:hover {
-  background: #10b981;
+  background: #28a745;
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(16, 185, 129, 0.2);
 }
 
 .btn-outline-success:disabled {
-  border-color: #94a3b8;
-  color: #94a3b8;
+  border-color: #6c757d;
+  color: #6c757d;
   cursor: not-allowed;
 }
 
 .btn-outline-danger {
-  border-color: #ef4444; /* Red */
-  color: #ef4444;
+  border-color: #dc3545;
+  color: #dc3545;
 }
 
 .btn-outline-danger:hover {
-  background: #ef4444;
+  background: #dc3545;
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(239, 68, 68, 0.2);
 }
 
 .btn-outline-danger:disabled {
-  border-color: #94a3b8;
-  color: #94a3b8;
+  border-color: #6c757d;
+  color: #6c757d;
   cursor: not-allowed;
+}
+
+.text-success {
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 /* Loading and error states */
 .text-center {
-  padding: 30px;
-  color: #64748b; /* Muted slate */
+  padding: 2rem;
+  color: #495057;
 }
 
 .text-center i {
   font-size: 1.5rem;
-  color: #2563eb;
+  color: #0d6efd;
 }
 
-.text-danger {
-  font-size: 0.95rem;
-  color: #dc2626; /* Bright red */
+.alert-danger {
+  background: #f8d7da;
+  color: #842029;
+  border-left: 4px solid #dc3545;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .description-job {
-    padding: 20px;
-  }
-
-  h2 {
-    font-size: 1.5rem;
+    padding: 1.5rem 0.75rem;
   }
 
   .card-body {
-    padding: 15px;
+    padding: 1.5rem;
   }
 
   .card-header h1 {
@@ -449,43 +516,39 @@ label {
   }
 
   .img-logo {
-    width: 150px;
-    height: 90px;
+    width: 140px;
+    height: 84px;
   }
 
-  .row {
-    flex-direction: column; /* Stack form inputs */
+  .company-info {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .col-6 {
-    width: 100%; /* Full-width inputs */
-  }
-
-  .btn {
-    width: 100%; /* Full-width buttons */
-    margin-bottom: 10px;
+  .job-requirements .row {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 576px) {
-  .card-body h4 {
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .job-details h4,
+  .job-requirements h4 {
     font-size: 1.1rem;
   }
 
-  .card-body p,
+  .description-text,
   .form-control,
-  label {
+  .form-label {
     font-size: 0.9rem;
-  }
-
-  .img-logo {
-    width: 120px;
-    height: 72px;
   }
 
   .btn {
-    padding: 8px 16px;
-    font-size: 0.9rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
 }
 </style>

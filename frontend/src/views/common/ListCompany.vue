@@ -23,7 +23,7 @@
               <div class="input-with-icon">
                 <i class="fa-solid fa-search search-icon"></i>
                 <input
-                  v-model="filters.keyword"
+                  v-model="filters.search"
                   type="text"
                   class="sidebar-input"
                   placeholder="Tên công ty, ngành nghề..."
@@ -245,7 +245,7 @@ export default {
     const employersStore = useUserStore();
 
     const filters = ref({
-      keyword: "",
+      search: "",
       address: "",
       industry: "",
       sort: "newest",
@@ -255,7 +255,7 @@ export default {
 
     // Initialize filters from URL query parameters
     const initializeFiltersFromQuery = () => {
-      filters.value.keyword = route.query.keyword || "";
+      filters.value.search = route.query.search || "";
       filters.value.address = route.query.address || "";
       filters.value.industry = route.query.industry || "";
       filters.value.sort = route.query.sort || "newest";
@@ -266,7 +266,7 @@ export default {
     // Update URL query parameters based on filters
     const updateQueryParams = () => {
       const query = {};
-      if (filters.value.keyword) query.keyword = filters.value.keyword;
+      if (filters.value.search) query.search = filters.value.search;
       if (filters.value.address) query.address = filters.value.address;
       if (filters.value.industry) query.industry = filters.value.industry;
       if (filters.value.sort && filters.value.sort !== "newest")
@@ -288,7 +288,7 @@ export default {
     const fetchEmployers = async () => {
       try {
         await employersStore.fetchAllEmployers({
-          keyword: filters.value.keyword,
+          search: filters.value.search,
           address: filters.value.address,
           industry: filters.value.industry,
           sort: filters.value.sort,

@@ -184,7 +184,12 @@ class JobsController {
    */
   async getJobsForTime(req, res) {
     try {
-      const data = await jobsService.getJobsForTime();
+      const { period, startDate, endDate } = req.query;
+      const data = await jobsService.getJobsForTime({
+        period,
+        startDate,
+        endDate,
+      });
       return res.status(StatusCode.OK).json({
         statusCode: StatusCode.OK,
         status: ResponseStatus.SUCCESS,

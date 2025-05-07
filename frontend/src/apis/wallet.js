@@ -48,3 +48,37 @@ export const getHistoryPaymentApi = async (page, limit) => {
   });
   return response.data;
 };
+
+/**
+ * Lấy ra danh sách giao dịch
+ * @param {string} page
+ * @param {string} limit
+ * @returns
+ */
+export const getPaymentsApi = async (page, limit) => {
+  const response = await api.get("/api/wallets/get-payments", {
+    params: { page, limit },
+  });
+
+  return response.data;
+};
+
+/**
+ * Xuất file csv
+ * @returns
+ */
+export const exportFileCsv = async () => {
+  const response = await api.get("/api/wallets/export-file", {
+    responseType: "blob", // 👈 yêu cầu server trả về định dạng nhị phân (blob)
+  });
+  return response.data;
+};
+
+/**
+ * Lấy doanh thu theo thời gian
+ * @returns {Promise<void>}
+ */
+export const getPaymentTimeApi = async () => {
+  const response = await api.get("/api/wallets/get-payments-time");
+  return response.data;
+};

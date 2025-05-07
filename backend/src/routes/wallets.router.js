@@ -2,7 +2,6 @@ const express = require("express");
 const {
   protectedRoute,
   authorizedRoute,
-  authorizedEmployer,
 } = require("../middlewares/auth.middleware");
 const walletsController = require("../controllers/wallets.controller");
 const {
@@ -27,7 +26,6 @@ router.post(
   "/deposit-zalopay",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner"),
   validateDepositToWallet,
   handleValidationErrors,
   walletsController.depositToWallet
@@ -40,6 +38,11 @@ router.post(
  * @controller walletsController.callbackZalopay: xử lý callback khi thanh toán thành công zalopay
  */
 router.post("/callback-zalopay", walletsController.callbackZalopay);
+
+router.get(
+  "/check-status-zalopay/:app_trans_id",
+  walletsController.checkPaymentStatusZalopay
+);
 
 /**
  * @route POST /deposit-momo
@@ -54,7 +57,6 @@ router.post(
   "/deposit-momo",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner"),
   validateDepositToWallet,
   handleValidationErrors,
   walletsController.depositToWalletWithMoMo
@@ -114,6 +116,43 @@ router.get(
   protectedRoute,
   authorizedRoute("employer"),
   walletsController.getHistoryPayment
+);
+
+/**
+ * @route GET/wallets/get-payments-time
+ * @desc Lấy doanh thu theo thời gian
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute("admin"): Kiểm tra quyền truy cập admin
+ * @controller walletsController.getPaymentTime: Danh sách doanh thu theo thời gian
+ */
+router.get(
+  "/get-payments-time",
+  protectedRoute,
+  authorizedRoute("admin"),
+  walletsController.getPaymentTime
+);
+
+/**
+ * @route GET/wallets/get-payments
+ * @desc Lấy danh sách doanh thu
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute("admin"): Kiểm tra quyền truy cập admin
+ * @controller walletsController.getPayments: Danh sách doanh thu
+ */
+router.get(
+  "/get-payments",
+  protectedRoute,
+  authorizedRoute("admin"),
+  walletsController.getPayments
+);
+
+router.get(
+  "/export-file",
+  protectedRoute,
+  authorizedRoute("admin"),
+  walletsController.exportPaymentToCsv
 );
 
 module.exports = router;

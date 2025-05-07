@@ -7,7 +7,9 @@ const { StatusCode } = require("../libs/enum");
 const db = require("../models");
 const { caculatePromotionAmount } = require("../libs/helper");
 const dotenv = require("dotenv").config();
-const { Op, fn, col, literal } = require("sequelize");
+const { Op } = require("sequelize");
+const { Parser } = require("json2csv");
+const dayjs = require("dayjs");
 
 const config = {
   app_id: "2553",
@@ -202,32 +204,33 @@ class WalletsService {
     }
   }
 
-  // async checkPaymentStatusZalopay(appTransId) {
-  //   let postData = {
-  //     app_id: config.app_id,
-  //     app_trans_id: appTransId, // Input your app_trans_id
-  //   };
+  async checkPaymentStatusZalopay(appTransId) {
+    let postData = {
+      app_id: config.app_id,
+      app_trans_id: appTransId, // Input your app_trans_id
+    };
 
-  //   let data =
-  //     postData.app_id + "|" + postData.app_trans_id + "|" + config.key1; // appid|app_trans_id|key1
-  //   postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+    let data =
+      postData.app_id + "|" + postData.app_trans_id + "|" + config.key1; // appid|app_trans_id|key1
+    postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
 
-  //   let postConfig = {
-  //     method: "post",
-  //     url: config.endpointCheckStatus,
-  //     headers: {
-  //       "Content-Type": "application/x-www-form-urlencoded",
-  //     },
-  //     data: qs.stringify(postData),
-  //   };
+    let postConfig = {
+      method: "post",
+      url: config.endpointCheckStatus,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: qs.stringify(postData),
+    };
 
-  //   try {
-  //     const result = await axios(postConfig);
-  //     return result.data;
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // }
+    try {
+      const result = await axios(postConfig);
+      console.log("Trạng thái đơn hàng:", response.data);
+      return result.data;
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
   /**
    * Nạp tiền vào tài khoản với MoMo
@@ -493,7 +496,14 @@ class WalletsService {
           as: "Jobs",
         },
       ],
-      attributes: ["paymentDate", "amount", "paymentMethod", "note"],
+      attributes: [
+        "paymentDate",
+        "amount",
+        "paymentMethod",
+        "balanceBefore",
+        "balanceAfter",
+        "note",
+      ],
       limit,
       offset,
     });
@@ -507,21 +517,28 @@ class WalletsService {
   }
 
   /**
-   * Lấy ra doanh thu theo thời gian
-   * @returns {Promise<void>} - Trả về doanh thu theo thời gian
+   * Lấy doanh thu theo thời gian
+   * @param {Object} params
+   * @param {string} params.period - Khoảng thời gian (day, month, year, weekday)
+   * @param {string} [params.startDate] - Ngày bắt đầu (YYYY-MM-DD)
+   * @param {string} [params.endDate] - Ngày kết thúc (YYYY-MM-DD)
+   * @returns {Promise<Array>} Danh sách doanh thu với thời gian và số tiền
    */
   async getPaymentTime({ period = "month", startDate, endDate }) {
     try {
+      const { fn, col, literal, Op } = require("sequelize");
+      const db = require("../models"); // Giả sử bạn có file models
+
       const periodFormats = {
         day: "%Y-%m-%d",
         month: "%Y-%m",
         year: "%Y",
-        weekday: "%W",
+        weekday: "%W", // Monday, Tuesday, ...
       };
 
       const format = periodFormats[period];
       if (!format) {
-        throw new Error("Invalid period. Use day, month, year or weekday");
+        throw new Error("Invalid period. Use day, month, year, or weekday");
       }
 
       const where = {};
@@ -536,21 +553,127 @@ class WalletsService {
       const data = await db.Payments.findAll({
         where,
         attributes: [
-          [fn("DATE_FORMAT", col("createdAt"), format), "period"],
+          [fn("DATE_FORMAT", col("created_at"), format), "period"],
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%W")), "weekday"], // Sử dụng MAX
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%d")), "day"], // Sử dụng MAX
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%m")), "month"], // Sử dụng MAX
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%Y")), "year"], // Sử dụng MAX
           [fn("SUM", col("amount")), "revenue"],
         ],
-        group: [literal(`DATE_FORMAT(createdAt, '${format}')`)],
-        order: [[literal(`DATE_FORMAT(createdAt, '${format}')`), "ASC"]],
+        group: [literal(`DATE_FORMAT(created_at, '${format}')`)],
+        order: [[literal(`DATE_FORMAT(created_at, '${format}')`), "ASC"]],
         raw: true,
       });
 
-      return data.reduce((acc, { period, revenue }) => {
-        acc[period] = parseFloat(revenue);
-        return acc;
-      }, {});
+      const weekdayMap = {
+        Monday: "Thứ Hai",
+        Tuesday: "Thứ Ba",
+        Wednesday: "Thứ Tư",
+        Thursday: "Thứ Năm",
+        Friday: "Thứ Sáu",
+        Saturday: "Thứ Bảy",
+        Sunday: "Chủ Nhật",
+      };
+
+      return data.map(({ period, weekday, day, month, year, revenue }) => ({
+        period,
+        display:
+          period === weekday
+            ? weekdayMap[weekday]
+            : `${weekdayMap[weekday]}, ${day}/${month}/${year}`,
+        revenue: parseFloat(revenue),
+      }));
     } catch (error) {
       throw new Error(`Lỗi lấy doanh thu theo thời gian: ${error.message}`);
     }
+  }
+
+  /**
+   * Lấy danh sách giao dịch
+   * @param {Object} query
+   * @returns {Promise<Array>} Danh sách giao dịch
+   */
+  async getPayments(query) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count: totalPayments, rows: payments } =
+      await db.Payments.findAndCountAll({
+        include: [
+          {
+            model: db.Users,
+            as: "Users",
+            attributes: ["id"],
+            include: [
+              {
+                model: db.Employers,
+                as: "Employers",
+                attributes: ["companyName"],
+              },
+            ],
+          },
+        ],
+        limit,
+        offset,
+      });
+
+    return { totalPayments, payments, page, limit };
+  }
+
+  /**
+   * Xuất doanh thu thành file csv
+   * @returns {Promise<void>}
+   */
+  async exportPaymentsToCsv() {
+    const payments = await db.Payments.findAll({
+      include: [
+        {
+          model: db.Users,
+          as: "Users",
+          attributes: ["id"],
+          include: [
+            {
+              model: db.Employers,
+              as: "Employers",
+              attributes: ["companyName"],
+            },
+          ],
+        },
+      ],
+      raw: true,
+      nest: true,
+    });
+
+    const fields = [
+      { label: "Mã giao dịch", value: "transactionId" },
+      {
+        label: "Tên công ty",
+        value: (row) => row.Users?.Employers?.companyName || "N/A",
+      },
+      {
+        label: "Loại giao dịch",
+        value: "transactionType",
+      },
+      {
+        label: "Số tiền (VND)",
+        value: (row) => (row.amount ? row.amount.toLocaleString("vi-VN") : "0"),
+      },
+      {
+        label: "Trạng thái",
+        value: (row) => row.status || "N/A",
+      },
+      {
+        label: "Ngày giao dịch",
+        value: (row) =>
+          row.createdAt ? dayjs(row.createdAt).format("DD/MM/YYYY") : "N/A",
+      },
+    ];
+
+    const json2csvParser = new Parser({ fields, delimiter: "," });
+    const csv = json2csvParser.parse(payments);
+
+    return "\uFEFF" + csv;
   }
 }
 

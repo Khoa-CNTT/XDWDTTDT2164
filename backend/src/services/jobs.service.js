@@ -7,6 +7,7 @@ const { moderateJob } = require("../libs/geminiClient");
 const { fn, col, literal, Op } = require("sequelize");
 const { parse } = require("dotenv");
 const { sendMailToEmployer } = require("../libs/sendMail");
+const { parseGeminiResultMatch } = require("../libs/helper");
 
 /**
  * Service xử lý login nghiệp vụ liên quan đến bài đăng công việc
@@ -96,12 +97,11 @@ class JobsService {
         );
       }
 
-      // Lấy thông tin employer (bao gồm wallet_balance)
+      // Kiểm tra nhà tuyển dụng
       const employer = await db.Employers.findOne({
         where: { id: job.employerId },
         transaction,
       });
-
       if (!employer) {
         throw new ApiError(
           StatusCode.BAD_REQUEST,
@@ -109,18 +109,20 @@ class JobsService {
         );
       }
 
-      // Kiểm tra số dư ví
+      // Kiểm tra ví
       const wallet = await db.Wallets.findOne({
         where: { userId },
       });
       if (!wallet) {
         throw new ApiError(
           StatusCode.NOT_FOUND,
-          `Bạn hãy nạp tiền vào tài khoản.`
+          "Bạn hãy nạp tiền vào tài khoản."
         );
       }
       const amountFloat = parseFloat(amount);
       const walletBalance = parseFloat(wallet.balance);
+      console.log("Wallet found", { userId, walletBalance, amountFloat });
+
       if (walletBalance < amountFloat) {
         throw new ApiError(
           StatusCode.BAD_REQUEST,
@@ -139,51 +141,40 @@ class JobsService {
           paymentDate: new Date(),
           jobId,
           userId,
-          transaction_type: "Thanh toán",
+          transactionType: "Thanh toán",
+          status: "Thành công",
         },
         { transaction }
       );
 
-      // Cập nhật số dư ví của employer
+      // Cập nhật số dư ví
       const newBalance = walletBalance - amountFloat;
       await db.Wallets.update(
         { balance: newBalance },
         { where: { userId }, transaction }
       );
 
-      // Cập nhật job is visible thành true
+      // Cập nhật job isVisible
       await db.Jobs.update(
         { isVisible: true },
         { where: { id: jobId }, transaction }
       );
 
-      // Gọi kiểm duyệt với Gemini
+      // Kiểm duyệt với Gemini
       const moderationResult = await moderateJob(job);
-      const result = parse(moderationResult);
-      console.log(result);
+      const result = parseGeminiResultMatch(moderationResult);
+      console.log("Moderation result", result);
 
       if (result.result === "Không duyệt") {
-        // Cập nhật status job "Không kiểm duyệt"
-        // await db.Jobs.update(
-        //   {
-        //     isApproved: "Đã bị từ chối",
-        //   },
-        //   { where: { id: job.id }, transaction }
-        // );
-
-        // Lấy danh sách admin để tạo notification
-        const admins = await this.getAdminList({ transaction });
-
         // Gửi thông báo đến admin
+        const admins = await this.getAdminList({ transaction });
         const notifications = admins.map((admin) => ({
           userId: admin.id,
           message: `Bài đăng "${job.jobName}" đã bị AI từ chối kiểm duyệt. Vui lòng kiểm tra lại.`,
           type: "moderation",
         }));
-
         await db.Notifications.bulkCreate(notifications, { transaction });
       } else {
-        // nếu ok thì đánh dấu đã duyệt
         await db.Jobs.update(
           { isApproved: "Đã được duyệt" },
           { where: { id: jobId }, transaction }
@@ -193,8 +184,8 @@ class JobsService {
       await transaction.commit();
       return payment;
     } catch (error) {
+      console.error("Error in payJob:", error.message, error.stack);
       await transaction.rollback();
-      console.error("Error in payJob:", error);
       throw error;
     }
   }
@@ -205,8 +196,10 @@ class JobsService {
    * @returns {Promise<Object>} Danh sách bài đăng công việc
    */
   async getJobs(query) {
-    const { page = 1, limit = 10, ...queryParams } = query;
-    const cacheKey = `jobs:${JSON.stringify(query)}`;
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const { ...queryParams } = query;
+    const cacheKey = `jobs:${JSON.stringify({ ...queryParams, page, limit })}`;
 
     // Kiểm tra cache trước khi truy vấn DB
     const cachedJobs = await redisClient.get(cacheKey);
@@ -215,14 +208,13 @@ class JobsService {
       return JSON.parse(cachedJobs);
     }
 
-    // Nếu không có cache, thực hiện truy vấn DB
     const offset = (page - 1) * limit;
 
     const whereClause = {};
 
-    if (queryParams.jobName) {
+    if (queryParams.search) {
       whereClause.jobName = {
-        [Op.like]: `%${queryParams.jobName}%`,
+        [Op.like]: `%${queryParams.search}%`,
       };
     }
 
@@ -292,11 +284,10 @@ class JobsService {
       jobs: jobs.rows,
       total: jobs.count,
       totalPages: Math.ceil(jobs.count / limit),
-      currentPage: parseInt(page),
-      limit: parseInt(limit),
+      currentPage: page,
+      limit,
     };
 
-    // Lưu vào redis với TTL = 600s (10 phút)
     await redisClient.set(cacheKey, JSON.stringify(result), {
       EX: 600,
     });
@@ -427,7 +418,35 @@ class JobsService {
       );
     }
 
-    return job;
+    const jobsRelateds = await db.Jobs.findAll({
+      where: {
+        jobSlug: { [db.Sequelize.Op.ne]: slug },
+        isApproved: "Đã được duyệt",
+        isVisible: true,
+        deletedAt: null,
+        categoryId: job.categoryId,
+      },
+      include: [
+        {
+          model: db.Employers,
+          as: "Employers",
+        },
+        {
+          model: db.JobTypes,
+          as: "JobTypes",
+        },
+        {
+          model: db.Salaries,
+          as: "Salaries",
+        },
+        {
+          model: db.Ranks,
+          as: "Ranks",
+        },
+      ],
+    });
+
+    return { job, jobsRelateds };
   }
 
   /**
@@ -483,6 +502,7 @@ class JobsService {
         "candidateRequirements",
         "benefit",
         "workTime",
+        "isApproved",
       ],
     });
 
@@ -491,20 +511,26 @@ class JobsService {
 
   /**
    * Lấy danh sách bài đăng theo thời gian
-   * @returns {Promise<Object>} Danh sách bài đăng theo thời gian
+   * @param {Object} params
+   * @param {string} params.period - Khoảng thời gian (day, month, year, weekday)
+   * @param {string} [params.startDate] - Ngày bắt đầu (YYYY-MM-DD)
+   * @param {string} [params.endDate] - Ngày kết thúc (YYYY-MM-DD)
+   * @returns {Promise<Array>} Danh sách bài đăng với thời gian và số lượng
    */
   async getJobsForTime({ period = "month", startDate, endDate }) {
     try {
+      const db = require("../models"); // Giả sử bạn có file models
+
       const formatByPeriod = {
         day: "%Y-%m-%d",
         month: "%Y-%m",
         year: "%Y",
-        weekday: "%W", // thêm vào để lấy theo tên thứ (Monday, Tuesday,...)
+        weekday: "%W", // Monday, Tuesday, ...
       };
 
       const format = formatByPeriod[period];
       if (!format) {
-        throw new Error("Invalid period. Use day, month, year or weekday");
+        throw new Error("Invalid period. Use day, month, year, or weekday");
       }
 
       const where = {};
@@ -516,21 +542,39 @@ class JobsService {
         where.createdAt[Op.lte] = new Date(endDate);
       }
 
-      const data = await db.Job.findAll({
+      const data = await db.Jobs.findAll({
         where,
         attributes: [
-          [fn("DATE_FORMAT", col("createdAt"), format), "period"],
+          [fn("DATE_FORMAT", col("created_at"), format), "period"],
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%W")), "weekday"], // Sử dụng MAX
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%d")), "day"], // Sử dụng MAX
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%m")), "month"], // Sử dụng MAX
+          [fn("MAX", fn("DATE_FORMAT", col("created_at"), "%Y")), "year"], // Sử dụng MAX
           [fn("COUNT", col("id")), "count"],
         ],
-        group: [literal(`DATE_FORMAT(createdAt, '${format}')`)],
-        order: [[literal(`DATE_FORMAT(createdAt, '${format}')`), "ASC"]],
+        group: [literal(`DATE_FORMAT(created_at, '${format}')`)],
+        order: [[literal(`DATE_FORMAT(created_at, '${format}')`), "ASC"]],
         raw: true,
       });
 
-      return data.reduce((acc, { period, count }) => {
-        acc[period] = Number(count);
-        return acc;
-      }, {});
+      const weekdayMap = {
+        Monday: "Thứ Hai",
+        Tuesday: "Thứ Ba",
+        Wednesday: "Thứ Tư",
+        Thursday: "Thứ Năm",
+        Friday: "Thứ Sáu",
+        Saturday: "Thứ Bảy",
+        Sunday: "Chủ Nhật",
+      };
+
+      return data.map(({ period, weekday, day, month, year, count }) => ({
+        period,
+        display:
+          period === weekday
+            ? weekdayMap[weekday]
+            : `${weekdayMap[weekday]}, ${day}/${month}/${year}`,
+        count: Number(count),
+      }));
     } catch (error) {
       throw new Error(`Error fetching job counts: ${error.message}`);
     }
@@ -663,7 +707,7 @@ class JobsService {
     const transaction = await db.sequelize.transaction();
     try {
       // Kiểm tra bài đăng công việc
-      const job = await this.getJobById(id, { transaction });
+      const job = await this.findJobById(id);
       if (!job) {
         throw new ApiError(
           StatusCode.NOT_FOUND,
@@ -678,7 +722,7 @@ class JobsService {
         // Tạo thông báo cho nhà tuyển dụng
         await db.Notifications.create(
           {
-            userId: job.employerId,
+            userId: job.userId,
             message: `Bài đăng công việc ${job.jobName} đã được ${job.isApproved}.`,
             type: "job",
             isRead: false,
@@ -767,7 +811,7 @@ class JobsService {
       // Tạo thông báo cho nhà tuyển dụng
       await db.Notifications.create(
         {
-          userId: job.employerId,
+          userId: job.userId,
           message: `Bài đăng công việc ${job.jobName} đã  ${job.isApproved}. Vui lòng cập nhật lại`,
           type: "job",
           isRead: false,

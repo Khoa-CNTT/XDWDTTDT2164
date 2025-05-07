@@ -5,11 +5,13 @@ import {
   depositZalopayApi,
   getHistoryDepositApi,
   getHistoryPaymentApi,
+  getPaymentsApi,
   getWalletApi,
 } from "../apis/wallet";
 
 export const useWalletStore = defineStore("wallet", {
   state: () => ({
+    payments: [],
     wallet: null,
     isLoading: false,
     error: null,
@@ -72,6 +74,27 @@ export const useWalletStore = defineStore("wallet", {
         this.wallet = response.data;
       } catch (error) {
         this.handleError(error, "Lỗi khi lấy ví người dùng");
+        throw error;
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async fetchPayments(page, limit) {
+      this.setLoadingState(true);
+      this.resetError();
+
+      try {
+        const response = await getPaymentsApi(page, limit);
+        if (!response || !response.data) {
+          throw new Error("Dữ liệu danh sách giao dịch không hợp lệ");
+        }
+        this.payments = response.data.payments;
+        this.currentPage = response.data.page;
+        this.pageSize = response.data.limit;
+        this.totalPages = response.data.totalPayments;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi lấy danh sách giao dịch");
         throw error;
       } finally {
         this.setLoadingState(false);

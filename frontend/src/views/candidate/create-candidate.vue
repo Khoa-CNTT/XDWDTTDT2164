@@ -197,7 +197,9 @@ export default {
 
     // Kiểm tra hồ sơ khi component được mount
     onMounted(() => {
-      console.log(authStore.user);
+      if (authStore.isAuthenticated && authStore.user.role !== "candidate") {
+        router.push("/");
+      }
       if (
         authStore.isAuthenticated &&
         authStore.user.Candidates &&

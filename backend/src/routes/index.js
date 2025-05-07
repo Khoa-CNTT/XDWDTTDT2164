@@ -15,6 +15,7 @@ const rankRoutes = require("./ranks.router");
 const walletRoutes = require("./wallets.router");
 const applyJobRoutes = require("./applyJob.router");
 const notificationRoutes = require("./notification.router");
+const dashboardRoutes = require("./dashboard.router");
 
 /**
  * Khởi tạo các tuyến đường chính cho ứng dụng
@@ -59,6 +60,9 @@ const initialRoutes = (app) => {
 
   // Định tuyến cho thông báo
   app.use("/api/notifications", notificationRoutes);
+
+  // Định tuyến cho dashboard
+  app.use("/api/dashboard", dashboardRoutes);
 
   // Middleware xử lý khi không tìm thấy route
   app.use(notFound);

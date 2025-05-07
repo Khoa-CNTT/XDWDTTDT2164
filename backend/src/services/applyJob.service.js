@@ -4,6 +4,7 @@ const { moderateApplyJob } = require("../libs/geminiClient");
 const { convertPdfToText, parseGeminiResult } = require("../libs/helper");
 const { sendMailToCandidate } = require("../libs/sendMail");
 const db = require("../models");
+const path = require("path");
 
 /**
  * Service xử lý nghiệp vụ liên quan đến ứng tuyển
@@ -59,7 +60,12 @@ class ApplyJobService {
         throw new ApiError(StatusCode.BAD_REQUEST, "CV phải là file PDF");
       }
       try {
-        cvText = await convertPdfToText(applyJobData.cvUpload);
+        const cvPath = path.join(
+          __dirname,
+          "../uploads",
+          applyJobData.cvUpload
+        );
+        cvText = await convertPdfToText(cvPath); // ✅ Đúng
       } catch (error) {
         throw new ApiError(
           StatusCode.INTERNAL_SERVER_ERROR,
@@ -102,7 +108,9 @@ class ApplyJobService {
     let parseResult;
     try {
       const aiResult = await moderateApplyJob(cvText, job);
+      console.log(aiResult);
       parseResult = parseGeminiResult(aiResult);
+      console.log(parseResult);
       if (!parseResult || typeof parseResult.matchScore !== "number") {
         throw new Error("Kết quả AI không hợp lệ");
       }

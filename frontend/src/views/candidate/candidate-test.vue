@@ -2,7 +2,8 @@
   <div class="profile-container">
     <div class="profile-header">
       <h1 class="welcome-title">
-        Xin chào, {{ authStore.user?.name || "User" }}
+        Xin chào,
+        {{ authStore.user?.name || authStore.user?.fullName || "User" }}
       </h1>
       <div class="back-home" @click="goBack">
         <i class="fas fa-arrow-left"></i> Trở lại trang chủ
@@ -14,12 +15,21 @@
 
       <div class="upload-section">
         <label for="uploadCV" class="cv-upload-area">
-          <div class="upload-placeholder" :class="{ 'has-file': cvFileName }">
+          <div
+            class="upload-placeholder"
+            :class="{ 'has-file': cvFileName }"
+            @dragover.prevent
+            @drop.prevent="handleFileDrop"
+          >
             <template v-if="cvFileName">
               <div class="file-preview">
-                <i class="fas fa-file-pdf file-icon"></i>
+                <i :class="['file-icon', getFileIconClass()]"></i>
                 <span class="file-name">{{ cvFileName }}</span>
-                <button v-if="cvUrl" @click="viewCV" class="view-cv-button">
+                <button
+                  v-if="cvUrl"
+                  @click.stop="viewCV"
+                  class="view-cv-button"
+                >
                   <i class="fas fa-eye"></i> Xem CV
                 </button>
               </div>
@@ -95,29 +105,35 @@
         <div class="form-column">
           <div class="form-group">
             <label class="form-label">Danh mục làm việc</label>
-            <input
-              v-model="profile.workingdirectory"
-              class="form-input"
-              placeholder="FullStack Development"
-            />
+            <select v-model="profile.workingdirectory" class="form-input">
+              <option value="" disabled>Chọn danh mục</option>
+              <option
+                v-for="category in categoryStore.categories"
+                :key="category.id"
+                :value="category.categoryName"
+              >
+                {{ category.categoryName }}
+              </option>
+            </select>
           </div>
 
           <div class="form-group">
             <label class="form-label">Vị trí ứng tuyển</label>
-            <input
-              v-model="profile.candidateposition"
-              class="form-input"
-              placeholder="ReactJS, Node JS"
-            />
+            <select v-model="profile.candidateposition" class="form-input">
+              <option value="" disabled>Chọn kỹ năng</option>
+              <option
+                v-for="skill in skillStore.skills"
+                :key="skill.id"
+                :value="skill.skillName"
+              >
+                {{ skill.skillName }}
+              </option>
+            </select>
           </div>
 
           <div class="form-group">
             <label class="form-label">Ngày sinh</label>
-            <input
-              v-model="profile.date"
-              class="form-input"
-              placeholder="22/12/2003"
-            />
+            <input type="date" v-model="profile.date" class="form-input" />
           </div>
 
           <div class="form-row">
@@ -132,20 +148,25 @@
 
             <div class="form-group half-width">
               <label class="form-label">Giới tính</label>
-              <input
-                v-model="profile.gender"
-                class="form-input"
-                placeholder="Nam"
-              />
+              <select v-model="profile.gender" class="form-input">
+                <option value="" disabled>Chọn giới tính</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
 
       <div class="form-actions">
-        <button @click="saveProfile" class="save-button" :disabled="isLoading">
+        <button
+          @click="updateProfile"
+          class="save-button"
+          :disabled="isLoading"
+        >
           <i class="fas fa-save"></i>
-          {{ authStore.user?.candidates ? "Cập nhật hồ sơ" : "Lưu hồ sơ" }}
+          {{ isLoading ? "Đang xử lý..." : "Cập nhật hồ sơ" }}
         </button>
       </div>
     </div>
@@ -153,22 +174,28 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "@stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { toast } from "vue3-toastify";
-import axios from "axios";
+import { updateCandidateProfile } from "@/apis/user";
+import { useCategoryStore } from "@/stores/useCategoryStore";
+import { useSkillStore } from "@/stores/useSkillStore";
 
 export default {
+  name: "ProfileComponent",
   setup() {
     const router = useRouter();
     const authStore = useAuthStore();
+    const skillStore = useSkillStore();
+    const categoryStore = useCategoryStore();
     const cvFileName = ref(null);
     const cvFile = ref(null);
     const cvUrl = ref(null);
     const isLoading = ref(false);
+    const selectedCategoryId = ref("");
 
-    // Khởi tạo profile từ user.candidates nếu tồn tại
+    // Khởi tạo profile
     const profile = ref({
       fullName: "",
       phone: "",
@@ -181,126 +208,200 @@ export default {
       gender: "",
     });
 
-    // Kiểm tra xem có candidates hay không
-    const hasCandidateProfile = computed(() => !!authStore.user?.Candidates);
+    // Watch cho workingdirectory để load skills tương ứng
+    watch(
+      () => profile.value.workingdirectory,
+      async (newCategory) => {
+        if (newCategory) {
+          // Tìm categoryId từ categoryName
+          const category = categoryStore.categories.find(
+            (cat) => cat.categoryName === newCategory
+          );
+
+          if (category) {
+            selectedCategoryId.value = category.id;
+            await skillStore.fetchSkillByCategoryIds(category.id);
+            // Reset candidateposition khi thay đổi category
+            profile.value.candidateposition = "";
+          }
+        }
+      }
+    );
+
+    // Hàm định dạng date để hiển thị
+    const formatDate = (dateString) => {
+      if (!dateString) return "";
+
+      // Nếu date có định dạng DD/MM/YYYY, chuyển sang YYYY-MM-DD cho input type="date"
+      if (dateString.includes("/")) {
+        const parts = dateString.split("/");
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(
+            2,
+            "0"
+          )}`;
+        }
+      }
+
+      return dateString;
+    };
+
+    // Hàm xử lý tệp CV
+    const handleCVUpload = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Kiểm tra kích thước tệp (5MB = 5 * 1024 * 1024)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước tệp vượt quá 5MB!");
+        return;
+      }
+
+      // Kiểm tra định dạng tệp
+      const validTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Chỉ chấp nhận tệp PDF, DOC, DOCX!");
+        return;
+      }
+
+      // Lưu tệp và tên tệp
+      cvFile.value = file;
+      cvFileName.value = file.name;
+
+      // Tạo URL tạm thời cho file để xem preview
+      if (file.type === "application/pdf") {
+        // Nếu là PDF, tạo URL trực tiếp
+        cvUrl.value = URL.createObjectURL(file);
+      } else {
+        // Nếu là DOC/DOCX, hiện thông báo (không thể preview trực tiếp)
+        toast.info(
+          "Tệp DOC/DOCX không thể xem trước trực tiếp, nhưng đã được tải lên thành công!"
+        );
+      }
+
+      toast.success("CV đã được tải lên thành công!");
+    };
 
     // Tải thông tin hồ sơ khi component được mounted
-    onMounted(() => {
-      if (hasCandidateProfile.value) {
+    onMounted(async () => {
+      try {
+        await categoryStore.fetchCategories();
+
+        if (!authStore.user) {
+          toast.error("Vui lòng đăng nhập để xem hồ sơ!");
+          router.push("/login");
+          return;
+        }
+
+        if (!authStore.user.Candidates) {
+          toast.error("Bạn cần tạo hồ sơ trước!");
+          router.push("/");
+          return;
+        }
+
         // Gán thông tin từ user.candidates vào profile
         const candidate = authStore.user.Candidates;
-        console.log(candidate);
+        console.log("Thông tin candidate:", candidate);
 
-        // Xử lý CandidateSkills để tạo chuỗi workingdirectory
-        const skills = candidate.CandidateSkills?.length
-          ? candidate.CandidateSkills.map(
-              (skill) => skill.Skills.skillName
-            ).join(",")
-          : "";
+        // Lấy categoryId từ CandidateSkills (nếu có)
+        if (
+          candidate.CandidateSkills?.length &&
+          candidate.CandidateSkills[0]?.Skills?.Categories
+        ) {
+          selectedCategoryId.value =
+            candidate.CandidateSkills[0].Skills.Categories.id;
+          await skillStore.fetchSkillByCategoryIds(selectedCategoryId.value);
+        }
+
+        // Xử lý CandidateSkills để tạo chuỗi workingdirectory và candidateposition
+        let skills = "";
+        let categoryName = "";
+
+        if (candidate.CandidateSkills?.length) {
+          skills = candidate.CandidateSkills[0]?.Skills?.skillName || "";
+
+          // Kiểm tra trước khi truy cập categoryName
+          if (candidate.CandidateSkills[0]?.Skills?.Categories) {
+            categoryName =
+              candidate.CandidateSkills[0].Skills.Categories.categoryName || "";
+          }
+        }
 
         profile.value = {
-          fullName: candidate.Users.fullName || "",
-          phone: candidate.Users.phoneNumber || "",
+          fullName: candidate.Users?.fullName || authStore.user?.fullName || "",
+          phone:
+            candidate.Users?.phoneNumber || authStore.user?.phoneNumber || "",
           experience: candidate.workExperience || "",
           address: candidate.address || "",
-          workingdirectory:
-            candidate.CandidateSkills[0].Skills.Categories.categoryName || "",
-          candidateposition: skills || "",
-          date: candidate.dateOfBirth || "",
+          workingdirectory: categoryName,
+          candidateposition: skills,
+          date: formatDate(candidate.dateOfBirth || ""),
           expectedSalary: candidate.salary || "",
           gender: candidate.gender || "",
         };
+
         // Nếu có CV, hiển thị tên file và URL
-        cvFileName.value = candidate.cvUrl || null;
-        cvUrl.value = candidate.cvUrl || null;
+        if (candidate.cvUrl) {
+          const filename = candidate.cvUrl.split("/").pop();
+          cvFileName.value = filename || "CV.pdf";
+          cvUrl.value = candidate.cvUrl;
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải thông tin hồ sơ:", error);
+        toast.error("Có lỗi xảy ra khi tải thông tin hồ sơ!");
       }
     });
 
-    // Xử lý upload CV
-    const handleCVUpload = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        // Validate file type
-        const validTypes = [
-          ".pdf",
-          ".doc",
-          ".docx",
-          "application/pdf",
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ];
-        const fileType =
-          file.type || file.name.substring(file.name.lastIndexOf("."));
+    // Hàm xem CV
+    const viewCV = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-        if (!validTypes.some((type) => fileType.includes(type))) {
-          toast.error("Chỉ chấp nhận file PDF, DOC hoặc DOCX!");
-          return;
-        }
-
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error("Kích thước file không được vượt quá 5MB!");
-          return;
-        }
-
-        cvFile.value = file;
-        cvFileName.value = file.name;
-        cvUrl.value = null; // Reset cvUrl, sẽ được cập nhật sau khi upload
-      }
-    };
-
-    // Hàm xem CV trong Google Docs Viewer
-    const viewCV = () => {
-      if (cvUrl.value) {
-        const viewerUrl = `http://localhost:5001/uploads/${cvUrl.value}`;
-        window.open(viewerUrl, "_blank");
-      } else {
+      if (!cvUrl.value) {
         toast.error("Không tìm thấy URL của CV!");
+        return;
       }
-    };
 
-    // Hàm thêm mới hồ sơ
-    const createProfile = async () => {
       try {
-        isLoading.value = true;
-        const formData = new FormData();
-
-        // Thêm file CV nếu có
-        if (cvFile.value) {
-          formData.append("cv", cvFile.value);
+        // Kiểm tra xem URL có phải là Blob URL (file vừa upload) hay URL từ server
+        if (cvUrl.value.startsWith("blob:")) {
+          // Đây là file vừa upload, mở trực tiếp
+          window.open(cvUrl.value, "_blank");
+        } else {
+          // Đây là URL từ server
+          const viewerUrl = `${
+            import.meta.env.VITE_API_URL || "http://localhost:5001"
+          }/uploads/${cvUrl.value}`;
+          window.open(viewerUrl, "_blank");
         }
-
-        // Thêm dữ liệu hồ sơ
-        Object.entries(profile.value).forEach(([key, value]) => {
-          formData.append(key, value || "");
-        });
-
-        // Gọi API thêm mới
-        const response = await axios.post("/api/candidate/profile", formData, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-
-        // Cập nhật user trong authStore
-        authStore.user.candidates = response.data.candidate;
-        cvUrl.value = response.data.candidate.cvUrl || null;
-        cvFileName.value =
-          response.data.candidate.cvFileName || cvFileName.value;
-        toast.success("Hồ sơ đã được tạo thành công!");
       } catch (error) {
-        console.error("Lỗi khi tạo hồ sơ:", error);
-        toast.error(error.response?.data?.message || "Lỗi khi tạo hồ sơ!");
-      } finally {
-        isLoading.value = false;
+        console.error("Lỗi khi mở CV:", error);
+        toast.error("Không thể mở CV. Vui lòng thử lại sau!");
       }
     };
 
     // Hàm cập nhật hồ sơ
     const updateProfile = async () => {
       try {
+        // Validation
+        if (!profile.value.fullName.trim()) {
+          toast.error("Vui lòng nhập tên đầy đủ!");
+          return;
+        }
+
+        if (!profile.value.phone.trim()) {
+          toast.error("Vui lòng nhập số điện thoại!");
+          return;
+        }
+
         isLoading.value = true;
+        console.log("Bắt đầu cập nhật hồ sơ");
+
+        // Chuẩn bị dữ liệu để gửi đi
         const formData = new FormData();
 
         // Thêm file CV nếu có
@@ -313,20 +414,31 @@ export default {
           formData.append(key, value || "");
         });
 
-        // Gọi API cập nhật
-        const response = await axios.put("/api/candidate/profile", formData, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        // Thêm categoryId nếu đã chọn
+        if (selectedCategoryId.value) {
+          formData.append("categoryId", selectedCategoryId.value);
+        }
+
+        // Sử dụng API để cập nhật
+        if (!authStore.user?.Candidates?.id) {
+          throw new Error("Không tìm thấy thông tin ứng viên!");
+        }
+
+        const candidateId = authStore.user.Candidates.id;
+        const response = await updateCandidateProfile(candidateId, formData);
 
         // Cập nhật user trong authStore
-        authStore.user.candidates = response.data.candidate;
-        cvUrl.value = response.data.candidate.cvUrl || null;
-        cvFileName.value =
-          response.data.candidate.cvFileName || cvFileName.value;
-        toast.success("Hồ sơ đã được cập nhật thành công!");
+        if (response && response.data) {
+          authStore.user.Candidates = response.data;
+          if (response.data.cvUrl) {
+            cvUrl.value = response.data.cvUrl;
+            cvFileName.value = response.data.cvUrl.split("/").pop() || "CV.pdf";
+          }
+
+          toast.success("Hồ sơ đã được cập nhật thành công!");
+        } else {
+          throw new Error("Không nhận được dữ liệu hợp lệ từ API");
+        }
       } catch (error) {
         console.error("Lỗi khi cập nhật hồ sơ:", error);
         toast.error(error.response?.data?.message || "Lỗi khi cập nhật hồ sơ!");
@@ -335,28 +447,49 @@ export default {
       }
     };
 
-    // Hàm xử lý lưu hồ sơ (quyết định gọi create hoặc update)
-    const saveProfile = async () => {
-      if (hasCandidateProfile.value) {
-        await updateProfile();
-      } else {
-        await createProfile();
-      }
-    };
-
     // Quay lại trang chủ
     const goBack = () => {
       router.push("/");
     };
 
+    // Hàm xử lý kéo và thả file
+    const handleFileDrop = (event) => {
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        // Giả lập sự kiện change để tái sử dụng hàm handleCVUpload
+        const mockEvent = { target: { files: [file] } };
+        handleCVUpload(mockEvent);
+      }
+    };
+
+    // Xác định icon cho file dựa vào loại file
+    const getFileIconClass = () => {
+      if (!cvFileName.value) return "fas fa-file";
+
+      const extension = cvFileName.value.split(".").pop()?.toLowerCase() || "";
+
+      if (extension === "pdf") {
+        return "fas fa-file-pdf";
+      } else if (["doc", "docx"].includes(extension)) {
+        return "fas fa-file-word";
+      } else {
+        return "fas fa-file-alt";
+      }
+    };
+
     return {
       authStore,
+      categoryStore,
+      skillStore,
       profile,
       cvFileName,
+      cvFile,
       cvUrl,
       handleCVUpload,
+      handleFileDrop,
+      getFileIconClass,
       viewCV,
-      saveProfile,
+      updateProfile,
       goBack,
       isLoading,
     };
@@ -520,6 +653,7 @@ export default {
 .view-cv-button:hover {
   background-color: #3182ce;
   transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .view-cv-button:active {
@@ -604,6 +738,7 @@ export default {
   font-size: 1rem;
   color: #4a5568;
   transition: all 0.3s ease;
+  background-color: white;
 }
 
 .form-input:focus {
@@ -614,6 +749,15 @@ export default {
 
 .form-input::placeholder {
   color: #a0aec0;
+}
+
+select.form-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
 }
 
 .form-actions {
@@ -639,7 +783,7 @@ export default {
 .save-button:hover {
   background-color: #3182ce;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.25);
+  box-shadow: 0 4px 20px rgba(66, 153, 225, 0.25);
 }
 
 .save-button:active {

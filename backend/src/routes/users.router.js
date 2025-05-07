@@ -4,7 +4,6 @@ const userController = require("../controllers/users.controller");
 const {
   protectedRoute,
   authorizedRoute,
-  authorizedEmployer,
 } = require("../middlewares/auth.middleware");
 const {
   validateChangePassword,
@@ -96,13 +95,13 @@ router.get(
 );
 
 /**
- * @route GET /api/user/employer/
+ * @route GET /api/user/employer/:employerId
  * @desc Lấy thông tin nhà tuyển dụng
  * @access Public
  * @controller UserController.getEmployerProfile
  */
 router.get(
-  "/employer",
+  "/employer/:employerId",
   protectedRoute,
   authorizedRoute("employer"),
   userController.getEmployerProfile
@@ -164,7 +163,6 @@ router.post(
   "/employer/:employerId/add-employee",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner"),
   validateAddEmployeeToEmployer,
   handleValidationErrors,
   userController.addEmployeeToEmployer
@@ -182,7 +180,6 @@ router.get(
   "/employer/:employerId/employees",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner"),
   userController.getEmployerEmployees
 );
 
@@ -233,6 +230,53 @@ router.put(
   protectedRoute,
   authorizedRoute("admin"),
   userController.updateUserByAdmin
+);
+
+/**
+ * @route PUT /api/users/employer-update-profile/:id
+ * @desc Cập nhật hồ sơ công ty
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
+ * @middleware authorizedRoute("employer"): Kiểm tra xem user có phải là employer không
+ * @controller UserController.updateEmployerProfile
+ */
+router.put(
+  "/employer-update-profile/:id",
+  protectedRoute,
+  authorizedRoute("employer"),
+  upload.single("avatar"),
+  userController.updateEmployerProfile
+);
+
+/**
+ * @route PUT /api/users/candidate-update-profile/:id
+ * @desc Cập nhận hồ sơ ứng viên
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
+ * @middleware authorizedRoute("candidate"): Kiểm tra xem user có phải là candidate không
+ * @controller UserController.updateCandidateProfile
+ */
+router.put(
+  "/candidate-update-profile/:id",
+  protectedRoute,
+  authorizedRoute("candidate"),
+  uploadPdf.single("cvUrl"),
+  userController.updateCandidateProfile
+);
+
+/**
+ * @route PUT /api/users/block-user/:id
+ * @desc Cập nhật trạng thái khóa người dùng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
+ * @middleware authorizedRoute("admin"): Kiểm tra xem user có phải là admin không
+ * @controller UserController.setBlockStatus
+ */
+router.put(
+  "/block-user/:id",
+  protectedRoute,
+  authorizedRoute("admin"),
+  userController.setBlockStatus
 );
 
 module.exports = router;

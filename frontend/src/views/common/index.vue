@@ -14,8 +14,11 @@
                 type="text"
                 class="search-input"
                 placeholder="Tìm kiếm việc làm..."
+                v-model="searchQuery"
               />
-              <button class="search-button">Tìm việc</button>
+              <button class="search-button" @click="searchJobs">
+                Tìm việc
+              </button>
             </div>
           </div>
           <div class="col-lg-6">
@@ -33,18 +36,28 @@
     <section class="category-section">
       <div class="container">
         <h2 class="section-title text-center">Danh mục công việc phổ biến</h2>
-        <div class="row">
+        <div v-if="isLoading" class="category-loading text-center">
+          <i class="fas fa-spinner fa-spin"></i> Đang tải danh mục...
+        </div>
+        <div v-else-if="error" class="category-error alert alert-danger">
+          {{ error }}
+        </div>
+        <div v-else class="row">
           <div
             class="col-lg-4 col-md-6 mb-4"
             v-for="(category, index) in categories"
             :key="index"
           >
             <div class="category-card">
-              <i class="fas fa-briefcase category-icon"></i>
+              <img
+                :src="`https://res.cloudinary.com/dh1i7su2f/image/upload/${category.categoryImage}`"
+                alt=""
+                style="width: 50px; height: 50px; object-fit: cover"
+              />
               <div>
-                <h5 class="category-name">{{ category.name }}</h5>
+                <h5 class="category-name">{{ category.categoryName }}</h5>
                 <p class="category-jobs">
-                  ({{ category.jobs }} vị trí đăng mới)
+                  ({{ category.Jobs.length }} vị trí đăng mới)
                 </p>
               </div>
             </div>
@@ -61,10 +74,16 @@
           Biết giá trị của bạn và tìm được công việc đáp ứng điều kiện cuộc sống
           của bạn
         </p>
-        <div class="row">
+        <div v-if="jobsLoading" class="jobs-loading text-center">
+          <i class="fas fa-spinner fa-spin"></i> Đang tải công việc...
+        </div>
+        <div v-else-if="jobsError" class="jobs-error alert alert-danger">
+          {{ jobsError }}
+        </div>
+        <div v-else class="row">
           <div
             class="col-lg-4 col-md-6 mb-4"
-            v-for="(job, index) in jobs"
+            v-for="(job, index) in displayedJobs"
             :key="index"
           >
             <div class="job-card">
@@ -72,15 +91,19 @@
                 <img
                   alt="Logo công ty"
                   class="job-logo"
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXZlaUXIWozu3xqknYB3S9nknCPGFPAEVZLA&s"
+                  :src="
+                    `https://res.cloudinary.com/dh1i7su2f/image/upload/${job.Employers.companyLogo}` ||
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXZlaUXIWozu3xqknYB3S9nknCPGFPAEVZLA&s'
+                  "
                 />
                 <div>
-                  <h5 class="job-title">{{ job.title }}</h5>
+                  <h5 class="job-title">{{ job.jobName }}</h5>
                   <p class="job-meta">
-                    <i class="fa-regular fa-building"></i> {{ job.company }} -
+                    <i class="fa-regular fa-building"></i>
+                    {{ job.Employers.companyName }} -
                     <i class="fa-solid fa-location-dot"></i>
-                    {{ job.location }} -
-                    <i class="fa-solid fa-sack-dollar"></i> {{ job.salary }}
+                    {{ job.address }} - <i class="fa-solid fa-sack-dollar"></i>
+                    {{ job.Salaries.salaryName }}
                   </p>
                   <p class="job-time">
                     <i class="fa-solid fa-clock"></i> {{ job.time }}
@@ -88,44 +111,15 @@
                 </div>
               </div>
               <div class="job-badges">
-                <span class="badge badge-type">{{ job.type }}</span>
-                <span class="badge badge-status">{{ job.status }}</span>
+                <span class="badge badge-type">{{
+                  job.JobTypes.jobTypeName
+                }}</span>
               </div>
             </div>
           </div>
         </div>
-        <div class="text-center mt-4">
-          <button class="view-more-button">Xem thêm</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Lời chứng thực -->
-    <section class="testimonial-section">
-      <div class="container">
-        <h2 class="section-title text-center">Lời chứng thực từ khách hàng</h2>
-        <div class="row">
-          <div
-            class="col-lg-4 mb-4"
-            v-for="(testimonial, index) in testimonials"
-            :key="index"
-          >
-            <div class="testimonial-card">
-              <h5 class="testimonial-title">{{ testimonial.title }}</h5>
-              <p class="testimonial-content">{{ testimonial.content }}</p>
-              <div class="testimonial-author">
-                <img
-                  alt="Ảnh khách hàng"
-                  class="author-image"
-                  src="https://cdn1.iconfinder.com/data/icons/user-pictures/101/malecostume-512.png"
-                />
-                <div>
-                  <p class="author-name">{{ testimonial.name }}</p>
-                  <p class="author-position">{{ testimonial.position }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div v-if="visibleJobs < jobs.length" class="text-center mt-4">
+          <button class="view-more-button" @click="showMore">Xem thêm</button>
         </div>
       </div>
     </section>
@@ -159,50 +153,25 @@
 </template>
 
 <script>
+import { getCategoriesApi } from "@/apis/category";
+import { getJobsApi } from "@/apis/job";
+import { toast } from "vue3-toastify";
+
 export default {
   name: "SuperioJobBoard",
   data() {
     return {
-      categories: [
-        { name: "Kế toán / Tài chính", jobs: 2 },
-        { name: "Công nghệ thông tin", jobs: 15 },
-        { name: "Marketing", jobs: 8 },
-        { name: "Nhân sự", jobs: 5 },
-        { name: "Thiết kế đồ họa", jobs: 7 },
-        { name: "Kinh doanh", jobs: 12 },
-        { name: "Marketing", jobs: 8 },
-        { name: "Nhân sự", jobs: 5 },
-        { name: "Thiết kế đồ họa", jobs: 7 },
-      ],
-      jobs: [
-        {
-          title: "Kỹ sư phần mềm (Android), Libraries",
-          company: "Phân đoạn",
-          location: "Đà Nẵng",
-          time: "11 giờ trước",
-          salary: "35 - 45 Triệu",
-          type: "Toàn thời gian",
-          status: "Cấp bách",
-        },
-        {
-          title: "Lập trình viên Frontend cao cấp",
-          company: "Công ty ABC",
-          location: "Hồ Chí Minh",
-          time: "1 ngày trước",
-          salary: "40 - 50 Triệu",
-          type: "Toàn thời gian",
-          status: "Mới",
-        },
-        {
-          title: "Quản lý sản phẩm",
-          company: "Công ty XYZ",
-          location: "Hà Nội",
-          time: "2 ngày trước",
-          salary: "45 - 60 Triệu",
-          type: "Toàn thời gian",
-          status: "Nổi bật",
-        },
-      ],
+      searchQuery: "", // Lưu giá trị input tìm kiếm
+      isLoading: false,
+      error: null,
+      categories: [],
+      jobs: [],
+      jobsLoading: false,
+      jobsError: null,
+      visibleJobs: 6,
+      totalPages: 0,
+      currentPage: 1,
+      pageSize: 8,
       testimonials: [
         {
           title: "Thiết kế tuyệt vời",
@@ -227,6 +196,84 @@ export default {
         },
       ],
     };
+  },
+  computed: {
+    displayedJobs() {
+      return this.jobs.slice(0, this.visibleJobs);
+    },
+  },
+  mounted() {
+    this.fetchCategories();
+    this.fetchJobs({ page: 1, limit: 8 });
+  },
+  methods: {
+    searchJobs() {
+      const query = this.searchQuery.trim();
+      if (query) {
+        this.$router.push({
+          path: "/list",
+          query: { search: query },
+        });
+        this.searchQuery = ""; // Reset input sau khi tìm kiếm
+      } else {
+        toast.warning("Vui lòng nhập tên công việc để tìm kiếm!");
+      }
+    },
+    async fetchCategories() {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const response = await getCategoriesApi();
+        console.log("Response từ getCategoriesApi:", response);
+        if (!response || !response.data) {
+          throw new Error("Dữ liệu danh mục không hợp lệ");
+        }
+        this.categories = response.data;
+      } catch (error) {
+        console.error("Lấy danh sách danh mục thất bại:", error);
+        const errorMessage =
+          error.response?.data?.message || "Lỗi khi lấy danh sách danh mục!";
+        toast.error(errorMessage);
+        this.error = errorMessage;
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchJobs(query) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await getJobsApi(query);
+        console.log("Response từ getJobsApi:", response);
+        if (!response || !response.data) {
+          throw new Error("Dữ liệu bài đăng không hợp lệ");
+        }
+        this.jobs = response.data.jobs;
+        this.totalPages = response.data.totalJobs;
+        this.currentPage = response.data.page;
+        this.pageSize = response.data.limit;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi lấy danh sách bài đăng");
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+    setLoadingState(state) {
+      this.jobsLoading = state;
+    },
+    resetError() {
+      this.jobsError = null;
+    },
+    handleError(error, defaultMessage) {
+      console.error("Lỗi:", error);
+      const errorMessage = error.response?.data?.message || defaultMessage;
+      toast.error(errorMessage);
+      this.jobsError = errorMessage;
+    },
+    showMore() {
+      this.visibleJobs = this.jobs.length;
+    },
   },
 };
 </script>
@@ -318,6 +365,26 @@ export default {
   margin-bottom: 40px;
 }
 
+.category-loading {
+  padding: 30px;
+  font-size: 1.2rem;
+  color: #555555;
+}
+
+.category-loading i {
+  font-size: 1.5rem;
+  color: #007bff;
+  margin-right: 10px;
+}
+
+.category-error {
+  margin: 20px auto;
+  max-width: 600px;
+  padding: 15px;
+  font-size: 1rem;
+  border-radius: 8px;
+}
+
 .category-card {
   display: flex;
   align-items: center;
@@ -331,12 +398,6 @@ export default {
 .category-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.category-icon {
-  font-size: 2rem;
-  color: #007bff;
-  margin-right: 20px;
 }
 
 .category-name {
@@ -362,6 +423,26 @@ export default {
   font-size: 1.2rem;
   color: #555555;
   margin-bottom: 40px;
+}
+
+.jobs-loading {
+  padding: 30px;
+  font-size: 1.2rem;
+  color: #555555;
+}
+
+.jobs-loading i {
+  font-size: 1.5rem;
+  color: #007bff;
+  margin-right: 10px;
+}
+
+.jobs-error {
+  margin: 20px auto;
+  max-width: 600px;
+  padding: 15px;
+  font-size: 1rem;
+  border-radius: 8px;
 }
 
 .job-card {
@@ -427,11 +508,6 @@ export default {
   color: #ffffff;
 }
 
-.badge-status {
-  background: #ffc107;
-  color: #333333;
-}
-
 .view-more-button {
   padding: 12px 30px;
   background: #007bff;
@@ -447,66 +523,6 @@ export default {
 .view-more-button:hover {
   background: #0056b3;
   transform: translateY(-2px);
-}
-
-/* Testimonial Section */
-.testimonial-section {
-  padding: 60px 0;
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: #ffffff;
-}
-
-.testimonial-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  color: #333333;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.testimonial-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #333333;
-  margin-bottom: 15px;
-}
-
-.testimonial-content {
-  font-size: 1rem;
-  color: #555555;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-}
-
-.author-image {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 15px;
-}
-
-.author-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333333;
-  margin: 0;
-}
-
-.author-position {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin: 0;
 }
 
 /* CTA Section */

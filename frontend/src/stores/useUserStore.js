@@ -7,6 +7,7 @@ import {
   getEmployersApi,
   getEmployersForAdminApi,
   getUsersByAdminApi,
+  setBlockStatusApi,
   updateUserApi,
 } from "../apis/user";
 
@@ -133,11 +134,11 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    async fetchEmployerInfo() {
+    async fetchEmployerInfo(employerId) {
       this.setLoadingState(true);
       this.resetError();
       try {
-        const response = await getEmployerInfoApi();
+        const response = await getEmployerInfoApi(employerId);
         if (!response || !response.data) {
           throw new Error("Dữ liệu nhà tuyển dụng không hợp lệ");
         }
@@ -173,6 +174,28 @@ export const useUserStore = defineStore("user", {
         return response;
       } catch (error) {
         this.handleError(error, "Lỗi khi cập nhật thông tin người dùng!");
+        throw error;
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async setBlockUser(id, data) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await setBlockStatusApi(id, data);
+        if (!response || !response.data) {
+          throw new Error("Phản hồi tử API không hợp lệ");
+        }
+
+        if (response.status === "success") {
+          toast.success(response.data.message);
+        }
+
+        return response;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi khóa hoặc mở khóa người dùng");
         throw error;
       } finally {
         this.setLoadingState(false);

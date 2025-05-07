@@ -1,7 +1,9 @@
 <template>
   <div class="company-management">
     <h2>Danh Sách Công Ty</h2>
-    <router-link to="/" class="mb-3 d-inline-block"> Quay trở lại trang chủ?</router-link>
+    <router-link to="/" class="mb-3 d-inline-block">
+      Quay trở lại trang chủ?</router-link
+    >
     <div class="card mt-5">
       <div class="card-header">
         <h5 class="title-header">Danh Sách Công Ty</h5>
@@ -31,10 +33,14 @@
                 <th>Trạng thái</th>
                 <th>Kiểm duyệt</th>
                 <th>Ngày khởi tạo</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody class="text-center align-middle">
-              <tr v-for="(employer, index) in userStore.employers" :key="employer.id">
+              <tr
+                v-for="(employer, index) in userStore.employers"
+                :key="employer.id"
+              >
                 <td>
                   {{
                     (userStore.currentPage - 1) * userStore.pageSize + index + 1
@@ -44,24 +50,61 @@
                 <td>{{ employer.companyName || "N/A" }}</td>
                 <td>{{ employer.phoneNumber || "N/A" }}</td>
                 <td>
-                  <span :class="[
-                    'badge',
-                    employer.deletedAt ? 'bg-danger text-light' : 'bg-success text-light',
-                  ]">
+                  <span
+                    :class="[
+                      'badge',
+                      employer.deletedAt
+                        ? 'bg-danger text-light'
+                        : 'bg-success text-light',
+                    ]"
+                  >
                     {{ employer.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                   </span>
                 </td>
                 <td>
-                  <span :class="[
-                    'badge',
-                    employer.isApproved ? 'bg-success' : 'bg-warning',
-                  ]">
+                  <span
+                    :class="[
+                      'badge',
+                      employer.isApproved === true
+                        ? 'bg-success'
+                        : employer.isApproved === false
+                        ? 'bg-danger'
+                        : 'bg-warning',
+                    ]"
+                  >
                     {{
-                      employer.isApproved ? "Đã kiểm duyệt" : "Chưa kiểm duyệt"
+                      employer.isApproved === true
+                        ? "Đã kiểm duyệt"
+                        : employer.isApproved === false
+                        ? "Đã từ chối"
+                        : "Chờ kiểm duyệt"
                     }}
                   </span>
                 </td>
                 <td>{{ formatDate(employer.createdAt) }}</td>
+                <td>
+                  <!-- Hiển thị nút duyệt và từ chối khi trạng thái là "Chờ kiểm duyệt" -->
+                  <div
+                    v-if="employer.isApproved === 'Chưa kiểm duyệt'"
+                    class="action-buttons"
+                  >
+                    <button
+                      @click="approveCompany(employer.id)"
+                      class="btn btn-sm btn-success me-2"
+                      :disabled="isProcessing"
+                    >
+                      <i class="fas fa-check me-1"></i> Duyệt
+                    </button>
+                    <button
+                      @click="rejectCompany(employer.id)"
+                      class="btn btn-sm btn-danger"
+                      :disabled="isProcessing"
+                    >
+                      <i class="fas fa-times me-1"></i> Từ chối
+                    </button>
+                  </div>
+                  <span v-else>-</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -69,20 +112,30 @@
           <!-- Phân trang -->
           <nav v-if="userStore.totalPages > 1" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-              <li class="page-item" :class="{ disabled: userStore.currentPage === 1 }">
+              <li
+                class="page-item"
+                :class="{ disabled: userStore.currentPage === 1 }"
+              >
                 <button class="page-link" @click="previousPage">
                   Trang trước
                 </button>
               </li>
-              <li v-for="page in userStore.totalPages" :key="page" class="page-item"
-                :class="{ active: userStore.currentPage === page }">
+              <li
+                v-for="page in userStore.totalPages"
+                :key="page"
+                class="page-item"
+                :class="{ active: userStore.currentPage === page }"
+              >
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li class="page-item" :class="{
-                disabled: userStore.currentPage === userStore.totalPages,
-              }">
+              <li
+                class="page-item"
+                :class="{
+                  disabled: userStore.currentPage === userStore.totalPages,
+                }"
+              >
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
             </ul>
@@ -90,17 +143,85 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal xác nhận -->
+    <div
+      class="modal fade"
+      id="confirmModal"
+      tabindex="-1"
+      aria-labelledby="confirmModalLabel"
+      aria-hidden="true"
+      ref="confirmModal"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmModalLabel">{{ modalTitle }}</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            {{ modalMessage }}
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn"
+              :class="modalActionBtnClass"
+              @click="confirmAction"
+            >
+              {{ modalActionBtnText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { useJobStore } from "@stores/useJobStore";
 import { useUserStore } from "@stores/useUserStore";
+import { ref } from "vue";
+import { Modal } from "bootstrap";
 
 export default {
   name: "CompanyManagement",
   setup() {
+    const jobStore = useJobStore();
     const userStore = useUserStore();
-    return { userStore };
+    const isProcessing = ref(false);
+    const confirmModal = ref(null);
+    const modalTitle = ref("");
+    const modalMessage = ref("");
+    const modalActionBtnText = ref("");
+    const modalActionBtnClass = ref("");
+    const pendingAction = ref(null);
+    const pendingCompanyId = ref(null);
+
+    return {
+      jobStore,
+      userStore,
+      isProcessing,
+      confirmModal,
+      modalTitle,
+      modalMessage,
+      modalActionBtnText,
+      modalActionBtnClass,
+      pendingAction,
+      pendingCompanyId,
+    };
   },
   methods: {
     async fetchEmployers(page = 1) {
@@ -128,6 +249,66 @@ export default {
     goToPage(page) {
       if (page >= 1 && page <= this.userStore.totalPages) {
         this.fetchEmployers(page);
+      }
+    },
+
+    // Hiển thị modal xác nhận duyệt công ty
+    approveCompany(companyId) {
+      this.modalTitle.value = "Xác nhận duyệt";
+      this.modalMessage.value = "Bạn có chắc chắn muốn duyệt công ty này?";
+      this.modalActionBtnText.value = "Đã được duyệt";
+      this.modalActionBtnClass.value = "btn-success";
+      this.pendingAction.value = "approve";
+      this.pendingCompanyId.value = companyId;
+
+      const modal = new Modal(this.confirmModal);
+      modal.show();
+    },
+
+    // Hiển thị modal xác nhận từ chối công ty
+    rejectCompany(companyId) {
+      this.modalTitle.value = "Xác nhận từ chối";
+      this.modalMessage.value = "Bạn có chắc chắn muốn từ chối công ty này?";
+      this.modalActionBtnText.value = "Đã bị từ chối";
+      this.modalActionBtnClass.value = "btn-danger";
+      this.pendingAction.value = "reject";
+      this.pendingCompanyId.value = companyId;
+
+      const modal = new Modal(this.confirmModal);
+      modal.show();
+    },
+
+    // Xử lý hành động xác nhận từ modal
+    async confirmAction() {
+      this.isProcessing = true;
+
+      try {
+        if (this.pendingAction.value === "approve") {
+          // Sử dụng verifyJob API với status là true (duyệt)
+          await this.jobStore.verifyJob(this.pendingCompanyId.value, true);
+          this.$toast.success("Công ty đã được duyệt thành công");
+        } else if (this.pendingAction.value === "reject") {
+          // Sử dụng verifyJob API với status là false (từ chối)
+          await this.jobStore.verifyJob(this.pendingCompanyId.value, false);
+          this.$toast.success("Đã từ chối công ty thành công");
+        }
+
+        // Đóng modal và làm mới dữ liệu
+        const modal = Modal.getInstance(this.confirmModal);
+        modal.hide();
+        this.fetchEmployers(this.userStore.currentPage);
+      } catch (error) {
+        console.error(
+          `Lỗi khi ${
+            this.pendingAction.value === "approve" ? "duyệt" : "từ chối"
+          } công ty:`,
+          error
+        );
+        this.$toast.error(
+          `Có lỗi xảy ra: ${error.message || "Không thể xử lý yêu cầu"}`
+        );
+      } finally {
+        this.isProcessing = false;
       }
     },
   },
@@ -332,7 +513,58 @@ h2 {
   color: #94a3b8;
 }
 
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.btn-sm {
+  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-success {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.btn-danger {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Responsive */
+@media (max-width: 992px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .me-2 {
+    margin-right: 0 !important;
+    margin-bottom: 8px;
+  }
+}
+
 @media (max-width: 768px) {
   .company-management {
     padding: 20px;

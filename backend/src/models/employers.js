@@ -9,10 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Employers.hasMany(models.EmployerUsers, {
+      Employers.belongsTo(models.Users, {
         sourceKey: "id",
-        foreignKey: "employerId",
-        as: "EmployerUsers",
+        foreignKey: "userId",
+        as: "Users",
+        onDelete: "CASCADE",
       });
     }
   }
@@ -63,6 +64,10 @@ module.exports = (sequelize, DataTypes) => {
       },
       industry: {
         type: DataTypes.STRING,
+      },
+      userId: {
+        type: DataTypes.UUID,
+        field: "user_id",
       },
       deletedAt: {
         type: DataTypes.DATE,
