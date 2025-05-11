@@ -229,17 +229,23 @@ class UserService {
    * @param {string} employerId - ID của nhà tuyển dụng
    * @returns {Promise<Object>} - Thông tin nhà tuyển dụng
    */
-  async approveEmployer(employerId) {
+  async approveEmployer(employerId, status) {
     const employer = await db.Employers.findByPk(employerId);
 
     if (!employer) {
       throw new ApiError(StatusCode.NOT_FOUND, "Công ty không tồn tại");
     }
 
-    employer.isApproved = true;
+    if (status === true) {
+      employer.isApproved = "Đã kiểm duyệt";
+    } else {
+      employer.isApproved = "Đã từ chối";
+    }
     await employer.save();
     return {
-      message: "Công ty đã được duyệt thành công",
+      message: status
+        ? "Công ty đã được duyệt thành công"
+        : "Công ty đã bị từ chối",
     };
   }
 

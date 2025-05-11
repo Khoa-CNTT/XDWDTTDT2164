@@ -1,4 +1,5 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const JoTypesService = require("../services/jobTypes.service");
 
 /**
@@ -15,18 +16,14 @@ class JobTypesController {
     try {
       const { jobTypeName } = req.body;
       const jobType = await JoTypesService.createJobType(jobTypeName);
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Tạo hình thức làm việc thành công",
-        data: jobType,
-      });
+      return resSuccess(
+        res,
+        "Tạo mới hình thức làm việc thành công",
+        jobType,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -40,17 +37,9 @@ class JobTypesController {
     try {
       const { page, limit } = req.query;
       const jobTypes = await JoTypesService.getJobTypes(page, limit);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: jobTypes,
-      });
+      return resSuccess(res, null, jobTypes);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -65,18 +54,9 @@ class JobTypesController {
       const { jobTypeName } = req.body;
       const { id } = req.params;
       const jobType = await JoTypesService.updateJobType(jobTypeName, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Cập nhật hình thức làm việc thành công",
-        data: jobType,
-      });
+      return resSuccess(res, "Cập nhật hình thức làm việc thành công", jobType);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -90,17 +70,9 @@ class JobTypesController {
     try {
       const { id } = req.params;
       const jobType = await JoTypesService.deleteJobType(id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa hình thức làm việc thành công",
-      });
+      return resSuccess(res, "Xóa hình thức làm việc thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

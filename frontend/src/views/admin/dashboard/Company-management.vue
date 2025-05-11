@@ -65,27 +65,21 @@
                   <span
                     :class="[
                       'badge',
-                      employer.isApproved === true
-                        ? 'bg-success'
-                        : employer.isApproved === false
-                        ? 'bg-danger'
-                        : 'bg-warning',
+                      {
+                        'bg-success': employer.isApproved === 'Đã kiểm duyệt',
+                        'bg-danger': employer.isApproved === 'Đã từ chối',
+                        'bg-warning': employer.isApproved === 'Chờ kiểm duyệt',
+                      },
                     ]"
                   >
-                    {{
-                      employer.isApproved === true
-                        ? "Đã kiểm duyệt"
-                        : employer.isApproved === false
-                        ? "Đã từ chối"
-                        : "Chờ kiểm duyệt"
-                    }}
+                    {{ employer.isApproved }}
                   </span>
                 </td>
                 <td>{{ formatDate(employer.createdAt) }}</td>
                 <td>
                   <!-- Hiển thị nút duyệt và từ chối khi trạng thái là "Chờ kiểm duyệt" -->
                   <div
-                    v-if="employer.isApproved === 'Chưa kiểm duyệt'"
+                    v-if="employer.isApproved === 'Chờ kiểm duyệt'"
                     class="action-buttons"
                   >
                     <button
@@ -254,12 +248,12 @@ export default {
 
     // Hiển thị modal xác nhận duyệt công ty
     approveCompany(companyId) {
-      this.modalTitle.value = "Xác nhận duyệt";
-      this.modalMessage.value = "Bạn có chắc chắn muốn duyệt công ty này?";
-      this.modalActionBtnText.value = "Đã được duyệt";
-      this.modalActionBtnClass.value = "btn-success";
-      this.pendingAction.value = "approve";
-      this.pendingCompanyId.value = companyId;
+      this.modalTitle = "Xác nhận duyệt";
+      this.modalMessage = "Bạn có chắc chắn muốn duyệt công ty này?";
+      this.modalActionBtnText = "Đã được duyệt";
+      this.modalActionBtnClass = "btn-success";
+      this.pendingAction = "Đã kiểm duyệt";
+      this.pendingCompanyId = companyId;
 
       const modal = new Modal(this.confirmModal);
       modal.show();
@@ -267,12 +261,12 @@ export default {
 
     // Hiển thị modal xác nhận từ chối công ty
     rejectCompany(companyId) {
-      this.modalTitle.value = "Xác nhận từ chối";
-      this.modalMessage.value = "Bạn có chắc chắn muốn từ chối công ty này?";
-      this.modalActionBtnText.value = "Đã bị từ chối";
-      this.modalActionBtnClass.value = "btn-danger";
-      this.pendingAction.value = "reject";
-      this.pendingCompanyId.value = companyId;
+      this.modalTitle = "Xác nhận từ chối";
+      this.modalMessage = "Bạn có chắc chắn muốn từ chối công ty này?";
+      this.modalActionBtnText = "Đã bị từ chối";
+      this.modalActionBtnClass = "btn-danger";
+      this.pendingAction = "Đã từ chối";
+      this.pendingCompanyId = companyId;
 
       const modal = new Modal(this.confirmModal);
       modal.show();
@@ -280,27 +274,41 @@ export default {
 
     // Xử lý hành động xác nhận từ modal
     async confirmAction() {
+      // Kiểm tra giá trị trước khi gọi API
+      if (!this.pendingAction || !this.pendingCompanyId) {
+        this.$toast.error("Không xác định được hành động hoặc ID công ty.");
+        this.isProcessing = false;
+        return;
+      }
+
       this.isProcessing = true;
 
       try {
-        if (this.pendingAction.value === "approve") {
-          // Sử dụng verifyJob API với status là true (duyệt)
-          await this.jobStore.verifyJob(this.pendingCompanyId.value, true);
-          this.$toast.success("Công ty đã được duyệt thành công");
-        } else if (this.pendingAction.value === "reject") {
-          // Sử dụng verifyJob API với status là false (từ chối)
-          await this.jobStore.verifyJob(this.pendingCompanyId.value, false);
-          this.$toast.success("Đã từ chối công ty thành công");
+        // Xác định data là true (duyệt) hoặc false (từ chối)
+        const data =
+          this.pendingAction === "Đã kiểm duyệt"
+            ? { status: true }
+            : { status: false };
+
+        const response = await this.userStore.approveEmployer(
+          this.pendingCompanyId,
+          data
+        );
+
+        if (response && response.status === "success") {
+          // Làm mới danh sách sau khi duyệt/từ chối
+          this.fetchEmployers(this.userStore.currentPage);
+        } else {
+          throw new Error("Phản hồi từ API không hợp lệ");
         }
 
-        // Đóng modal và làm mới dữ liệu
+        // Đóng modal
         const modal = Modal.getInstance(this.confirmModal);
         modal.hide();
-        this.fetchEmployers(this.userStore.currentPage);
       } catch (error) {
         console.error(
           `Lỗi khi ${
-            this.pendingAction.value === "approve" ? "duyệt" : "từ chối"
+            this.pendingAction === "approve" ? "duyệt" : "từ chối"
           } công ty:`,
           error
         );
@@ -324,7 +332,6 @@ export default {
   padding: 30px;
   max-width: 100%;
   background: #f8fafc;
-  /* Light background for depth */
   border-radius: 12px;
   min-height: 100vh;
 }
@@ -334,14 +341,12 @@ h2 {
   font-size: 1.75rem;
   font-weight: 700;
   color: #1e293b;
-  /* Dark slate for contrast */
   margin-bottom: 15px;
 }
 
 .mb-3.d-inline-block {
   font-size: 0.95rem;
   color: #2563eb;
-  /* Vibrant blue */
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -351,14 +356,11 @@ h2 {
 
 .mb-3.d-inline-block:hover {
   color: #1e40af;
-  /* Darker blue on hover */
   transform: translateX(-3px);
-  /* Subtle shift */
 }
 
 .mb-3.d-inline-block::before {
   content: "\f060";
-  /* Font Awesome arrow-left */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.9rem;
@@ -369,7 +371,6 @@ h2 {
   border: none;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  /* Soft shadow */
   background: #ffffff;
   margin-top: 20px;
   overflow: hidden;
@@ -377,7 +378,6 @@ h2 {
 
 .card-header {
   background: #eff6ff;
-  /* Light blue header */
   border-bottom: 1px solid #e2e8f0;
   padding: 20px;
 }
@@ -398,7 +398,6 @@ h2 {
 .text-center {
   padding: 30px;
   color: #64748b;
-  /* Muted slate */
 }
 
 .text-center i {
@@ -409,7 +408,6 @@ h2 {
 .text-danger {
   font-size: 0.95rem;
   color: #dc2626;
-  /* Bright red */
   padding: 30px;
 }
 
@@ -430,12 +428,10 @@ h2 {
   vertical-align: middle;
   padding: 12px 15px;
   border-color: #e2e8f0;
-  /* Light border */
 }
 
 .table th {
   background: #f1f5f9;
-  /* Light slate header */
   color: #475569;
   font-weight: 600;
   text-transform: uppercase;
@@ -445,13 +441,11 @@ h2 {
 
 .table-hover tbody tr:hover {
   background: #f8fafc;
-  /* Subtle hover effect */
   transition: background 0.2s ease;
 }
 
 .table td {
   color: #334155;
-  /* Dark slate text */
 }
 
 /* Badges */
@@ -464,19 +458,16 @@ h2 {
 
 .badge.bg-success {
   background: #d1fae5;
-  /* Light green */
   color: #065f46;
 }
 
 .badge.bg-danger {
   background: #fee2e2;
-  /* Light red */
   color: #991b1b;
 }
 
 .badge.bg-warning {
   background: #fef3c7;
-  /* Light yellow */
   color: #92400e;
 }
 

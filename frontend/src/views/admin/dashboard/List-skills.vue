@@ -1,12 +1,19 @@
 <template>
   <div class="list-skills">
     <h2>Danh Sách Kỹ Năng</h2>
-    <router-link to="/" class="mb-3 d-inline-block"> Quay trở lại trang chủ?</router-link>
+    <router-link to="/" class="mb-3 d-inline-block">
+      Quay trở lại trang chủ?</router-link
+    >
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Danh Sách Kỹ Năng</h5>
-        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
-          style="width: 150px; height: 40px" :disabled="skillStore.isLoading">
+        <button
+          class="btn btn-primary mt-2"
+          data-bs-toggle="modal"
+          data-bs-target="#add-modal"
+          style="width: 150px; height: 40px"
+          :disabled="skillStore.isLoading"
+        >
           Thêm mới
         </button>
       </div>
@@ -36,19 +43,31 @@
                 <td>{{ skill.skillSlug || "N/A" }}</td>
                 <td>{{ skill.Categories.categoryName || "N/A" }}</td>
                 <td>
-                  <span :class="[
-                    'badge',
-                    skill.deletedAt ? 'bg-danger text-light' : 'bg-success text-light',
-                  ]">
+                  <span
+                    :class="[
+                      'badge',
+                      skill.deletedAt
+                        ? 'bg-danger text-light'
+                        : 'bg-success text-light',
+                    ]"
+                  >
                     {{ skill.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                   </span>
                 </td>
                 <td>
-                  <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal"
-                    @click="loadSkillForUpdate(skill)">
+                  <button
+                    class="btn btn-success me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#update-modal"
+                    @click="loadSkillForUpdate(skill)"
+                  >
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button class="btn btn-danger me-2" @click="deleteSkill(skill.id)" :disabled="skillStore.isLoading">
+                  <button
+                    class="btn btn-danger me-2"
+                    @click="deleteSkill(skill.id)"
+                    :disabled="skillStore.isLoading"
+                  >
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </td>
@@ -64,12 +83,20 @@
                   Trang trước
                 </button>
               </li>
-              <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
+              <li
+                v-for="page in totalPages"
+                :key="page"
+                class="page-item"
+                :class="{ active: currentPage === page }"
+              >
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+              <li
+                class="page-item"
+                :class="{ disabled: currentPage === totalPages }"
+              >
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
             </ul>
@@ -80,40 +107,80 @@
   </div>
 
   <!-- Modal thêm mới -->
-  <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div
+    class="modal fade"
+    id="add-modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Thêm mới kỹ năng
           </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Tên kỹ năng</label>
-            <input type="text" class="form-control" v-model="newSkill.skillName" :disabled="skillStore.isLoading" />
+            <input
+              type="text"
+              class="form-control"
+              v-model="newSkill.skillName"
+              :disabled="skillStore.isLoading"
+              @input="clearError('skillName')"
+            />
+            <small v-if="errors.skillName" class="text-danger">
+              {{ errors.skillName }}
+            </small>
           </div>
           <div class="mt-2">
             <label class="mb-2">Danh mục công việc</label>
-            <select class="form-select" v-model="newSkill.categoryId"
-              :disabled="skillStore.isLoading || categories.length === 0">
+            <select
+              class="form-select"
+              v-model="newSkill.categoryId"
+              :disabled="skillStore.isLoading || categories.length === 0"
+              @change="clearError('categoryId')"
+            >
               <option value="" disabled>Chọn danh mục công việc</option>
-              <option v-for="category in categories" :key="category.id" :value="category.id">
+              <option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
                 {{ category.categoryName }}
               </option>
             </select>
+            <small v-if="errors.categoryId" class="text-danger">
+              {{ errors.categoryId }}
+            </small>
             <small v-if="categories.length === 0" class="text-danger">
               Không có danh mục công việc nào.
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="skillStore.isLoading">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            :disabled="skillStore.isLoading"
+          >
             Đóng
           </button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="addNewSkill"
-            :disabled="skillStore.isLoading">
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="addNewSkill"
+            :disabled="skillStore.isLoading"
+          >
             <span v-if="skillStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
             </span>
@@ -125,40 +192,80 @@
   </div>
 
   <!-- Modal cập nhật -->
-  <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div
+    class="modal fade"
+    id="update-modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Cập nhật kỹ năng
           </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <div>
             <label class="mb-2">Tên kỹ năng</label>
-            <input type="text" class="form-control" v-model="updateSkill.skillName" :disabled="skillStore.isLoading" />
+            <input
+              type="text"
+              class="form-control"
+              v-model="updateSkill.skillName"
+              :disabled="skillStore.isLoading"
+              @input="clearError('updateSkillName')"
+            />
+            <small v-if="errors.updateSkillName" class="text-danger">
+              {{ errors.updateSkillName }}
+            </small>
           </div>
           <div class="mt-2">
             <label class="mb-2">Danh mục công việc</label>
-            <select class="form-select" v-model="updateSkill.categoryId"
-              :disabled="skillStore.isLoading || categories.length === 0">
+            <select
+              class="form-select"
+              v-model="updateSkill.categoryId"
+              :disabled="skillStore.isLoading || categories.length === 0"
+              @change="clearError('updateCategoryId')"
+            >
               <option value="" disabled>Chọn danh mục công việc</option>
-              <option v-for="category in categories" :key="category.id" :value="category.id">
+              <option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
                 {{ category.categoryName }}
               </option>
             </select>
+            <small v-if="errors.updateCategoryId" class="text-danger">
+              {{ errors.updateCategoryId }}
+            </small>
             <small v-if="categories.length === 0" class="text-danger">
               Không có danh mục công việc nào.
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="skillStore.isLoading">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            :disabled="skillStore.isLoading"
+          >
             Đóng
           </button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateSkillDetails"
-            :disabled="skillStore.isLoading">
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="updateSkillDetails"
+            :disabled="skillStore.isLoading"
+          >
             <span v-if="skillStore.isLoading">
               <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
             </span>
@@ -173,6 +280,7 @@
 <script>
 import { useSkillStore } from "@stores/useSkillStore";
 import { useCategoryStore } from "@stores/useCategoryStore";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "ListSkills",
@@ -195,6 +303,12 @@ export default {
       categories: [], // Danh sách danh mục công việc
       currentPage: 1, // Trang hiện tại
       itemsPerPage: 8, // Số phần tử mỗi trang
+      errors: {
+        skillName: "",
+        categoryId: "",
+        updateSkillName: "",
+        updateCategoryId: "",
+      },
     };
   },
   computed: {
@@ -213,13 +327,11 @@ export default {
     // Lấy danh sách danh mục
     async fetchCategories() {
       try {
-        // Gọi action fetchCategories từ useCategoryStore
         await this.categoryStore.fetchCategories();
-        // Gán dữ liệu từ store vào categories
         this.categories = this.categoryStore.categories;
       } catch (error) {
         console.error("Lỗi khi lấy danh sách danh mục:", error);
-        this.categories = []; // Đảm bảo categories là mảng rỗng nếu có lỗi
+        this.categories = [];
       }
     },
 
@@ -227,7 +339,7 @@ export default {
     async fetchSkills() {
       try {
         await this.skillStore.fetchSkills();
-        this.currentPage = 1; // Reset về trang 1 khi dữ liệu thay đổi
+        this.currentPage = 1;
       } catch (error) {
         console.error("Lỗi khi lấy danh sách kỹ năng:", error);
       }
@@ -250,14 +362,36 @@ export default {
       }
     },
 
-    // Xử lý thêm mới
-    async addNewSkill() {
-      if (!this.newSkill.skillName) {
-        alert("Vui lòng nhập tên kỹ năng");
-        return;
+    // Xử lý validation và thêm mới
+    validateNewSkill() {
+      this.clearErrors();
+      let isValid = true;
+
+      if (!this.newSkill.skillName.trim()) {
+        this.errors.skillName = "Tên kỹ năng không được để trống.";
+        isValid = false;
       }
+
       if (!this.newSkill.categoryId) {
-        alert("Vui lòng chọn danh mục công việc");
+        this.errors.categoryId = "Vui lòng chọn danh mục công việc.";
+        isValid = false;
+      }
+
+      return isValid;
+    },
+    clearError(field) {
+      this.errors[field] = "";
+    },
+    clearErrors() {
+      this.errors = {
+        skillName: "",
+        categoryId: "",
+        updateSkillName: "",
+        updateCategoryId: "",
+      };
+    },
+    async addNewSkill() {
+      if (!this.validateNewSkill()) {
         return;
       }
 
@@ -270,10 +404,27 @@ export default {
         await this.skillStore.addNewSkill(skillData);
         this.resetForm();
 
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById("add-modal")
-        );
-        modal.hide();
+        const modalElement = document.getElementById("add-modal");
+        if (typeof bootstrap !== "undefined" && modalElement) {
+          const modal =
+            bootstrap.Modal.getInstance(modalElement) ||
+            bootstrap.Modal.getOrCreateInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          } else {
+            modalElement.classList.remove("show");
+            modalElement.setAttribute("aria-hidden", "true");
+            modalElement.removeAttribute("aria-modal");
+            const backdrop = document.querySelector(".modal-backdrop");
+            if (backdrop) backdrop.remove();
+          }
+        } else {
+          modalElement.classList.remove("show");
+          modalElement.setAttribute("aria-hidden", "true");
+          modalElement.removeAttribute("aria-modal");
+          const backdrop = document.querySelector(".modal-backdrop");
+          if (backdrop) backdrop.remove();
+        }
       } catch (error) {
         console.error("Lỗi khi thêm mới kỹ năng:", error);
       }
@@ -283,23 +434,28 @@ export default {
         skillName: "",
         categoryId: "",
       };
+      this.clearErrors();
     },
 
-    // Xử lý cập nhật
-    loadSkillForUpdate(skill) {
-      this.updateSkill = {
-        id: skill.id,
-        skillName: skill.skillName,
-        categoryId: skill.categoryId,
-      };
+    // Xử lý validation và cập nhật
+    validateUpdateSkill() {
+      this.clearErrors();
+      let isValid = true;
+
+      if (!this.updateSkill.skillName.trim()) {
+        this.errors.updateSkillName = "Tên kỹ năng không được để trống.";
+        isValid = false;
+      }
+
+      if (!this.updateSkill.categoryId) {
+        this.errors.updateCategoryId = "Vui lòng chọn danh mục công việc.";
+        isValid = false;
+      }
+
+      return isValid;
     },
     async updateSkillDetails() {
-      if (!this.updateSkill.skillName) {
-        alert("Vui lòng nhập tên kỹ năng");
-        return;
-      }
-      if (!this.updateSkill.categoryId) {
-        alert("Vui lòng chọn danh mục công việc");
+      if (!this.validateUpdateSkill()) {
         return;
       }
 
@@ -312,10 +468,27 @@ export default {
         await this.skillStore.updateSkill(this.updateSkill.id, skillData);
         this.resetUpdateForm();
 
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById("update-modal")
-        );
-        modal.hide();
+        const modalElement = document.getElementById("update-modal");
+        if (typeof bootstrap !== "undefined" && modalElement) {
+          const modal =
+            bootstrap.Modal.getInstance(modalElement) ||
+            bootstrap.Modal.getOrCreateInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          } else {
+            modalElement.classList.remove("show");
+            modalElement.setAttribute("aria-hidden", "true");
+            modalElement.removeAttribute("aria-modal");
+            const backdrop = document.querySelector(".modal-backdrop");
+            if (backdrop) backdrop.remove();
+          }
+        } else {
+          modalElement.classList.remove("show");
+          modalElement.setAttribute("aria-hidden", "true");
+          modalElement.removeAttribute("aria-modal");
+          const backdrop = document.querySelector(".modal-backdrop");
+          if (backdrop) backdrop.remove();
+        }
       } catch (error) {
         console.error("Lỗi khi cập nhật kỹ năng:", error);
       }
@@ -326,6 +499,16 @@ export default {
         skillName: "",
         categoryId: "",
       };
+      this.clearErrors();
+    },
+
+    // Xử lý load dữ liệu để cập nhật
+    loadSkillForUpdate(skill) {
+      this.updateSkill = {
+        id: skill.id,
+        skillName: skill.skillName || "",
+        categoryId: skill.categoryId || "",
+      };
     },
 
     // Xử lý xóa
@@ -335,15 +518,17 @@ export default {
       }
       try {
         await this.skillStore.deleteSkill(id);
-        this.currentPage = 1; // Reset về trang 1 sau khi xóa
+        toast.success("Xóa kỹ năng thành công!");
+        this.currentPage = 1;
       } catch (error) {
         console.error("Lỗi khi xóa kỹ năng:", error);
+        toast.error("Lỗi khi xóa kỹ năng. Vui lòng thử lại!");
       }
     },
   },
   async mounted() {
-    await this.fetchCategories(); // Lấy danh sách danh mục trước
-    await this.fetchSkills(); // Lấy danh sách kỹ năng sau
+    await this.fetchCategories();
+    await this.fetchSkills();
   },
 };
 </script>

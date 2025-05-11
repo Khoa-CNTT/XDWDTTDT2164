@@ -1,4 +1,4 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const applyJobService = require("../services/applyJob.service");
 
 /**
@@ -22,18 +22,9 @@ class ApplyJobController {
       };
       const result = await applyJobService.applyJob(applyData);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: result,
-        message: "Ứng tuyển vào công việc này thành công",
-      });
+      return resSuccess(res, "Ứng tuyển vào công việc thành công", result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -47,17 +38,9 @@ class ApplyJobController {
     try {
       const { jobId } = req.params;
       const data = await applyJobService.getCandidates(jobId, req.query);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -72,17 +55,9 @@ class ApplyJobController {
       const { applyId } = req.params;
       const data = await applyJobService.getCandidateDetail(applyId);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -96,17 +71,9 @@ class ApplyJobController {
     try {
       const { candidateId } = req.params;
       const data = await applyJobService.getJobApply(candidateId, req.query);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -123,17 +90,9 @@ class ApplyJobController {
         applicationId,
         req.body
       );
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

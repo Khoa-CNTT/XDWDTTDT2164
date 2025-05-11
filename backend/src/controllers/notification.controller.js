@@ -1,4 +1,4 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const notificationService = require("../services/notification.service");
 
 /**
@@ -15,17 +15,9 @@ class NotificationController {
     try {
       const { id } = req.user;
       const result = await notificationService.getNotifications(id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

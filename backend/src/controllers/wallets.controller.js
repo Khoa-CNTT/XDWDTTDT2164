@@ -1,4 +1,4 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const walletsService = require("../services/wallets.service");
 
 /**
@@ -16,17 +16,9 @@ class WalletsController {
       const { id } = req.user;
       const { amount } = req.body;
       const result = await walletsService.depositToWallet(amount, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.OK,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message,
-      });
+      return resError(res, error);
     }
   }
 
@@ -39,17 +31,9 @@ class WalletsController {
   async callbackZalopay(req, res) {
     try {
       const result = await walletsService.callbackZalopay(req.body);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.OK,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message,
-      });
+      return resError(res, error);
     }
   }
 
@@ -57,17 +41,9 @@ class WalletsController {
     try {
       const { app_trans_id } = req.params;
       const data = await walletsService.checkPaymentStatusZalopay(app_trans_id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message,
-      });
+      return resError(res, error);
     }
   }
 
@@ -82,17 +58,9 @@ class WalletsController {
       const { id } = req.user;
       const { amount } = req.body;
       const result = await walletsService.depositToWalletWithMoMo(amount, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.OK,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message,
-      });
+      return resError(res, error);
     }
   }
 
@@ -105,17 +73,9 @@ class WalletsController {
   async callbackMoMo(req, res) {
     try {
       const result = await walletsService.callbackMoMo(req.body);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.OK,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message,
-      });
+      return resError(res, error);
     }
   }
 
@@ -130,17 +90,9 @@ class WalletsController {
       const { id } = req.user;
       const data = await walletsService.getWallet(id);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -155,17 +107,9 @@ class WalletsController {
       const { id } = req.user;
       const data = await walletsService.getHistoryDeposit(id, req.query);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -179,17 +123,9 @@ class WalletsController {
     try {
       const { id } = req.user;
       const data = await walletsService.getHistoryPayment(id, req.query);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -207,17 +143,9 @@ class WalletsController {
         startDate,
         endDate,
       });
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -230,17 +158,9 @@ class WalletsController {
   async getPayments(req, res) {
     try {
       const data = await walletsService.getPayments(req.query);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -257,11 +177,7 @@ class WalletsController {
       res.attachment("danh-sach-thanh-toan.csv");
       res.send("\uFEFF" + data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

@@ -1,12 +1,19 @@
 <template>
   <div class="list-jobtype">
     <h2>Danh Sách Loại Công Việc</h2>
-    <router-link to="/" class="mb-3 d-inline-block"> Quay trở lại trang chủ?</router-link>
+    <router-link to="/" class="mb-3 d-inline-block">
+      Quay trở lại trang chủ?</router-link
+    >
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Danh Sách Loại Công Việc</h5>
-        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#add-modal"
-          style="width: 150px; height: 40px" :disabled="categoryStore.isLoading">
+        <button
+          class="btn btn-primary mt-2"
+          data-bs-toggle="modal"
+          data-bs-target="#add-modal"
+          style="width: 150px; height: 40px"
+          :disabled="categoryStore.isLoading"
+        >
           Thêm mới
         </button>
       </div>
@@ -14,7 +21,10 @@
         <div v-if="categoryStore.isLoading" class="text-center">
           <i class="fas fa-spinner fa-spin"></i> Đang tải...
         </div>
-        <div v-else-if="categoryStore.categories.length === 0" class="text-center">
+        <div
+          v-else-if="categoryStore.categories.length === 0"
+          class="text-center"
+        >
           Không có loại công việc nào.
         </div>
         <table v-else class="table table-bordered table-hover">
@@ -29,29 +39,47 @@
             </tr>
           </thead>
           <tbody class="text-center align-middle">
-            <tr v-for="(jobType, index) in categoryStore.categories" :key="jobType.id">
+            <tr
+              v-for="(jobType, index) in categoryStore.categories"
+              :key="jobType.id"
+            >
               <td>{{ index + 1 }}</td>
               <td>{{ jobType.categoryName }}</td>
               <td>{{ jobType.categorySlug || "N/A" }}</td>
               <td>
-                <img class="img-logo" :src="getImageUrl(jobType.categoryImage)" alt="logo-jobtype"
-                  @error="handleImageError" />
+                <img
+                  class="img-logo"
+                  :src="getImageUrl(jobType.categoryImage)"
+                  alt="logo-jobtype"
+                  @error="handleImageError"
+                />
               </td>
               <td>
-                <span :class="[
-                  'badge',
-                  jobType.deletedAt ? 'bg-danger text-light' : 'bg-success text-light',
-                ]">
+                <span
+                  :class="[
+                    'badge',
+                    jobType.deletedAt
+                      ? 'bg-danger text-light'
+                      : 'bg-success text-light',
+                  ]"
+                >
                   {{ jobType.deletedAt ? "Không hoạt động" : "Hoạt động" }}
                 </span>
               </td>
               <td>
-                <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal"
-                  @click="loadJobTypeForUpdate(jobType)">
+                <button
+                  class="btn btn-success me-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#update-modal"
+                  @click="loadJobTypeForUpdate(jobType)"
+                >
                   <i class="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button class="btn btn-danger me-2" @click="deleteJobType(jobType.id)"
-                  :disabled="categoryStore.isLoading">
+                <button
+                  class="btn btn-danger me-2"
+                  @click="deleteJobType(jobType.id)"
+                  :disabled="categoryStore.isLoading"
+                >
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </td>
@@ -63,14 +91,25 @@
   </div>
 
   <!-- Modal thêm mới -->
-  <div class="modal fade" id="add-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div
+    class="modal fade"
+    id="add-modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Thêm mới loại công việc
           </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <div class="card">
@@ -78,25 +117,47 @@
               <h5>Thông tin loại công việc</h5>
             </div>
             <div class="card-body">
-              <form @submit.prevent>
+              <form @submit.prevent="addNewJobType">
                 <div class="row mb-3">
                   <div class="col-md-6">
-                    <label class="form-label">Tên loại công việc</label>
-                    <input type="text" class="form-control" placeholder="Công nghệ thông tin"
-                      v-model="newJobType.categoryName" :disabled="categoryStore.isLoading" />
+                    <label class="form-label"
+                      >Tên loại công việc
+                      <span class="text-danger">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Công nghệ thông tin"
+                      v-model="newJobType.categoryName"
+                      :disabled="categoryStore.isLoading"
+                    />
+                    <div v-if="errors.categoryName" class="text-danger mt-1">
+                      {{ errors.categoryName }}
+                    </div>
                   </div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">Hình ảnh</label>
+                  <label class="form-label"
+                    >Hình ảnh <span class="text-danger">*</span></label
+                  >
                   <div class="image-upload-container">
                     <div class="upload-actions mb-3">
-                      <button type="button" class="btn btn-outline-primary" @click="triggerFileInput"
-                        :disabled="categoryStore.isLoading">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        @click="triggerFileInput"
+                        :disabled="categoryStore.isLoading"
+                      >
                         <i class="fas fa-image"></i> Chọn ảnh
                       </button>
-                      <input type="file" ref="fileInput" style="display: none" @change="handleImageUpload"
-                        accept="image/*" />
+                      <input
+                        type="file"
+                        ref="fileInput"
+                        style="display: none"
+                        @change="handleImageUpload"
+                        accept="image/*"
+                      />
                     </div>
                     <div class="image-preview">
                       <p>Hình ảnh hiển thị</p>
@@ -108,37 +169,60 @@
                         <span>Chưa có hình ảnh</span>
                       </div>
                     </div>
+                    <div v-if="errors.imageFile" class="text-danger mt-1">
+                      {{ errors.imageFile }}
+                    </div>
                   </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                    :disabled="categoryStore.isLoading"
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    :disabled="categoryStore.isLoading"
+                  >
+                    <span v-if="categoryStore.isLoading">
+                      <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
+                    </span>
+                    <span v-else>Thêm mới</span>
+                  </button>
                 </div>
               </form>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="categoryStore.isLoading">
-            Đóng
-          </button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="addNewJobType"
-            :disabled="categoryStore.isLoading">
-            <span v-if="categoryStore.isLoading">
-              <i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...
-            </span>
-            <span v-else>Thêm mới</span>
-          </button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Modal cập nhật -->
-  <div class="modal fade" id="update-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div
+    class="modal fade"
+    id="update-modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             Cập nhật loại công việc
           </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <div class="card">
@@ -146,12 +230,17 @@
               <h5>Thông tin loại công việc</h5>
             </div>
             <div class="card-body">
-              <form @submit.prevent>
+              <form @submit.prevent="updateJobTypeDetails">
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label">Tên loại công việc</label>
-                    <input type="text" class="form-control" placeholder="Nhập tên công việc (không bắt buộc)"
-                      v-model="updateJobType.categoryName" :disabled="categoryStore.isLoading" />
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Nhập tên công việc (không bắt buộc)"
+                      v-model="updateJobType.categoryName"
+                      :disabled="categoryStore.isLoading"
+                    />
                   </div>
                 </div>
 
@@ -159,12 +248,21 @@
                   <label class="form-label">Hình ảnh (Không bắt buộc)</label>
                   <div class="image-upload-container">
                     <div class="upload-actions mb-3">
-                      <button type="button" class="btn btn-outline-primary" @click="triggerFileInputUpdate"
-                        :disabled="categoryStore.isLoading">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        @click="triggerFileInputUpdate"
+                        :disabled="categoryStore.isLoading"
+                      >
                         <i class="fas fa-image"></i> Chọn ảnh
                       </button>
-                      <input type="file" ref="fileInputUpdate" style="display: none" @change="handleImageUploadUpdate"
-                        accept="image/*" />
+                      <input
+                        type="file"
+                        ref="fileInputUpdate"
+                        style="display: none"
+                        @change="handleImageUploadUpdate"
+                        accept="image/*"
+                      />
                     </div>
                     <div class="image-preview">
                       <p>Hình ảnh hiển thị</p>
@@ -178,21 +276,31 @@
                     </div>
                   </div>
                 </div>
+
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                    :disabled="categoryStore.isLoading"
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    :disabled="categoryStore.isLoading"
+                  >
+                    <span v-if="categoryStore.isLoading">
+                      <i class="fas fa-spinner fa-spin me-2"></i>Đang cập
+                      nhật...
+                    </span>
+                    <span v-else>Cập nhật</span>
+                  </button>
+                </div>
               </form>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="categoryStore.isLoading">
-            Đóng
-          </button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateJobTypeDetails"
-            :disabled="categoryStore.isLoading">
-            <span v-if="categoryStore.isLoading">
-              <i class="fas fa-spinner fa-spin me-2"></i>Đang cập nhật...
-            </span>
-            <span v-else>Cập nhật</span>
-          </button>
         </div>
       </div>
     </div>
@@ -201,6 +309,7 @@
 
 <script>
 import { useCategoryStore } from "@stores/useCategoryStore";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "ListJobType",
@@ -221,12 +330,16 @@ export default {
         imageUrl: null,
         imageFile: null,
       },
-      defaultImage: "https://via.placeholder.com/100", // Hình ảnh mặc định nếu ảnh lỗi
+      errors: {
+        categoryName: "",
+        imageFile: "",
+      },
+      defaultImage: "https://via.placeholder.com/100",
     };
   },
   methods: {
     getImageUrl(imagePath) {
-      if (!imagePath) return "https://via.placeholder.com/150"; // Ảnh mặc định nếu không có ảnh
+      if (!imagePath) return "https://via.placeholder.com/150";
       return `https://res.cloudinary.com/dh1i7su2f/image/upload/${imagePath}`;
     },
     async fetchJobTypes() {
@@ -234,6 +347,7 @@ export default {
         await this.categoryStore.fetchCategories();
       } catch (error) {
         console.error("Lỗi khi lấy danh sách loại công việc:", error);
+        toast.error("Không thể tải danh sách loại công việc!");
       }
     },
 
@@ -244,35 +358,72 @@ export default {
     handleImageUpload(event) {
       const file = event.target.files[0];
       if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          this.errors.imageFile =
+            "Kích thước hình ảnh không được vượt quá 5MB.";
+          this.newJobType.imageFile = null;
+          this.newJobType.imageUrl = null;
+          return;
+        }
+        if (!file.type.match(/image\/(jpeg|jpg|png|webp)/)) {
+          this.errors.imageFile = "Chỉ hỗ trợ các định dạng .jpg, .png, .webp.";
+          this.newJobType.imageFile = null;
+          this.newJobType.imageUrl = null;
+          return;
+        }
+        this.errors.imageFile = "";
         this.newJobType.imageFile = file;
         this.newJobType.imageUrl = URL.createObjectURL(file);
       }
     },
-    async addNewJobType() {
-      if (!this.newJobType.categoryName) {
-        alert("Vui lòng nhập tên loại công việc");
-        return;
+    validateNewJobType() {
+      this.errors = { categoryName: "", imageFile: "" };
+      let isValid = true;
+
+      if (!this.newJobType.categoryName.trim()) {
+        this.errors.categoryName = "Tên loại công việc không được để trống.";
+        isValid = false;
       }
+
       if (!this.newJobType.imageFile) {
-        alert("Vui lòng chọn hình ảnh");
+        this.errors.imageFile = "Vui lòng chọn một hình ảnh.";
+        isValid = false;
+      }
+
+      return isValid;
+    },
+    async addNewJobType() {
+      if (!this.validateNewJobType()) {
         return;
       }
 
-      // Tạo FormData để gửi dữ liệu
       const formData = new FormData();
       formData.append("categoryName", this.newJobType.categoryName);
       formData.append("image", this.newJobType.imageFile);
+
       try {
         await this.categoryStore.addNewCategory(formData);
         this.resetForm();
 
-        // Đóng modal
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById("add-modal")
-        );
-        modal.hide();
+        // Đóng modal với fallback nếu bootstrap không được định nghĩa
+        const modalElement = document.getElementById("add-modal");
+        if (typeof bootstrap !== "undefined" && modalElement) {
+          const modal = bootstrap.Modal.getInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          } else {
+            bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+          }
+        } else {
+          modalElement.classList.remove("show");
+          modalElement.setAttribute("aria-hidden", "true");
+          modalElement.removeAttribute("aria-modal");
+          const backdrop = document.querySelector(".modal-backdrop");
+          if (backdrop) backdrop.remove();
+        }
       } catch (error) {
         console.error("Lỗi khi thêm mới loại công việc:", error);
+        toast.error("Lỗi khi thêm mới loại công việc. Vui lòng thử lại!");
       }
     },
     resetForm() {
@@ -281,6 +432,7 @@ export default {
         imageUrl: null,
         imageFile: null,
       };
+      this.errors = { categoryName: "", imageFile: "" };
     },
 
     // Xử lý cập nhật
@@ -288,7 +440,7 @@ export default {
       this.updateJobType = {
         id: jobType.id,
         categoryName: jobType.categoryName,
-        imageUrl: jobType.image,
+        imageUrl: this.getImageUrl(jobType.categoryImage),
         imageFile: null,
       };
     },
@@ -298,12 +450,27 @@ export default {
     handleImageUploadUpdate(event) {
       const file = event.target.files[0];
       if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error("Kích thước hình ảnh không được vượt quá 5MB.");
+          this.updateJobType.imageFile = null;
+          this.updateJobType.imageUrl = this.getImageUrl(
+            this.updateJobType.imageUrl
+          );
+          return;
+        }
+        if (!file.type.match(/image\/(jpeg|jpg|png|webp)/)) {
+          toast.error("Chỉ hỗ trợ các định dạng .jpg, .png, .webp.");
+          this.updateJobType.imageFile = null;
+          this.updateJobType.imageUrl = this.getImageUrl(
+            this.updateJobType.imageUrl
+          );
+          return;
+        }
         this.updateJobType.imageFile = file;
         this.updateJobType.imageUrl = URL.createObjectURL(file);
       }
     },
     async updateJobTypeDetails() {
-      // Tạo FormData để gửi dữ liệu
       const formData = new FormData();
       formData.append("categoryName", this.updateJobType.categoryName);
       if (this.updateJobType.imageFile) {
@@ -317,13 +484,25 @@ export default {
         );
         this.resetUpdateForm();
 
-        // Đóng modal
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById("update-modal")
-        );
-        modal.hide();
+        // Đóng modal với fallback nếu bootstrap không được định nghĩa
+        const modalElement = document.getElementById("update-modal");
+        if (typeof bootstrap !== "undefined" && modalElement) {
+          const modal = bootstrap.Modal.getInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          } else {
+            bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+          }
+        } else {
+          modalElement.classList.remove("show");
+          modalElement.setAttribute("aria-hidden", "true");
+          modalElement.removeAttribute("aria-modal");
+          const backdrop = document.querySelector(".modal-backdrop");
+          if (backdrop) backdrop.remove();
+        }
       } catch (error) {
         console.error("Lỗi khi cập nhật loại công việc:", error);
+        toast.error("Lỗi khi cập nhật loại công việc. Vui lòng thử lại!");
       }
     },
     resetUpdateForm() {
@@ -342,8 +521,10 @@ export default {
       }
       try {
         await this.categoryStore.deleteCategory(id);
+        toast.success("Xóa loại công việc thành công!");
       } catch (error) {
         console.error("Lỗi khi xóa loại công việc:", error);
+        toast.error("Lỗi khi xóa loại công việc. Vui lòng thử lại!");
       }
     },
 
@@ -353,7 +534,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchJobTypes(); // Tải danh sách khi component được mount
+    this.fetchJobTypes();
   },
 };
 </script>
@@ -364,7 +545,6 @@ export default {
   padding: 30px;
   max-width: 100%;
   background: #f8fafc;
-  /* Light background for depth */
   border-radius: 12px;
   min-height: 100vh;
 }
@@ -374,14 +554,12 @@ h2 {
   font-size: 1.75rem;
   font-weight: 700;
   color: #1e293b;
-  /* Dark slate for contrast */
   margin-bottom: 15px;
 }
 
 a.mb-3.d-inline-block {
   font-size: 0.95rem;
   color: #2563eb;
-  /* Vibrant blue */
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -391,14 +569,11 @@ a.mb-3.d-inline-block {
 
 a.mb-3.d-inline-block:hover {
   color: #1e40af;
-  /* Darker blue on hover */
   transform: translateX(-3px);
-  /* Subtle shift */
 }
 
 a.mb-3.d-inline-block::before {
   content: "\f060";
-  /* Font Awesome arrow-left */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.9rem;
@@ -409,7 +584,6 @@ a.mb-3.d-inline-block::before {
   border: none;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  /* Soft shadow */
   background: #ffffff;
   margin-top: 20px;
   overflow: hidden;
@@ -417,7 +591,6 @@ a.mb-3.d-inline-block::before {
 
 .card-header {
   background: #eff6ff;
-  /* Light blue header */
   border-bottom: 1px solid #e2e8f0;
   padding: 20px;
   display: flex;
@@ -453,12 +626,10 @@ a.mb-3.d-inline-block::before {
   vertical-align: middle;
   padding: 12px 15px;
   border-color: #e2e8f0;
-  /* Light border */
 }
 
 .table th {
   background: #f1f5f9;
-  /* Light slate header */
   color: #475569;
   font-weight: 600;
   text-transform: uppercase;
@@ -468,30 +639,24 @@ a.mb-3.d-inline-block::before {
 
 .table-hover tbody tr:hover {
   background: #f8fafc;
-  /* Subtle hover effect */
   transition: background 0.2s ease;
 }
 
 .table td {
   color: #334155;
-  /* Dark slate text */
 }
 
 /* Image in table */
 .img-logo {
   width: 80px;
-  /* Smaller for consistency */
   height: 80px;
   object-fit: cover;
-  /* Ensure proper scaling */
   border-radius: 8px;
-  /* Rounded corners */
   transition: transform 0.2s ease;
 }
 
 .img-logo:hover {
   transform: scale(1.05);
-  /* Subtle zoom on hover */
 }
 
 /* Badges */
@@ -504,13 +669,11 @@ a.mb-3.d-inline-block::before {
 
 .badge.bg-success {
   background: #d1fae5;
-  /* Light green */
   color: #065f46;
 }
 
 .badge.bg-danger {
   background: #fee2e2;
-  /* Light red */
   color: #991b1b;
 }
 
@@ -523,7 +686,6 @@ a.mb-3.d-inline-block::before {
 
 .btn-primary {
   background: #2563eb;
-  /* Vibrant blue */
   border: none;
   padding: 10px 20px;
   font-size: 0.95rem;
@@ -542,7 +704,6 @@ a.mb-3.d-inline-block::before {
 
 .btn-success {
   background: #10b981;
-  /* Green */
   border: none;
   padding: 8px 12px;
   font-size: 0.85rem;
@@ -556,7 +717,6 @@ a.mb-3.d-inline-block::before {
 
 .btn-danger {
   background: #ef4444;
-  /* Red */
   border: none;
   padding: 8px 12px;
   font-size: 0.85rem;
@@ -577,7 +737,6 @@ a.mb-3.d-inline-block::before {
 .text-center {
   padding: 30px;
   color: #64748b;
-  /* Muted slate */
 }
 
 .text-center i {
@@ -588,19 +747,16 @@ a.mb-3.d-inline-block::before {
 /* Modal */
 .modal-dialog {
   max-width: 700px;
-  /* Slightly wider for better form layout */
 }
 
 .modal-content {
   border-radius: 12px;
   border: none;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  /* Stronger shadow */
 }
 
 .modal-header {
   background: #f1f5f9;
-  /* Light slate */
   border-bottom: 1px solid #e2e8f0;
   padding: 15px 20px;
 }
@@ -625,7 +781,6 @@ a.mb-3.d-inline-block::before {
 
 .modal-body {
   padding: 0;
-  /* Delegate padding to card */
 }
 
 .modal-footer {
@@ -637,7 +792,6 @@ a.mb-3.d-inline-block::before {
 
 .btn-secondary {
   background: #6b7280;
-  /* Gray */
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
@@ -687,7 +841,6 @@ a.mb-3.d-inline-block::before {
 
 .form-control {
   border: 1px solid #d1d5db;
-  /* Light gray */
   border-radius: 8px;
   padding: 10px;
   font-size: 0.95rem;
@@ -705,20 +858,21 @@ a.mb-3.d-inline-block::before {
   cursor: not-allowed;
 }
 
+.text-danger {
+  font-size: 0.85rem;
+}
+
 /* Image upload */
 .image-upload-container {
   border: 2px dashed #d1d5db;
-  /* Thicker, lighter dashed border */
   border-radius: 8px;
   padding: 20px;
   background: #fafafa;
-  /* Light background */
   transition: border-color 0.2s ease;
 }
 
 .image-upload-container:hover {
   border-color: #93c5fd;
-  /* Light blue on hover */
 }
 
 .upload-actions {
@@ -762,7 +916,6 @@ a.mb-3.d-inline-block::before {
 .preview-image img {
   max-width: 100%;
   max-height: 180px;
-  /* Slightly smaller for modals */
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   transition: transform 0.2s ease;
@@ -770,13 +923,11 @@ a.mb-3.d-inline-block::before {
 
 .preview-image img:hover {
   transform: scale(1.02);
-  /* Subtle zoom */
 }
 
 .empty-preview {
   padding: 30px;
   background: #f1f5f9;
-  /* Light slate */
   border-radius: 8px;
   color: #64748b;
   display: flex;
@@ -788,7 +939,6 @@ a.mb-3.d-inline-block::before {
 .empty-preview i {
   font-size: 2rem;
   color: #94a3b8;
-  /* Muted slate */
 }
 
 .empty-preview span {
@@ -813,7 +963,6 @@ a.mb-3.d-inline-block::before {
 
   .btn-primary {
     width: 100%;
-    /* Full-width button on mobile */
   }
 
   .table th,

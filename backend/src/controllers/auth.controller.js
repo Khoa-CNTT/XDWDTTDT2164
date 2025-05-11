@@ -1,4 +1,5 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const authService = require("../services/auth.service");
 
 /**
@@ -14,18 +15,9 @@ class AuthController {
   async registerUser(req, res) {
     try {
       const user = await authService.registerUser(req.body);
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Đăng ký thành công, hãy kiểm tra email",
-        data: user,
-      });
+      return resSuccess(res, null, user);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -38,18 +30,9 @@ class AuthController {
   async verifyEmail(req, res) {
     try {
       const user = await authService.verifyEmail(req.body);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xác minh email thành công.",
-        data: user,
-      });
+      return resSuccess(res, null, user);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -74,18 +57,9 @@ class AuthController {
         sameSite: "strict",
       });
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Đăng nhập thành công.",
-        data: { accessToken, refreshToken },
-      });
+      return resSuccess(res, null, { accessToken, refreshToken });
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -104,17 +78,9 @@ class AuthController {
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Đăng xuất thành công",
-      });
+      return resSuccess(res, "Đăng xuất thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -128,11 +94,12 @@ class AuthController {
     try {
       const { refreshToken } = req.cookies;
       if (!refreshToken) {
-        return res.status(StatusCode.UNAUTHORIZED).json({
-          statusCode: StatusCode.UNAUTHORIZED,
-          status: ResponseStatus.ERROR,
-          message: "Refresh token không tồn tại",
-        });
+        return resSuccess(
+          res,
+          "Refresh token không tồn tại",
+          {},
+          StatusCode.UNAUTHORIZED
+        );
       }
 
       const { accessToken } = await authService.refreshToken(refreshToken);
@@ -143,16 +110,9 @@ class AuthController {
         sameSite: "strict",
       });
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Refresh token thành công",
-        data: { accessToken },
-      });
+      return resSuccess(res, "Refresh token thành công", { accessToken });
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-      });
+      return resError(res, error);
     }
   }
 }

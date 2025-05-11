@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { toast } from "vue3-toastify";
 import {
+  approveEmployerApi,
   getCandidatesByAdminApi,
   getDetailEmployerApi,
   getEmployerInfoApi,
@@ -196,6 +197,26 @@ export const useUserStore = defineStore("user", {
         return response;
       } catch (error) {
         this.handleError(error, "Lỗi khi khóa hoặc mở khóa người dùng");
+        throw error;
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async approveEmployer(id, data) {
+      this.setLoadingState(false);
+      this.resetError();
+      try {
+        const response = await approveEmployerApi(id, data);
+        if (!response || !response.data) {
+          throw new Error("Phản hồi từ API không hợp lệ");
+        }
+        if (response.status === "success") {
+          toast.success(response.data.message);
+        }
+        return response;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi kiểm duyệt người dùng");
         throw error;
       } finally {
         this.setLoadingState(false);

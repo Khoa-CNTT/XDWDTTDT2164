@@ -116,3 +116,11 @@ export const setBlockStatusApi = async (id, data) => {
   });
   return response.data;
 };
+
+export const approveEmployerApi = async (employerId, data) => {
+  const response = await api.put(
+    `/api/users/employer/${employerId}/approve`,
+    data
+  );
+  return response.data;
+};
