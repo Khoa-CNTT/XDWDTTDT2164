@@ -1,4 +1,5 @@
 const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const jobsService = require("../services/jobs.service");
 
 /**
@@ -15,18 +16,14 @@ class JobsController {
     try {
       const { employerId, id } = req.user;
       const job = await jobsService.createJob(req.body, employerId, id);
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Tạo bài đăng công việc thành công",
-        data: job,
-      });
+      return resSuccess(
+        res,
+        "Tạo bài đăng công việc thành công",
+        job,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -41,17 +38,9 @@ class JobsController {
       const { id } = req.user;
       const { jobId, amount } = req.body;
       const result = await jobsService.payJob(jobId, amount, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -64,18 +53,13 @@ class JobsController {
   async getJobs(req, res) {
     try {
       const jobs = await jobsService.getJobs(req.query);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Lấy danh sách bài đăng công việc thành công",
-        data: jobs,
-      });
+      return resSuccess(
+        res,
+        "Lấy bài đăng danh sách công việc thành công",
+        jobs
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -88,17 +72,9 @@ class JobsController {
   async getJobsForAdmin(req, res) {
     try {
       const data = await jobsService.getJobForAdmin(req.query);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -111,20 +87,11 @@ class JobsController {
   async getJobsForEmployer(req, res) {
     try {
       const { employerId } = req.user;
-      console.log(req.query);
       const data = await jobsService.getJobsForEmployer(employerId, req.query);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -137,18 +104,9 @@ class JobsController {
   async getJobBySlug(req, res) {
     try {
       const job = await jobsService.getJobBySlug(req.params.slug);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Lấy chi tiết bài đăng công việc thành công",
-        data: job,
-      });
+      return resSuccess(res, "Lấy chi tiết bài đăng công việc thành công", job);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -162,17 +120,9 @@ class JobsController {
     try {
       const { id } = req.params;
       const data = await jobsService.getJobDetailForEmployer(id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -190,17 +140,9 @@ class JobsController {
         startDate,
         endDate,
       });
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data,
-      });
+      return resSuccess(res, null, data);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.StatusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -213,18 +155,9 @@ class JobsController {
   async updateJob(req, res) {
     try {
       const job = await jobsService.updateJob(req.params.id, req.body);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Cập nhật bài đăng công việc thành công",
-        data: job,
-      });
+      return resSuccess(res, null, job);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -237,12 +170,7 @@ class JobsController {
   async deleteJob(req, res) {
     try {
       const job = await jobsService.deleteJob(req.params.id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa bài đăng công việc thành công",
-        data: job,
-      });
+      return resSuccess(res, "Xóa bài đăng công việc thành công", job);
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
         statusCode: error.statusCode || StatusCode.SERVER_ERROR,
@@ -261,12 +189,7 @@ class JobsController {
   async verifyJob(req, res) {
     try {
       const job = await jobsService.verifyJob(req.params.id, req.body);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Kiểm duyệt bài đăng công việc thành công",
-        data: job,
-      });
+      return resSuccess(res, "Kiểm duyệt bài đăng công việc thành công", job);
     } catch (error) {
       return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
         statusCode: error.statusCode || StatusCode.SERVER_ERROR,

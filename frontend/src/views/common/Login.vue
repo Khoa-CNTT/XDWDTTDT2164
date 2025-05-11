@@ -80,20 +80,6 @@
               <span v-else>Đăng nhập</span>
             </button>
 
-            <div class="separator mb-4">
-              <span>hoặc</span>
-            </div>
-
-            <button
-              type="button"
-              class="btn btn-google w-100 py-3 mb-4"
-              @click="loginWithGoogle"
-              :disabled="authStore.isLoading"
-            >
-              <i class="fab fa-google me-2"></i>
-              Đăng nhập với Google
-            </button>
-
             <div class="text-center register-prompt">
               Bạn chưa có tài khoản?
               <router-link to="/register" class="register-link"

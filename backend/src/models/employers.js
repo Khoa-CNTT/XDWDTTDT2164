@@ -58,8 +58,8 @@ module.exports = (sequelize, DataTypes) => {
         field: "company_tax_code",
       },
       isApproved: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        type: DataTypes.ENUM("Chờ kiểm duyệt", "Đã kiểm duyệt", "Đã từ chối"),
+        defaultValue: "Chờ kiểm duyệt",
         field: "is_approved",
       },
       industry: {

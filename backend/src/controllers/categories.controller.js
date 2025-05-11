@@ -1,6 +1,7 @@
 const categoryService = require("../services/categories.service");
 const ApiError = require("../libs/apiError");
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 
 /**
  *  Controller xử lý logic liên quan đến category
@@ -24,18 +25,14 @@ class CategoryController {
         categoryName,
         image: imageUrl,
       });
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Tạo danh mục thành công",
-        data: category,
-      });
+      return resSuccess(
+        res,
+        "Tạo danh mục thành công",
+        category,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -48,17 +45,9 @@ class CategoryController {
   async getCategories(req, res) {
     try {
       const categories = await categoryService.getCategories();
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: categories,
-      });
+      return resSuccess(res, null, categories);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -81,18 +70,9 @@ class CategoryController {
         },
         id
       );
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Cập nhật danh mục thành công",
-        data: category,
-      });
+      return resSuccess(res, "Cập nhật danh mục thành công", category);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -106,15 +86,9 @@ class CategoryController {
     try {
       const { id } = req.params;
       await categoryService.deleteCategory(id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa danh mục thành công",
-      });
+      return resSuccess(res, "Xóa danh mục thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-      });
+      return resError(res, error);
     }
   }
 }

@@ -8,7 +8,6 @@ const {
 const {
   validateChangePassword,
   validateCreateEmployerProfile,
-  validateAddEmployeeToEmployer,
   validateCreateCandidateProfile,
 } = require("../validations/validateUser.validation");
 const {
@@ -87,7 +86,7 @@ router.post(
  * @middleware authorizedRoute("admin"): Kiểm tra xem user có phải là admin không
  * @controller UserController.approveEmployer
  */
-router.get(
+router.put(
   "/employer/:employerId/approve",
   protectedRoute,
   authorizedRoute("admin"),
@@ -147,40 +146,6 @@ router.get(
   protectedRoute,
   authorizedRoute("admin"),
   userController.getCandidates
-);
-
-/**
- * @route POST /api/user/employer/:employerId/add-employee
- * @desc Thêm nhân viên vào công ty
- * @access Private
- * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
- * @middleware authorizedRoute("employer"): Kiểm tra xem user có phải là nhà tuyển dụng không
- * @middleware validateAddEmployeeToEmployer: Validate request thêm nhân viên vào công ty
- * @middleware handleValidationErrors: Xử lý lỗi validation
- * @controller UserController.addEmployeeToEmployer
- */
-router.post(
-  "/employer/:employerId/add-employee",
-  protectedRoute,
-  authorizedRoute("employer"),
-  validateAddEmployeeToEmployer,
-  handleValidationErrors,
-  userController.addEmployeeToEmployer
-);
-
-/**
- * @route GET /api/user/employer/:employerId/employees
- * @desc Lấy danh sách nhân viên của nhà tuyển dụng
- * @access Private
- * @middleware protectedRoute: Kiểm tra xem user có đăng nhập không
- * @middleware authorizedRoute("employer"): Kiểm tra xem user có phải là nhà tuyển dụng không
- * @controller UserController.getEmployerEmployees
- */
-router.get(
-  "/employer/:employerId/employees",
-  protectedRoute,
-  authorizedRoute("employer"),
-  userController.getEmployerEmployees
 );
 
 /**
