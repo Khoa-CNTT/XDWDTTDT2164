@@ -4,7 +4,11 @@ import api from "@utils/axios.config";
  * @returns {Promise<void>} - Trả về data
  */
 export const applyToJobApi = async (data) => {
-  const response = await api.post("/api/apply-jobs/apply", data);
+  const response = await api.post("/api/apply-jobs/apply", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 

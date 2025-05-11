@@ -1,4 +1,4 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const saveJobsService = require("../services/saveJobs.service");
 
 /**
@@ -16,18 +16,13 @@ class SaveJobsController {
       const { jobId } = req.body;
       const { id } = req.user;
       const result = await saveJobsService.saveJob(jobId, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Lưu job vào danh sách thành công",
-        data: result,
-      });
+      return resSuccess(
+        res,
+        "Lưu bài đăng công việc vào danh sách thành công",
+        result
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -42,17 +37,12 @@ class SaveJobsController {
       const { jobId } = req.params;
       const { id } = req.user;
       await saveJobsService.delJob(jobId, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa job khỏi danh sách thành công",
-      });
+      return resSuccess(
+        res,
+        "Xóa bài đăng công việc khỏi danh sách thành công"
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -66,17 +56,9 @@ class SaveJobsController {
     try {
       const { id } = req.user;
       const result = await saveJobsService.getJobs(req.query, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: result,
-      });
+      return resSuccess(res, null, result);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

@@ -1,4 +1,5 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const experiencesService = require("../services/experiences.service");
 
 /**
@@ -18,18 +19,14 @@ class ExperiencesController {
         experienceName
       );
 
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Thêm mới kinh nghiệm thành công",
-        data: experince,
-      });
+      return resSuccess(
+        res,
+        "Thêm mới kinh nghiệm thành công",
+        experince,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -43,17 +40,9 @@ class ExperiencesController {
     try {
       const { page, limit } = req.query;
       const experiences = await experiencesService.getExperiences(page, limit);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: experiences,
-      });
+      return resSuccess(res, null, experiences);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -72,18 +61,9 @@ class ExperiencesController {
         id
       );
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Cập nhật kinh nghiệm thành công",
-        data: experience,
-      });
+      return resSuccess(res, "Cập nhật kinh nghiệm thành công", experience);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -98,17 +78,9 @@ class ExperiencesController {
     try {
       const experience = await experiencesService.deleteExperience(id);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa kinh nghiệm thành công",
-      });
+      return resSuccess(res, "Xóa kinh nghiệm thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

@@ -435,6 +435,7 @@ export default {
       try {
         await this.jobStore.paymentJob(this.paymentData, this.$router);
         // Redirect to /employer-dashboard/employer-list is handled in jobStore.paymentJob
+        this.$router.push("/employer-dashboard/employer-list");
       } catch (error) {
         toast.error("Lỗi khi thanh toán bài đăng!");
         console.error("Payment error:", error);

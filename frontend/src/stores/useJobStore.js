@@ -10,6 +10,7 @@ import {
   getJobsApi,
   paymentJobApi,
   updateJobApi,
+  verifyJobApi,
 } from "../apis/job";
 
 export const useJobStore = defineStore("job", {
@@ -75,11 +76,11 @@ export const useJobStore = defineStore("job", {
       }
     },
 
-    async fetchJobs(query) {
+    async fetchJobs(params) {
       this.setLoadingState(true);
       this.resetError();
       try {
-        const response = await getJobsApi(query);
+        const response = await getJobsApi(params);
         if (!response || !response.data) {
           throw new Error("Dữ liệu bài đăng không hợp lệ");
         }
@@ -167,6 +168,23 @@ export const useJobStore = defineStore("job", {
         return response;
       } catch (error) {
         this.handleError(error, "Lỗi khi chỉnh sửa bài đăng");
+        throw error;
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async verifyJob(id, status) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await verifyJobApi(id, status);
+        if (!response) {
+          throw new Error("Phản hồi từ API không hợp lệ");
+        }
+        return response;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi kiểm duyệt bài đăng");
         throw error;
       } finally {
         this.setLoadingState(false);

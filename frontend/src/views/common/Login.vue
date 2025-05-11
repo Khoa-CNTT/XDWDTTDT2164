@@ -80,20 +80,6 @@
               <span v-else>Đăng nhập</span>
             </button>
 
-            <div class="separator mb-4">
-              <span>hoặc</span>
-            </div>
-
-            <button
-              type="button"
-              class="btn btn-google w-100 py-3 mb-4"
-              @click="loginWithGoogle"
-              :disabled="authStore.isLoading"
-            >
-              <i class="fab fa-google me-2"></i>
-              Đăng nhập với Google
-            </button>
-
             <div class="text-center register-prompt">
               Bạn chưa có tài khoản?
               <router-link to="/register" class="register-link"
@@ -159,9 +145,10 @@ export default defineComponent({
             (typeof this.authStore.Employers === "object" &&
               Object.keys(this.authStore.Employers).length === 0)
           ) {
-            redirectPath = "/employer-profile-create"; // Chưa có hồ sơ nhà tuyển dụng
+            redirectPath = "/create-employer-profile"; // Chưa có hồ sơ nhà tuyển dụng
           } else {
-            redirectPath = this.$route.query.redirect || "/"; // Có hồ sơ
+            redirectPath =
+              this.$route.query.redirect || "/employer-dashboard/employer-info"; // Có hồ sơ
           }
         } else {
           redirectPath = this.$route.query.redirect || "/"; // Vai trò khác

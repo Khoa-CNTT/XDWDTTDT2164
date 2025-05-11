@@ -47,7 +47,7 @@ const convertPdfToText = async (file) => {
 };
 
 const parseGeminiResult = (resultText) => {
-  const matchScoreRegex = /Điểm đánh giá:\s*([0-9.]+)\/10/;
+  const matchScoreRegex = /Điểm đánh giá:\s*([0-9.]+)%/;
   const suitableRegex = /Mức độ phù hợp:\s*(.+)/;
   const commentRegex = /Nhận xét:\s*(.+)/s;
 
@@ -63,9 +63,21 @@ const parseGeminiResult = (resultText) => {
 };
 
 const parseGeminiResultMatch = (resultText) => {
+  console.log("Parsing Gemini result:", resultText);
+
+  // Regex linh hoạt hơn
   const match = resultText.match(
-    /^Kiểm duyệt:\s*(Duyệt|Không duyệt)\.?(?:\s*Lý do:\s*(.*))?$/i
+    /Kiểm duyệt:\s*(Duyệt|Không duyệt)\s*(?:\.?\s*Lý do:\s*(.*))?/i
   );
+
+  if (!match) {
+    console.error("Invalid Gemini result format:", resultText);
+    return {
+      result: "Không duyệt",
+      reason:
+        "Định dạng phản hồi từ AI không đúng. Vui lòng kiểm tra lại nội dung bài đăng.",
+    };
+  }
 
   return {
     result: match[1],

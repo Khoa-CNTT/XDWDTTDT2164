@@ -3,13 +3,18 @@
     <div class="d-flex justify-content-between align-items-center">
       <div>
         <h2>Quản Lý Giao Dịch</h2>
-        <a href="blank">Quay trở lại trang chủ?</a>
+        <a href="/" class="back-link">Quay trở lại trang chủ?</a>
       </div>
       <div>
-        <button class="btn btn-success">
+        <button class="btn btn-success" @click="handleExportCsv">
           Xuất file CSV <i class="fa-solid fa-circle-down"></i>
         </button>
       </div>
+    </div>
+
+    <!-- Thông báo lỗi -->
+    <div v-if="error" class="alert alert-danger mt-3" role="alert">
+      {{ error }}
     </div>
 
     <!-- Card doanh thu -->
@@ -18,7 +23,7 @@
         <div class="card">
           <div class="card-body">
             <h5>Tổng doanh thu hôm nay</h5>
-            <span class="text-success">{{ formatCurrency(todayRevenue) }}</span>
+            <p class="text-success">{{ formatCurrency(todayRevenue) }}</p>
           </div>
         </div>
       </div>
@@ -26,7 +31,7 @@
         <div class="card">
           <div class="card-body">
             <h5>Tổng doanh thu tháng này</h5>
-            <span class="text-success">{{ formatCurrency(monthRevenue) }}</span>
+            <p class="text-success">{{ formatCurrency(monthRevenue) }}</p>
           </div>
         </div>
       </div>
@@ -35,9 +40,13 @@
           <div class="card-body">
             <h5>Tổng số giao dịch</h5>
             <div>
-              <span class="text-success">Thành công: {{ transactionStats.success }}</span>
+              <span class="text-success"
+                >Thành công: {{ transactionStats.success }}</span
+              >
               /
-              <span class="text-danger">Thất bại: {{ transactionStats.failed }}</span>
+              <span class="text-danger"
+                >Thất bại: {{ transactionStats.failed }}</span
+              >
             </div>
           </div>
         </div>
@@ -46,9 +55,7 @@
         <div class="card">
           <div class="card-body">
             <h5>Tổng tiền nạp vào ví</h5>
-            <span class="text-success">{{
-              formatCurrency(walletDeposits)
-            }}</span>
+            <p class="text-success">{{ formatCurrency(walletDeposits) }}</p>
           </div>
         </div>
       </div>
@@ -60,34 +67,99 @@
         <div class="card p-3">
           <div class="d-flex justify-content-between align-items-center">
             <h5>Doanh thu theo thời gian</h5>
-            <select v-model="selectedRevenueFilter" @change="updateRevenueChart" class="form-select"
-              style="width: 100px">
-              <option value="day">Theo ngày</option>
-              <option value="month">Theo tháng</option>
-              <option value="year">Theo năm</option>
-            </select>
+            <div class="d-flex gap-2 align-items-center">
+              <div v-if="showDatePickers" class="d-flex gap-2">
+                <input
+                  type="date"
+                  v-model="startDate"
+                  class="form-control form-control-sm"
+                  style="width: 140px"
+                  @change="debouncedFetchRevenueData"
+                />
+                <input
+                  type="date"
+                  v-model="endDate"
+                  class="form-control form-control-sm"
+                  style="width: 140px"
+                  @change="debouncedFetchRevenueData"
+                />
+              </div>
+              <select
+                v-model="selectedRevenueFilter"
+                @change="debouncedFetchRevenueData"
+                class="form-select"
+                style="width: 120px"
+              >
+                <option value="day">Theo ngày</option>
+                <option value="month">Theo tháng</option>
+                <option value="year">Theo năm</option>
+                <option value="weekday">Theo thứ</option>
+              </select>
+              <button
+                @click="toggleDatePickers"
+                class="btn btn-sm"
+                :class="showDatePickers ? 'btn-danger' : 'btn-outline-primary'"
+              >
+                <i
+                  class="fas"
+                  :class="showDatePickers ? 'fa-times' : 'fa-calendar'"
+                ></i>
+              </button>
+            </div>
           </div>
-          <canvas ref="revenueChartCanvas"></canvas>
+
+          <div v-if="revenueChartLoading" class="text-center py-5">
+            <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+          </div>
+          <div
+            v-else-if="revenueChartError"
+            class="text-center py-5 text-danger"
+          >
+            <i class="fas fa-exclamation-triangle"></i> {{ revenueChartError }}
+          </div>
+          <div v-else-if="revenueData.length === 0" class="text-center py-5">
+            <i class="fas fa-info-circle"></i> Không có dữ liệu trong khoảng
+            thời gian này
+          </div>
+          <canvas
+            v-else
+            ref="revenueChartCanvas"
+            style="min-height: 350px"
+          ></canvas>
         </div>
       </div>
       <div class="col-lg-5 col-md-12">
         <div class="card p-3">
           <div class="d-flex justify-content-between align-items-center">
             <h5>Phân bổ doanh thu</h5>
-            <select v-model="selectedPieFilter" @change="updatePieChart" class="form-select" style="width: 100px">
+            <select
+              v-model="selectedPieFilter"
+              @change="updatePieChart"
+              class="form-select"
+              style="width: 120px"
+            >
               <option value="day">Theo ngày</option>
               <option value="month">Theo tháng</option>
               <option value="year">Theo năm</option>
             </select>
           </div>
-          <canvas ref="pieChartCanvas"></canvas>
+          <canvas ref="pieChartCanvas" style="min-height: 350px"></canvas>
         </div>
       </div>
     </div>
 
     <!-- Bảng giao dịch -->
     <div class="card mt-5">
-      <table class="table table-bordered table-hover">
+      <div v-if="paymentStore.isLoading" class="text-center py-5">
+        <i class="fas fa-spinner fa-spin"></i> Đang tải danh sách giao dịch...
+      </div>
+      <div v-else-if="paymentStore.error" class="text-center py-5 text-danger">
+        <i class="fas fa-exclamation-triangle"></i> {{ paymentStore.error }}
+      </div>
+      <div v-else-if="!paymentStore.payments.length" class="text-center py-5">
+        <i class="fas fa-info-circle"></i> Không có giao dịch nào.
+      </div>
+      <table v-else class="table table-bordered table-hover">
         <thead class="table-success text-center align-middle">
           <tr>
             <th>STT</th>
@@ -101,188 +173,279 @@
           </tr>
         </thead>
         <tbody class="text-center align-middle">
-          <tr v-for="(transaction, index) in transactions" :key="transaction.id">
-            <td>{{ index + 1 }}</td>
+          <tr
+            v-for="(transaction, index) in paymentStore.payments"
+            :key="transaction.id"
+          >
+            <td>
+              {{
+                (paymentStore.currentPage - 1) * paymentStore.pageSize +
+                index +
+                1
+              }}
+            </td>
             <td>{{ transaction.transactionId }}</td>
-            <td>{{ transaction.companyName }}</td>
+            <td>
+              {{ transaction.Users.EmployerUsers[0].Employers.companyName }}
+            </td>
             <td>{{ transaction.transactionType }}</td>
             <td>{{ formatCurrency(transaction.amount) }}</td>
             <td>
-              <button :class="transaction.status === 'Thành công' ? 'badge bg-success text-light': 'badge bg-danger text-light'">
+              <button
+                :class="
+                  transaction.status === 'Thành công'
+                    ? 'badge bg-success text-light'
+                    : 'badge bg-danger text-light'
+                "
+              >
                 {{ transaction.status }}
               </button>
             </td>
             <td>{{ formatDate(transaction.paymentDate) }}</td>
             <td class="d-flex justify-content-center">
-              <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#update-modal">
+              <button
+                class="btn btn-success me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#update-modal"
+                @click="selectedTransaction = transaction"
+              >
                 Xem chi tiết
               </button>
-              <button class="btn btn-danger me-2" @click="handleRefund(transaction.id)">
+              <button
+                class="btn btn-danger me-2"
+                @click="handleRefund(transaction.id)"
+              >
                 Hoàn Tiền
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+      <div
+        v-if="paymentStore.payments.length"
+        class="d-flex justify-content-between align-items-center p-3"
+      >
+        <div>
+          Trang {{ paymentStore.currentPage }} / {{ paymentStore.totalPages }}
+        </div>
+        <div>
+          <button
+            class="btn btn-outline-primary me-2"
+            :disabled="paymentStore.currentPage === 1"
+            @click="paymentStore.previousPage"
+          >
+            Trang trước
+          </button>
+          <button
+            class="btn btn-outline-primary"
+            :disabled="paymentStore.currentPage >= paymentStore.totalPages"
+            @click="paymentStore.nextPage"
+          >
+            Trang sau
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for transaction details -->
+    <div class="modal fade" id="update-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Chi tiết giao dịch</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p v-if="selectedTransaction">
+              <strong>Mã giao dịch:</strong>
+              {{ selectedTransaction.transactionId }}
+            </p>
+            <p v-if="selectedTransaction">
+              <strong>Tên công ty:</strong>
+              {{
+                selectedTransaction.Users?.EmployerUsers[0]?.Employers
+                  .companyName || "N/A"
+              }}
+            </p>
+            <p v-if="selectedTransaction">
+              <strong>Loại giao dịch:</strong>
+              {{ selectedTransaction.transactionType }}
+            </p>
+            <p v-if="selectedTransaction">
+              <strong>Số tiền:</strong>
+              {{ formatCurrency(selectedTransaction.amount) }}
+            </p>
+            <p v-if="selectedTransaction">
+              <strong>Trạng thái:</strong> {{ selectedTransaction.status }}
+            </p>
+            <p v-if="selectedTransaction">
+              <strong>Thời gian:</strong>
+              {{ formatDate(selectedTransaction.paymentDate) }}
+            </p>
+            <p v-else>Không có dữ liệu giao dịch.</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { Chart, registerables } from "chart.js";
-import { BarController, PieController } from "chart.js";
+import { Chart, registerables, BarController, PieController } from "chart.js";
+import { debounce } from "lodash";
+import { useWalletStore } from "@/stores/useWalletStore";
+import { exportFileCsv, getPaymentTimeApi } from "@/apis/wallet";
+import { getPaymentOverview } from "@/apis/dashboard";
 
-// Đăng ký các thành phần cần thiết của Chart.js
+// Register Chart.js components
 Chart.register(...registerables, BarController, PieController);
 
 export default {
   name: "TransactionManagement",
   setup() {
-    // Dữ liệu mẫu (có thể thay thế bằng dữ liệu từ API)
-    const todayRevenue = ref(5000000);
-    const monthRevenue = ref(70000000);
-    const transactionStats = ref({ success: 90, failed: 10 });
-    const walletDeposits = ref(60000000);
-    const transactions = ref([
-      {
-        id: 1,
-        transactionId: "PX01231414323",
-        companyName: "Công TNHH Văn Minh",
-        transactionType: "Thanh toán bài đăng",
-        amount: 50000,
-        status: "Thành công",
-        paymentDate: "2025-04-03T22:50:00",
-      },
-    ]);
-
-    // Bộ lọc cho biểu đồ
-    const selectedRevenueFilter = ref("day");
-    const selectedPieFilter = ref("day");
-
-    // Tham chiếu đến canvas
-    const revenueChartCanvas = ref(null);
-    const pieChartCanvas = ref(null);
-
-    // Biến lưu trữ instance của biểu đồ
-    let revenueChartInstance = null;
-    let pieChartInstance = null;
-
-    // Dữ liệu mẫu cho biểu đồ (có thể thay thế bằng dữ liệu từ API)
-    const revenueData = {
-      day: {
-        labels: ["01/04", "02/04", "03/04", "04/04", "05/04", "06/04", "07/04"],
-        datasets: [
-          {
-            label: "Doanh thu (VNĐ)",
-            data: [
-              2000000, 3000000, 5000000, 4000000, 6000000, 3500000, 4500000,
-            ],
-            backgroundColor: "rgba(75, 192, 192, 0.6)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
-          },
-        ],
-      },
-      month: {
-        labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4"],
-        datasets: [
-          {
-            label: "Doanh thu (VNĐ)",
-            data: [15000000, 20000000, 25000000, 70000000],
-            backgroundColor: "rgba(75, 192, 192, 0.6)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
-          },
-        ],
-      },
-      year: {
-        labels: ["2023", "2024", "2025"],
-        datasets: [
-          {
-            label: "Doanh thu (VNĐ)",
-            data: [100000000, 150000000, 200000000],
-            backgroundColor: "rgba(75, 192, 192, 0.6)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
-          },
-        ],
-      },
-    };
-
-    const pieData = {
-      day: {
-        labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
-        datasets: [
-          {
-            label: "Phân bổ doanh thu",
-            data: [3000000, 1500000, 500000],
-            backgroundColor: [
-              "rgba(75, 192, 192, 0.6)",
-              "rgba(255, 99, 132, 0.6)",
-              "rgba(255, 206, 86, 0.6)",
-            ],
-            borderColor: [
-              "rgba(75, 192, 192, 1)",
-              "rgba(255, 99, 132, 1)",
-              "rgba(255, 206, 86, 1)",
-            ],
-            borderWidth: 1,
-          },
-        ],
-      },
-      month: {
-        labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
-        datasets: [
-          {
-            label: "Phân bổ doanh thu",
-            data: [40000000, 25000000, 5000000],
-            backgroundColor: [
-              "rgba(75, 192, 192, 0.6)",
-              "rgba(255, 99, 132, 0.6)",
-              "rgba(255, 206, 86, 0.6)",
-            ],
-            borderColor: [
-              "rgba(75, 192, 192, 1)",
-              "rgba(255, 99, 132, 1)",
-              "rgba(255, 206, 86, 1)",
-            ],
-            borderWidth: 1,
-          },
-        ],
-      },
-      year: {
-        labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
-        datasets: [
-          {
-            label: "Phân bổ doanh thu",
-            data: [120000000, 70000000, 10000000],
-            backgroundColor: [
-              "rgba(75, 192, 192, 0.6)",
-              "rgba(255, 99, 132, 0.6)",
-              "rgba(255, 206, 86, 0.6)",
-            ],
-            borderColor: [
-              "rgba(75, 192, 192, 1)",
-              "rgba(255, 99, 132, 1)",
-              "rgba(255, 206, 86, 1)",
-            ],
-            borderWidth: 1,
-          },
-        ],
+    const paymentStore = useWalletStore();
+    return { paymentStore };
+  },
+  data() {
+    return {
+      todayRevenue: 0,
+      monthRevenue: 0,
+      transactionStats: { success: 0, failed: 0 },
+      walletDeposits: 0,
+      error: null,
+      selectedRevenueFilter: "month",
+      selectedPieFilter: "month",
+      revenueChartCanvas: null,
+      pieChartCanvas: null,
+      selectedTransaction: null,
+      revenueChartInstance: null,
+      pieChartInstance: null,
+      revenueData: [],
+      revenueChartLoading: false,
+      revenueChartError: null,
+      showDatePickers: false,
+      startDate: "",
+      endDate: "",
+      pieData: {
+        day: {
+          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
+          datasets: [
+            {
+              label: "Phân bổ doanh thu",
+              data: [3000000, 1500000, 500000],
+              backgroundColor: [
+                "rgba(75, 192, 192, 0.6)",
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(255, 206, 86, 0.6)",
+              ],
+              borderColor: [
+                "rgba(75, 192, 192, 1)",
+                "rgba(255, 99, 132, 1)",
+                "rgba(255, 206, 86, 1)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        },
+        month: {
+          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
+          datasets: [
+            {
+              label: "Phân bổ doanh thu",
+              data: [40000000, 25000000, 5000000],
+              backgroundColor: [
+                "rgba(75, 192, 192, 0.6)",
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(255, 206, 86, 0.6)",
+              ],
+              borderColor: [
+                "rgba(75, 192, 192, 1)",
+                "rgba(255, 99, 132, 1)",
+                "rgba(255, 206, 86, 1)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        },
+        year: {
+          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
+          datasets: [
+            {
+              label: "Phân bổ doanh thu",
+              data: [120000000, 70000000, 10000000],
+              backgroundColor: [
+                "rgba(75, 192, 192, 0.6)",
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(255, 206, 86, 0.6)",
+              ],
+              borderColor: [
+                "rgba(75, 192, 192, 1)",
+                "rgba(255, 99, 132, 1)",
+                "rgba(255, 206, 86, 1)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        },
       },
     };
+  },
+  mounted() {
+    this.fetchPaymentOverview();
+    this.paymentStore.fetchPayments(1, this.paymentStore.pageSize);
+    this.$nextTick(() => {
+      this.fetchRevenueData();
+      this.updatePieChart();
+    });
+  },
+  watch: {
+    revenueData: {
+      handler(newData) {
+        if (newData.length > 0) {
+          this.$nextTick(() => {
+            this.updateRevenueChart();
+          });
+        }
+      },
+      deep: true,
+    },
+  },
+  methods: {
+    debouncedFetchRevenueData: debounce(function () {
+      this.fetchRevenueData();
+    }, 500),
 
-    // Hàm định dạng tiền tệ
-    const formatCurrency = (value) => {
+    toggleDatePickers() {
+      this.showDatePickers = !this.showDatePickers;
+      if (!this.showDatePickers) {
+        this.startDate = "";
+        this.endDate = "";
+        this.debouncedFetchRevenueData();
+      }
+    },
+
+    formatCurrency(value) {
       return new Intl.NumberFormat("vi-VN", {
         style: "currency",
         currency: "VND",
       }).format(value);
-    };
+    },
 
-    // Hàm định dạng ngày
-    const formatDate = (date) => {
+    formatDate(date) {
       return new Date(date).toLocaleString("vi-VN", {
         hour: "2-digit",
         minute: "2-digit",
@@ -290,177 +453,312 @@ export default {
         month: "2-digit",
         year: "numeric",
       });
-    };
+    },
 
-    // Hàm cập nhật biểu đồ cột (Doanh thu theo thời gian)
-    const updateRevenueChart = () => {
-      if (revenueChartInstance) {
-        revenueChartInstance.destroy();
+    async fetchPaymentOverview() {
+      try {
+        const response = await getPaymentOverview();
+        this.todayRevenue = response.data.todayRevenue || 0;
+        this.monthRevenue = response.data.monthRevenue || 0;
+        this.transactionStats = response.data || {
+          totalTransactions: 0,
+          failed: 0,
+        };
+        this.walletDeposits = response.data.totalWalletBalance || 0;
+        this.error = null;
+      } catch (err) {
+        this.error = "Không thể tải dữ liệu doanh thu. Vui lòng thử lại.";
+        console.error("Lỗi khi lấy dữ liệu doanh thu:", err);
+      }
+    },
+
+    async fetchRevenueData() {
+      try {
+        this.revenueChartLoading = true;
+        this.revenueChartError = null;
+
+        if (
+          this.startDate &&
+          this.endDate &&
+          new Date(this.startDate) > new Date(this.endDate)
+        ) {
+          this.revenueChartError =
+            "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu";
+          this.revenueChartLoading = false;
+          return;
+        }
+
+        const query = { period: this.selectedRevenueFilter };
+        if (this.startDate) query.startDate = this.startDate;
+        if (this.endDate) query.endDate = this.endDate;
+
+        console.log("Đang gửi yêu cầu với query:", query);
+        const response = await getPaymentTimeApi(query);
+        console.log("Dữ liệu nhận được:", response);
+
+        this.revenueData = response.data || [];
+      } catch (err) {
+        this.revenueChartError = `Không thể tải dữ liệu biểu đồ: ${
+          err.message || "Lỗi không xác định"
+        }`;
+        console.error("Lỗi khi lấy dữ liệu biểu đồ:", err);
+      } finally {
+        this.revenueChartLoading = false;
+      }
+    },
+
+    async handleExportCsv() {
+      try {
+        const response = await exportFileCsv();
+        const blob = new Blob([response], { type: "text/csv;charset=utf-8;" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "transactions.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Lỗi khi xuất file CSV:", error);
+        this.error = "Không thể xuất file CSV. Vui lòng thử lại.";
+      }
+    },
+
+    updateRevenueChart() {
+      if (this.revenueChartInstance) {
+        this.revenueChartInstance.destroy();
       }
 
-      const ctx = revenueChartCanvas.value.getContext("2d");
-      revenueChartInstance = new Chart(ctx, {
-        type: "bar", // Biểu đồ cột
-        data: revenueData[selectedRevenueFilter.value],
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: "Doanh thu (VNĐ)",
+      if (this.revenueData.length === 0) {
+        console.warn("Không có dữ liệu để vẽ biểu đồ");
+        return;
+      }
+
+      if (!this.$refs.revenueChartCanvas) {
+        console.warn("Canvas chưa sẵn sàng");
+        setTimeout(() => {
+          this.updateRevenueChart();
+        }, 100);
+        return;
+      }
+
+      try {
+        const ctx = this.$refs.revenueChartCanvas.getContext("2d");
+        const labels = this.revenueData.map((item) => item.display);
+        const currentData = this.revenueData.map((item) => item.revenue);
+        const previousData = this.revenueData.map((item) => item.previod);
+        const maxCount = Math.max(...currentData, ...previousData, 1);
+
+        console.log("Dữ liệu biểu đồ:", { labels, currentData, previousData });
+
+        this.$refs.revenueChartCanvas.width =
+          this.$refs.revenueChartCanvas.parentNode.offsetWidth;
+        this.$refs.revenueChartCanvas.height = 350;
+
+        this.revenueChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Doanh thu hiện tại (VNĐ)",
+                data: currentData,
+                backgroundColor: currentData.map((count) =>
+                  count === Math.max(...currentData)
+                    ? "rgba(54, 162, 235, 1)"
+                    : "rgba(54, 162, 235, 0.7)"
+                ),
+                borderColor: "rgba(54, 162, 235, 1)",
+                borderWidth: 1,
+                borderRadius: 5,
               },
-              ticks: {
-                callback: (value) => formatCurrency(value).replace("₫", ""),
+              {
+                label: "Doanh thu kỳ trước (VNĐ)",
+                data: previousData,
+                backgroundColor: previousData.map((count) =>
+                  count === Math.max(...previousData)
+                    ? "rgba(108, 117, 125, 1)"
+                    : "rgba(108, 117, 125, 0.7)"
+                ),
+                borderColor: "rgba(108, 117, 125, 1)",
+                borderWidth: 1,
+                borderRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: Math.max(1000000, Math.ceil(maxCount / 10)),
+                  precision: 0,
+                  callback: (value) =>
+                    this.formatCurrency(value).replace("₫", ""),
+                },
+                title: {
+                  display: true,
+                  text: "Doanh thu (VNĐ)",
+                  font: {
+                    size: 14,
+                  },
+                },
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45,
+                },
+                title: {
+                  display: true,
+                  text:
+                    this.selectedRevenueFilter === "weekday"
+                      ? "Thứ trong tuần"
+                      : "Thời gian",
+                  font: {
+                    size: 14,
+                  },
+                },
               },
             },
-            x: {
-              title: {
+            plugins: {
+              legend: {
                 display: true,
-                text:
-                  selectedRevenueFilter.value === "day"
-                    ? "Ngày"
-                    : selectedRevenueFilter.value === "month"
-                      ? "Tháng"
-                      : "Năm",
+                position: "top",
+              },
+              tooltip: {
+                callbacks: {
+                  title: (tooltipItems) => tooltipItems[0].label,
+                  label: (context) =>
+                    `${context.dataset.label}: ${this.formatCurrency(
+                      context.raw
+                    )}`,
+                },
               },
             },
           },
+        });
+      } catch (error) {
+        console.error("Lỗi khi vẽ biểu đồ:", error);
+      }
+    },
+
+    updatePieChart() {
+      if (this.pieChartInstance) {
+        this.pieChartInstance.destroy();
+      }
+
+      const ctx = this.$refs.pieChartCanvas.getContext("2d");
+      this.pieChartInstance = new Chart(ctx, {
+        type: "pie",
+        data: this.pieData[this.selectedPieFilter],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: true,
               position: "top",
             },
             tooltip: {
               callbacks: {
                 label: (context) =>
-                  `${context.dataset.label}: ${formatCurrency(context.raw)}`,
+                  `${context.label}: ${this.formatCurrency(context.raw)}`,
               },
             },
           },
         },
       });
-    };
+    },
 
-    // Hàm cập nhật biểu đồ tròn (Phân bổ doanh thu)
-    const updatePieChart = () => {
-      if (pieChartInstance) {
-        pieChartInstance.destroy();
-      }
-
-      const ctx = pieChartCanvas.value.getContext("2d");
-      pieChartInstance = new Chart(ctx, {
-        type: "pie", // Biểu đồ tròn
-        data: pieData[selectedPieFilter.value],
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: "top",
-            },
-            tooltip: {
-              callbacks: {
-                label: (context) =>
-                  `${context.label}: ${formatCurrency(context.raw)}`,
-              },
-            },
-          },
-        },
-      });
-    };
-
-    // Hàm xử lý hoàn tiền (có thể gọi API)
-    const handleRefund = (transactionId) => {
-      // Gọi API hoàn tiền (ví dụ)
+    handleRefund(transactionId) {
       console.log(`Hoàn tiền cho giao dịch ${transactionId}`);
-      // Sau khi hoàn tiền thành công, cập nhật lại danh sách giao dịch
-      // transactions.value = transactions.value.filter(t => t.id !== transactionId);
-    };
-
-    // Khởi tạo biểu đồ khi component được mount
-    onMounted(() => {
-      updateRevenueChart();
-      updatePieChart();
-    });
-
-    // Hủy biểu đồ khi component bị hủy
-    onBeforeUnmount(() => {
-      if (revenueChartInstance) {
-        revenueChartInstance.destroy();
-      }
-      if (pieChartInstance) {
-        pieChartInstance.destroy();
-      }
-    });
-
-    return {
-      todayRevenue,
-      monthRevenue,
-      transactionStats,
-      walletDeposits,
-      transactions,
-      selectedRevenueFilter,
-      selectedPieFilter,
-      revenueChartCanvas,
-      pieChartCanvas,
-      formatCurrency,
-      formatDate,
-      updateRevenueChart,
-      updatePieChart,
-      handleRefund,
-    };
+    },
+  },
+  beforeUnmount() {
+    if (this.revenueChartInstance) {
+      this.revenueChartInstance.destroy();
+    }
+    if (this.pieChartInstance) {
+      this.pieChartInstance.destroy();
+    }
   },
 };
 </script>
 
-< <style scoped>
-/* General container */
+<style scoped>
+/* Main Container */
 .transaction-management {
   padding: 30px;
   max-width: 100%;
-  background: #f8fafc;
-  /* Light background for depth */
-  border-radius: 12px;
+  background: linear-gradient(to bottom, #f0f5ff, #f8fafc);
+  border-radius: 16px;
   min-height: 100vh;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Header */
 h2 {
-  font-size: 1.75rem;
+  font-size: 2.25rem;
   font-weight: 700;
   color: #1e293b;
-  /* Dark slate for contrast */
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  position: relative;
+  display: inline-block;
 }
 
-a[href="blank"] {
+h2:after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(to right, #2563eb, #60a5fa);
+  border-radius: 4px;
+}
+
+.back-link {
   font-size: 0.95rem;
   color: #2563eb;
-  /* Vibrant blue */
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  background-color: rgba(37, 99, 235, 0.1);
+  border-radius: 8px;
+  width: fit-content;
 }
 
-a[href="blank"]:hover {
+.back-link:hover {
   color: #1e40af;
-  /* Darker blue on hover */
-  transform: translateX(-3px);
-  /* Subtle shift */
+  transform: translateX(-5px);
+  background-color: rgba(37, 99, 235, 0.15);
 }
 
-a[href="blank"]::before {
+.back-link::before {
   content: "\f060";
-  /* Font Awesome arrow-left */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.9rem;
 }
 
-/* Header layout */
+/* Alert */
+.alert-danger {
+  background: #fee2e2;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: #991b1b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Header Layout */
 .d-flex.justify-content-between {
   margin-bottom: 20px;
   align-items: center;
@@ -471,72 +769,94 @@ a[href="blank"]::before {
   border-radius: 8px;
   font-weight: 500;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn-success {
   background: #10b981;
-  /* Green */
   border: none;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.9rem;
 }
 
 .btn-success:hover {
   background: #059669;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(16, 185, 129, 0.2);
-}
-
-.btn-success i {
-  font-size: 1rem;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
 .btn-danger {
-  background: #ef4444;
-  /* Red */
+  background: #dc2626;
   border: none;
-  padding: 8px 12px;
-  font-size: 0.85rem;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.9rem;
 }
 
 .btn-danger:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(239, 68, 68, 0.2);
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
 }
 
-/* Revenue cards */
-.row.mt-5 {
+.btn-outline-primary {
+  border-color: #2563eb;
+  color: #2563eb;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.btn-outline-primary:hover {
+  background: #2563eb;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Revenue Cards */
+.row.mb-4 {
   gap: 20px;
-  /* Add gap for better spacing */
+  margin-bottom: 30px;
 }
 
 .col-lg-3.col-md-6 {
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .col-lg-3.col-md-6:hover {
-  transform: translateY(-5px);
-  /* Lift effect on hover */
+  transform: translateY(-8px);
 }
 
 .card {
   border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  /* Soft shadow */
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   background: #ffffff;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 40px rgba(14, 30, 73, 0.12);
+  transform: translateY(-5px);
 }
 
 .card-body {
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .card-body h5 {
@@ -544,30 +864,45 @@ a[href="blank"]::before {
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+  text-transform: uppercase;
 }
 
+.card-body p.text-success,
 .card-body span.text-success {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #065f46;
-  /* Dark green */
+  color: #047857;
+  position: relative;
+  display: inline-block;
+}
+
+.card-body p.text-success:before,
+.card-body span.text-success:before {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #047857, #10b981);
+  border-radius: 2px;
+  opacity: 0.6;
 }
 
 .card-body span.text-danger {
   font-size: 1rem;
   font-weight: 500;
-  color: #991b1b;
-  /* Dark red */
+  color: #dc2626;
 }
 
-/* Chart cards */
-.row.mt-4 {
+/* Chart Cards */
+.row {
   gap: 20px;
 }
 
 .col-lg-7.col-md-12,
 .col-lg-5.col-md-12 {
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .col-lg-7.col-md-12:hover,
@@ -576,36 +911,52 @@ a[href="blank"]::before {
 }
 
 .card.p-3 {
-  padding: 20px;
+  padding: 24px !important;
 }
 
 .card.p-3 h5 {
   font-size: 1.25rem;
   font-weight: 600;
   color: #1e293b;
-  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5eaef;
+}
+
+.form-control-sm {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.form-control-sm:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  outline: none;
 }
 
 .form-select {
   border: 1px solid #d1d5db;
-  /* Light gray */
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 0.9rem;
-  width: 120px;
-  /* Slightly wider */
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 }
 
 .form-select:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
   outline: none;
 }
 
 canvas {
-  max-height: 300px;
-  width: 100%;
+  width: 100% !important;
+  max-height: 350px !important;
+  padding: 10px;
 }
 
 /* Table */
@@ -613,88 +964,178 @@ canvas {
   margin-top: 30px;
 }
 
-.table-responsive {
-  overflow-x: auto;
-}
-
 .table {
-  margin-bottom: 0;
-  font-size: 0.95rem;
+  margin: 0;
+  font-size: 0.9rem;
   border-collapse: separate;
   border-spacing: 0;
+  background: #ffffff;
 }
 
 .table th,
 .table td {
+  padding: 12px;
+  border-color: #e5e7eb;
   vertical-align: middle;
-  padding: 12px 15px;
-  border-color: #e2e8f0;
-  /* Light border */
 }
 
 .table th {
   background: #d1fae5;
-  /* Light green header */
   color: #065f46;
-  /* Dark green text */
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  color: #1f2937;
 }
 
 .table-hover tbody tr:hover {
   background: #f8fafc;
-  /* Subtle hover effect */
   transition: background 0.2s ease;
-}
-
-.table td {
-  color: #334155;
-  /* Dark slate text */
 }
 
 /* Badges */
 .badge {
-  font-size: 0.85rem;
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 0.8rem;
   font-weight: 500;
   border: none;
-  cursor: default;
 }
 
 .badge.bg-success {
   background: #d1fae5;
-  /* Light green */
   color: #065f46;
 }
 
 .badge.bg-danger {
   background: #fee2e2;
-  /* Light red */
   color: #991b1b;
+}
+
+/* Pagination */
+.d-flex.justify-content-between.p-3 {
+  border-top: 1px solid #e5e7eb;
+  padding: 16px !important;
+}
+
+/* Loading & Error States */
+.text-center.py-5 {
+  padding: 30px;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.text-center.py-5 i {
+  font-size: 1.5rem;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+.text-center.py-5 i.fa-spinner {
+  font-size: 2rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.text-danger {
+  color: #dc2626;
+  font-size: 0.95rem;
+  padding: 30px;
+}
+
+/* Modal */
+.modal-dialog {
+  max-width: 600px;
+}
+
+.modal-content {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  background: #f1f5f9;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 18px;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-body p {
+  margin: 12px 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.modal-body strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 16px;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  border: none;
+  color: #ffffff;
+  padding: 8px 16px;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);
 }
 
 /* Responsive */
 @media (max-width: 992px) {
-
-  .row.mt-5,
-  .row.mt-4 {
-    gap: 15px;
+  .row.mb-4,
+  .row {
+    gap: 20px;
   }
 
-  .col-lg-3.col-md-6 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    /* Full-width cards on medium screens */
-  }
-
+  .col-lg-3.col-md-6,
   .col-lg-7.col-md-12,
   .col-lg-5.col-md-12 {
     flex: 0 0 100%;
     max-width: 100%;
-    /* Full-width charts on medium screens */
+  }
+
+  .d-flex.gap-2 {
+    flex-wrap: wrap;
   }
 }
 
@@ -704,59 +1145,78 @@ canvas {
   }
 
   h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 
   .d-flex.justify-content-between {
     flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
+    gap: 16px;
+    align-items: stretch;
   }
 
   .btn-success {
     width: 100%;
-    /* Full-width button on mobile */
   }
 
   .table th,
   .table td {
-    padding: 10px;
-    font-size: 0.9rem;
+    padding: 8px;
+    font-size: 0.8rem;
   }
 
   .card-body h5 {
     font-size: 1rem;
   }
 
+  .card-body p.text-success,
   .card-body span.text-success {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
   }
 
-  .form-select {
+  .form-select,
+  .form-control-sm {
     width: 100%;
-    /* Full-width select on mobile */
+  }
+
+  canvas {
+    max-height: 300px !important;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
 @media (max-width: 576px) {
-  .table {
-    font-size: 0.85rem;
+  h2 {
+    font-size: 1.5rem;
   }
 
-  .btn-success,
-  .btn-danger {
-    padding: 6px 10px;
+  .table {
     font-size: 0.8rem;
   }
 
-  canvas {
-    max-height: 250px;
+  .btn-success,
+  .btn-danger,
+  .btn-outline-primary,
+  .btn-secondary {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 
+  .card-body p.text-success,
   .card-body span.text-success,
   .card-body span.text-danger {
-    font-size: 0.95rem;
+    font-size: 1rem;
+  }
+
+  .modal-dialog {
+    margin: 16px;
+  }
+
+  canvas {
+    max-height: 280px !important;
   }
 }
 </style>
-  >

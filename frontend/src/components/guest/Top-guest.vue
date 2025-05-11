@@ -55,7 +55,11 @@
         <div class="user-menu-container" v-else>
           <div class="user-menu-trigger" @click="toggleUserMenu">
             <div class="user-avatar">
-              <img v-if="userAvatar" :src="userAvatar" alt="User avatar" />
+              <img
+                v-if="userAvatar"
+                :src="getCompanyLogo(userAvatar)"
+                alt="User avatar"
+              />
               <div v-else class="avatar-placeholder">
                 {{ userInitials }}
               </div>
@@ -70,7 +74,11 @@
           <div class="user-dropdown" :class="{ 'show-dropdown': isMenuOpen }">
             <div class="dropdown-header">
               <div class="user-avatar">
-                <img v-if="userAvatar" :src="userAvatar" alt="User avatar" />
+                <img
+                  v-if="userAvatar"
+                  :src="getCompanyLogo(userAvatar)"
+                  alt="User avatar"
+                />
                 <div v-else class="avatar-placeholder">
                   {{ userInitials }}
                 </div>
@@ -141,9 +149,7 @@
                   </router-link>
                 </li>
                 <li class="dropdown-item">
-                  <router-link
-                    to="/employer-dashboard/employer-workmanagerment"
-                  >
+                  <router-link to="/employer-dashboard/employer-workmanagement">
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span>Quản lý bài đăng công việc</span>
                   </router-link>
@@ -211,12 +217,9 @@ export default {
       }
       if (
         this.authStore.user.role === "employer" &&
-        this.authStore.user.EmployerUsers[0].Employers
+        this.authStore.user.Employers
       ) {
-        return (
-          this.authStore.user.EmployerUsers[0].Employers.companyName ||
-          "Nhà tuyển dụng"
-        );
+        return this.authStore.user.Employers.companyName || "Nhà tuyển dụng";
       }
       return "Admin";
     },
@@ -232,11 +235,9 @@ export default {
       }
       if (
         this.authStore.user.role === "employer" &&
-        this.authStore.user.EmployerUsers[0].Employers
+        this.authStore.user.Employers
       ) {
-        return (
-          this.authStore.user.EmployerUsers[0].Employers.companyLogo || null
-        );
+        return this.authStore.user.Employers.companyLogo || null;
       }
       return null;
     },
@@ -279,6 +280,10 @@ export default {
       if (userMenu && !userMenu.contains(event.target) && this.isMenuOpen) {
         this.isMenuOpen = false;
       }
+    },
+    getCompanyLogo(logo) {
+      if (!logo) return "/images/default-company-logo.png";
+      return `https://res.cloudinary.com/dh1i7su2f/image/upload/${logo}`;
     },
   },
   mounted() {

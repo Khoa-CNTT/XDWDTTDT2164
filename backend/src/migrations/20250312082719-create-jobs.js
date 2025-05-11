@@ -105,7 +105,6 @@ module.exports = {
         },
         status: {
           type: Sequelize.STRING,
-          defaultValue: "Chưa duyệt",
         },
         applyCount: {
           type: Sequelize.INTEGER,

@@ -1,4 +1,5 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const salariesService = require("../services/salaries.service");
 
 /**
@@ -15,18 +16,14 @@ class SalariesController {
     const { salaryName } = req.body;
     try {
       const salary = await salariesService.createSalary(salaryName);
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Tạo mức lương thành công",
-        data: salary,
-      });
+      return resSuccess(
+        res,
+        "Tạo mới mức lương thành công",
+        salary,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -41,17 +38,9 @@ class SalariesController {
       const { page, limit } = req.query;
       const salaries = await salariesService.getSalaries(page, limit);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: salaries,
-      });
+      return resSuccess(res, null, salaries);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -66,18 +55,9 @@ class SalariesController {
     const { salaryName } = req.body;
     try {
       const salary = await salariesService.updateSalary(salaryName, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Cập nhật mức lương thành công",
-        data: salary,
-      });
+      return resSuccess(res, "Cập nhật mức lương thành công", salary);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -91,17 +71,9 @@ class SalariesController {
     const { id } = req.params;
     try {
       const salary = await salariesService.deleteSalary(id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa mức lương thành công",
-      });
+      return resSuccess(res, "Xóa mức lương thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

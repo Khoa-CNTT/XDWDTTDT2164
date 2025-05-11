@@ -132,19 +132,6 @@
               <i class="fas fa-user-plus me-2"></i>Đăng Ký
             </button>
 
-            <div class="separator mb-4">
-              <span>hoặc</span>
-            </div>
-
-            <button
-              type="button"
-              class="btn btn-google w-100 py-3 mb-4"
-              @click="signUpWithGoogle"
-            >
-              <i class="fab fa-google me-2"></i>
-              Đăng ký với Google
-            </button>
-
             <div class="text-center login-prompt">
               Bạn đã có tài khoản?
               <router-link to="/login" class="login-link"

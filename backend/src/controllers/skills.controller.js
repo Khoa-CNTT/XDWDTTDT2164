@@ -1,4 +1,5 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const skillsService = require("../services/skills.service");
 
 /**
@@ -20,18 +21,14 @@ class SkillsController {
         categoryId,
       });
 
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Skill đã được tạo thành công",
-        data: skill,
-      });
+      return resSuccess(
+        res,
+        "Tạo mới kỹ năng thành công",
+        skill,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -47,17 +44,9 @@ class SkillsController {
 
       const skills = await skillsService.getSkillsByCategory(categoryId);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: skills,
-      });
+      return resSuccess(res, null, skills);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -71,17 +60,9 @@ class SkillsController {
     try {
       const { page, limit } = req.query;
       const skills = await skillsService.getSkills(page, limit);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: skills,
-      });
+      return resSuccess(res, null, skills);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -101,18 +82,9 @@ class SkillsController {
         id
       );
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.ERROR,
-        message: "Cập nhật skill thành công",
-        data: skill,
-      });
+      return resSuccess(res, "Cập nhật kỹ năng thành công", skill);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -127,17 +99,9 @@ class SkillsController {
       const { id } = req.params;
       const skill = await skillsService.deleteSkill(id);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Xóa skill thành công",
-      });
+      return resSuccess(res, "Xóa kỹ năng thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

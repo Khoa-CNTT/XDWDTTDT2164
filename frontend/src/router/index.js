@@ -97,10 +97,6 @@ const routes = [
           import("@/views/employer/employer-depositinformation.vue"),
       },
       {
-        path: "employer-paymentpost",
-        component: () => import("@/views/employer/employer-paymentpost.vue"),
-      },
-      {
         path: "employer-paymenthistory",
         component: () => import("@/views/employer/employer-paymenthistory.vue"),
       },
@@ -219,6 +215,10 @@ const routes = [
       {
         path: "create-candidate",
         component: () => import("@/views/candidate/create-candidate.vue"),
+      },
+      {
+        path: "create-employer-profile",
+        component: () => import("@/views/employer/create-employer-profile.vue"),
       },
     ],
   },

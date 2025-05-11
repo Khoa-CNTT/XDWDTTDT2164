@@ -38,8 +38,8 @@ export const getCandidatesByAdminApi = async (page, limit) => {
   return response.data;
 };
 
-export const getEmployerInfoApi = async () => {
-  const response = await api.get("/api/users/employer");
+export const getEmployerInfoApi = async (employerId) => {
+  const response = await api.get(`/api/users/employer/${employerId}`);
   return response.data;
 };
 
@@ -81,5 +81,46 @@ export const createCandidateProfile = async (data) => {
       "Content-Type": "multipart/form-data",
     },
   });
+  return response.data;
+};
+
+export const updateEmployerProfile = async (id, data) => {
+  const response = await api.put(
+    `/api/users/employer-update-profile/${id}`,
+    data,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const updateCandidateProfile = async (id, data) => {
+  const response = await api.put(
+    `/api/users/candidate-update-profile/${id}`,
+    data,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const setBlockStatusApi = async (id, data) => {
+  const response = await api.put(`/api/users/block-user/${id}`, {
+    isBlocked: data,
+  });
+  return response.data;
+};
+
+export const approveEmployerApi = async (employerId, data) => {
+  const response = await api.put(
+    `/api/users/employer/${employerId}/approve`,
+    data
+  );
   return response.data;
 };

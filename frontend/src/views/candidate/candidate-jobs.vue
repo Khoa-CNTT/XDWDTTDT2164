@@ -80,7 +80,7 @@
                 <button
                   class="delete-btn"
                   title="Xóa"
-                  @click="removeJob(job.id)"
+                  @click="removeJob(job.Jobs.id)"
                 >
                   <i class="fa-solid fa-trash"></i>
                 </button>

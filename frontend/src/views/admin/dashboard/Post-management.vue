@@ -45,7 +45,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(job, index) in jobStore.jobs" :key="job.id" class="text-center align-middle">
+                <tr
+                  v-for="(job, index) in jobStore.jobs"
+                  :key="job.id"
+                  class="text-center align-middle"
+                >
                   <td>
                     {{
                       (jobStore.currentPage - 1) * jobStore.pageSize + index + 1
@@ -53,7 +57,10 @@
                   </td>
                   <td>
                     {{ job.jobName || "N/A" }}
-                    <router-link :to="`/admin-dashboard/description-job/${job.id}`" class="ms-2">
+                    <router-link
+                      :to="`/admin-dashboard/description-job/${job.id}`"
+                      class="ms-2"
+                    >
                       <span class="badge bg-info text-white">Chi tiết</span>
                     </router-link>
                   </td>
@@ -61,35 +68,45 @@
                   <td>{{ job.Users?.fullName || "N/A" }}</td>
                   <td>{{ formatDate(job.expire) }}</td>
                   <td>
-                    <span :class="[
-                      'badge',
-                      job.status === 'Chờ kiểm duyệt'
-                        ? 'bg-warning text-dark'
-                        : job.status === 'Đã kiểm duyệt'
+                    <span
+                      :class="[
+                        'badge',
+                        job.isApproved === 'Chờ kiểm duyệt'
+                          ? 'bg-warning text-dark'
+                          : job.isApproved === 'Đã được duyệt'
                           ? 'bg-success text-light'
                           : 'bg-danger text-light',
-                    ]">
+                      ]"
+                    >
                       {{
-                        job.status === "Đã kiểm duyệt"
+                        job.isApproved === "Đã được duyệt"
                           ? "Đã duyệt"
-                          : job.status === "Từ chối"
-                            ? "Từ chối"
-                            : "Chờ duyệt"
+                          : job.isApproved === "Từ chối"
+                          ? "Từ chối"
+                          : "Chờ duyệt"
                       }}
                     </span>
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <router-link :to="`/admin-dashboard/description-job/${job.id}`"
-                        class="btn btn-outline-primary btn-sm me-2">
+                      <router-link
+                        :to="`/admin-dashboard/description-job/${job.id}`"
+                        class="btn btn-outline-primary btn-sm me-2"
+                      >
                         Xem chi tiết
                       </router-link>
-                      <button v-if="job.status === 'Chờ kiểm duyệt'" class="btn btn-success btn-sm me-2"
-                        @click="approveJob(job.id)">
+                      <button
+                        v-if="job.status === 'Chờ kiểm duyệt'"
+                        class="btn btn-success btn-sm me-2"
+                        @click="approveJob(job.id)"
+                      >
                         Duyệt
                       </button>
-                      <button v-if="job.status === 'Chờ kiểm duyệt'" class="btn btn-danger btn-sm"
-                        @click="openRejectModal(job.id)">
+                      <button
+                        v-if="job.status === 'Chờ kiểm duyệt'"
+                        class="btn btn-danger btn-sm"
+                        @click="openRejectModal(job.id)"
+                      >
                         Từ chối
                       </button>
                     </div>
@@ -102,21 +119,37 @@
           <!-- Pagination -->
           <nav v-if="jobStore.totalPages > 1" aria-label="Page navigation">
             <ul class="pagination justify-content-center mt-4">
-              <li class="page-item" :class="{ disabled: jobStore.currentPage === 1 }">
-                <button class="page-link" @click="goToPage(jobStore.currentPage - 1)">
+              <li
+                class="page-item"
+                :class="{ disabled: jobStore.currentPage === 1 }"
+              >
+                <button
+                  class="page-link"
+                  @click="goToPage(jobStore.currentPage - 1)"
+                >
                   <i class="fas fa-chevron-left"></i>
                 </button>
               </li>
-              <li v-for="page in jobStore.totalPages" :key="page" class="page-item"
-                :class="{ active: jobStore.currentPage === page }">
+              <li
+                v-for="page in jobStore.totalPages"
+                :key="page"
+                class="page-item"
+                :class="{ active: jobStore.currentPage === page }"
+              >
                 <button class="page-link" @click="goToPage(page)">
                   {{ page }}
                 </button>
               </li>
-              <li class="page-item" :class="{
-                disabled: jobStore.currentPage === jobStore.totalPages,
-              }">
-                <button class="page-link" @click="goToPage(jobStore.currentPage + 1)">
+              <li
+                class="page-item"
+                :class="{
+                  disabled: jobStore.currentPage === jobStore.totalPages,
+                }"
+              >
+                <button
+                  class="page-link"
+                  @click="goToPage(jobStore.currentPage + 1)"
+                >
                   <i class="fas fa-chevron-right"></i>
                 </button>
               </li>
@@ -132,20 +165,42 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Từ chối bài đăng</h5>
-            <button type="button" class="btn-close" @click="closeRejectModal" aria-label="Close"></button>
+            <button
+              type="button"
+              class="btn-close"
+              @click="closeRejectModal"
+              aria-label="Close"
+            ></button>
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="rejectReason" class="form-label">Lý do từ chối:</label>
-              <textarea id="rejectReason" v-model="rejectReason" class="form-control" rows="4"
-                placeholder="Nhập lý do từ chối..." required></textarea>
+              <label for="rejectReason" class="form-label"
+                >Lý do từ chối:</label
+              >
+              <textarea
+                id="rejectReason"
+                v-model="rejectReason"
+                class="form-control"
+                rows="4"
+                placeholder="Nhập lý do từ chối..."
+                required
+              ></textarea>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeRejectModal">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="closeRejectModal"
+            >
               Thoát
             </button>
-            <button type="button" class="btn btn-danger" @click="confirmRejectJob" :disabled="!rejectReason.trim()">
+            <button
+              type="button"
+              class="btn btn-danger"
+              @click="confirmRejectJob"
+              :disabled="!rejectReason.trim()"
+            >
               Từ chối
             </button>
           </div>

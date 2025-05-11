@@ -65,6 +65,8 @@ class AuthService {
       otpExpire,
     });
 
+    console.log(user);
+
     // Gửi email/SMS chứa OTP cho user
     await sendOtpEmail(email, otp);
 
@@ -169,23 +171,16 @@ class AuthService {
       );
     }
 
-    const { employerRole = null, employerId = null } =
-      userExists.EmployerUsers[0] || {};
-
     // Tạo accessToken và refreshToken
     const accessToken = generateAccessToken(
       userExists.id,
       userExists.email,
-      userExists.role,
-      employerRole,
-      employerId
+      userExists.role
     );
     const refreshToken = generateRefreshToken(
       userExists.id,
       userExists.email,
-      userExists.role,
-      userExists?.EmployerUsers?.employerRole || null,
-      userExists?.EmployerUsers?.id || null
+      userExists.role
     );
 
     // Lưu refreshToken vào db và redis
@@ -255,9 +250,7 @@ class AuthService {
       const accessToken = generateAccessToken(
         decoded.id,
         decoded.email,
-        decoded.role,
-        userExists.EmployerUsers.employerRole || null,
-        userExists.EmployerUsers.employerId || null
+        decoded.role
       );
 
       return { accessToken };
@@ -274,7 +267,6 @@ class AuthService {
   async findByEmail(email) {
     return await db.Users.findOne({
       where: { email },
-      include: [{ model: db.EmployerUsers, as: "EmployerUsers" }],
     });
   }
 

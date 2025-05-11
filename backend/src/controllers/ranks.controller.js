@@ -1,4 +1,5 @@
-const { StatusCode, ResponseStatus } = require("../libs/enum");
+const { StatusCode } = require("../libs/enum");
+const { resSuccess, resError } = require("../libs/response");
 const ranksService = require("../services/ranks.service");
 
 /**
@@ -15,18 +16,14 @@ class RanksController {
     try {
       const { rankName } = req.body;
       const rank = await ranksService.createRank(rankName);
-      return res.status(StatusCode.CREATED).json({
-        statusCode: StatusCode.CREATED,
-        status: ResponseStatus.SUCCESS,
-        message: "Tạo cấp bậc thành công",
-        data: rank,
-      });
+      return resSuccess(
+        res,
+        "Tạo mới cấp bậc thành công",
+        rank,
+        StatusCode.CREATED
+      );
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -41,17 +38,9 @@ class RanksController {
       const { page, limit } = req.query;
       const ranks = await ranksService.getRanks(page, limit);
 
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        data: ranks,
-      });
+      return resSuccess(res, null, ranks);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -66,18 +55,9 @@ class RanksController {
     const { rankName } = req.body;
     try {
       const rank = await ranksService.updateRank(rankName, id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: "Cập nhật cấp bậc thành công",
-        data: rank,
-      });
+      return resSuccess(res, "Cập nhật cấp bậc thành công", rank);
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 
@@ -91,17 +71,9 @@ class RanksController {
     const { id } = req.params;
     try {
       const rank = await ranksService.deleteRank(id);
-      return res.status(StatusCode.OK).json({
-        statusCode: StatusCode.OK,
-        status: ResponseStatus.SUCCESS,
-        message: rank,
-      });
+      return resSuccess(res, "Xóa cấp bậc thành công");
     } catch (error) {
-      return res.status(error.statusCode || StatusCode.SERVER_ERROR).json({
-        statusCode: error.statusCode || StatusCode.SERVER_ERROR,
-        status: ResponseStatus.ERROR,
-        message: error.message || "Lỗi hệ thống",
-      });
+      return resError(res, error);
     }
   }
 }

@@ -9,10 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Employers.hasMany(models.EmployerUsers, {
+      Employers.belongsTo(models.Users, {
         sourceKey: "id",
-        foreignKey: "employerId",
-        as: "EmployerUsers",
+        foreignKey: "userId",
+        as: "Users",
+        onDelete: "CASCADE",
       });
     }
   }
@@ -57,12 +58,16 @@ module.exports = (sequelize, DataTypes) => {
         field: "company_tax_code",
       },
       isApproved: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        type: DataTypes.ENUM("Chờ kiểm duyệt", "Đã kiểm duyệt", "Đã từ chối"),
+        defaultValue: "Chờ kiểm duyệt",
         field: "is_approved",
       },
       industry: {
         type: DataTypes.STRING,
+      },
+      userId: {
+        type: DataTypes.UUID,
+        field: "user_id",
       },
       deletedAt: {
         type: DataTypes.DATE,

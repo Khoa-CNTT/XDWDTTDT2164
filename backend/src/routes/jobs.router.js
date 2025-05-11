@@ -2,7 +2,6 @@ const express = require("express");
 const {
   protectedRoute,
   authorizedRoute,
-  authorizedEmployer,
 } = require("../middlewares/auth.middleware");
 const jobsController = require("../controllers/jobs.controller");
 const { validateCreateJob } = require("../validations/validateJob.validation");
@@ -81,6 +80,21 @@ router.get(
 );
 
 /**
+ * @route GET/jobs/get-job-time
+ * @desc Lấy danh sách bài đăng theo thời gian
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute("admin"): Kiểm tra quyền truy cập admin
+ * @controller JobsController.updateJob: Danh sách bài đăng công việc theo thời gian
+ */
+router.get(
+  "/get-jobs-time",
+  protectedRoute,
+  authorizedRoute("admin"),
+  jobsController.getJobsForTime
+);
+
+/**
  * @route GET/jobs/:slug
  * @desc Lấy chi tiết bài đăng công việc
  * @access Public
@@ -104,21 +118,6 @@ router.get(
 );
 
 /**
- * @route GET/jobs/get-job-time
- * @desc Lấy danh sách bài đăng theo thời gian
- * @access Private
- * @middleware protectedRoute: Kiểm tra xác thực người dùng
- * @middleware authorizedRoute("admin"): Kiểm tra quyền truy cập admin
- * @controller JobsController.updateJob: Danh sách bài đăng công việc theo thời gian
- */
-router.get(
-  "/get-jobs-time",
-  protectedRoute,
-  authorizedRoute("admin"),
-  jobsController.getJobsForTime
-);
-
-/**
  * @route PUT/jobs/:id
  * @desc Cập nhật bài đăng công việc
  * @access Private
@@ -131,7 +130,6 @@ router.put(
   "/:id",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner", "recruiter"),
   jobsController.updateJob
 );
 
@@ -148,7 +146,6 @@ router.delete(
   "/:id",
   protectedRoute,
   authorizedRoute("employer"),
-  authorizedEmployer("owner", "recruiter"),
   jobsController.deleteJob
 );
 

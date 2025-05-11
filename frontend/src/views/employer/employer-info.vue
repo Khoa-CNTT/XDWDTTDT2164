@@ -33,8 +33,8 @@
                 class="d-flex flex-column align-items-center justify-content-center h-100"
               >
                 <img
-                  v-if="previewLogo || userStore.employer?.companyLogo"
-                  :src="getImageUrl(userStore.employer?.companyLogo)"
+                  v-if="logoPreview"
+                  :src="logoPreview"
                   alt="Company Logo"
                   style="width: 100%; height: 100%; object-fit: cover"
                 />
@@ -53,7 +53,7 @@
               ref="uploadImage"
               class="d-none"
               accept=".jpg, .png"
-              @change="previewImage"
+              @change="handleImageChange"
             />
           </div>
 
@@ -142,8 +142,12 @@
             </div>
 
             <div>
-              <button type="submit" class="btn btn-primary px-5 w-30">
-                Lưu
+              <button
+                type="submit"
+                class="btn btn-primary px-5 w-30"
+                :disabled="isSubmitting"
+              >
+                {{ isSubmitting ? "Đang lưu..." : "Lưu" }}
               </button>
             </div>
           </div>
@@ -159,13 +163,16 @@
 
 <script>
 import { useUserStore } from "@stores/useUserStore";
+import { useAuthStore } from "@stores/useAuthStore";
 import { toast } from "vue3-toastify";
+import { updateEmployerProfile } from "@/apis/user";
 
 export default {
   name: "CompanyProfile",
   setup() {
     const userStore = useUserStore();
-    return { userStore };
+    const authStore = useAuthStore();
+    return { userStore, authStore }; // Trả về cả userStore và authStore
   },
   data() {
     return {
@@ -177,71 +184,123 @@ export default {
         companyDescription: "",
         companyAddress: "",
       },
-      previewLogo: null, // Để hiển thị preview ảnh logo trước khi upload
+      logoFile: null,
+      logoPreview: null,
+      isSubmitting: false,
     };
   },
   methods: {
     getImageUrl(imagePath) {
-      if (!imagePath) return "https://via.placeholder.com/150"; // Ảnh mặc định nếu không có ảnh
+      if (!imagePath) return "https://via.placeholder.com/150";
       return `https://res.cloudinary.com/dh1i7su2f/image/upload/${imagePath}`;
     },
     async fetchEmployerInfo() {
       try {
-        await this.userStore.fetchEmployerInfo();
-        // Cập nhật form với dữ liệu từ API
-        this.form = { ...this.userStore.employer };
+        // Kiểm tra authStore.user và authStore.user.Employers
+        if (!this.authStore.user || !this.authStore.user.Employers) {
+          throw new Error(
+            "Không thể truy cập thông tin người dùng hoặc nhà tuyển dụng"
+          );
+        }
+
+        const employerId = this.authStore.user.Employers.id;
+        if (!employerId) {
+          throw new Error("Không tìm thấy ID nhà tuyển dụng");
+        }
+
+        console.log("Đang lấy thông tin nhà tuyển dụng với ID:", employerId);
+        await this.userStore.fetchEmployerInfo(employerId);
+
+        const employer = this.userStore.employer;
+        if (employer) {
+          this.form = {
+            companyName: employer.companyName || "",
+            companyTaxCode: employer.companyTaxCode || "",
+            companyWebsite: employer.companyWebsite || "",
+            companySize: employer.companySize || "",
+            companyDescription: employer.companyDescription || "",
+            companyAddress: employer.companyAddress || "",
+          };
+
+          if (employer.companyLogo) {
+            this.logoPreview = this.getImageUrl(employer.companyLogo);
+          }
+        } else {
+          console.warn("Không tìm thấy dữ liệu nhà tuyển dụng trong userStore");
+        }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin nhà tuyển dụng:", error);
+        toast.error("Không thể tải thông tin công ty. Vui lòng thử lại sau!");
       }
     },
-    previewImage(event) {
+    handleImageChange(event) {
       const file = event.target.files[0];
-      if (file) {
-        // Kiểm tra kích thước tệp (tối đa 1MB)
-        if (file.size > 1 * 1024 * 1024) {
-          toast.error("Kích thước tệp vượt quá 1MB!");
-          return;
-        }
-        // Kiểm tra loại tệp
-        if (!file.type.match(/image\/(jpg|png)/)) {
-          toast.error("Chỉ hỗ trợ tệp .jpg và .png!");
-          return;
-        }
-        // Preview ảnh
-        this.previewLogo = URL.createObjectURL(file);
-        // Gọi API để upload ảnh (giả định)
-        this.uploadLogo(file);
+      if (!file) return;
+
+      if (file.size > 1 * 1024 * 1024) {
+        toast.error("Kích thước tệp vượt quá 1MB!");
+        return;
       }
-    },
-    async uploadLogo(file) {
-      try {
-        const formData = new FormData();
-        formData.append("logo", file);
-        // Giả định có API upload logo: /api/employer/upload-logo
-        // const response = await uploadLogoApi(formData);
-        // this.userStore.employer.companyLogo = response.data.logoUrl;
-        console.log("Upload ảnh logo:", file.name);
-      } catch (error) {
-        console.error("Lỗi khi upload ảnh logo:", error);
-        toast.error("Lỗi khi upload ảnh logo!");
+
+      if (!file.type.match(/image\/(jpeg|jpg|png)/)) {
+        toast.error("Chỉ hỗ trợ tệp .jpg và .png!");
+        return;
       }
+
+      this.logoFile = file;
+      this.logoPreview = URL.createObjectURL(file);
     },
     async saveProfile() {
       try {
-        // Giả định có API update thông tin: /api/employer/update
-        // const response = await updateEmployerInfoApi(this.form);
-        console.log("Lưu thông tin công ty:", this.form);
-        toast.success("Cập nhật hồ sơ thành công!");
-        // Cập nhật lại thông tin trong store
-        this.userStore.employer = { ...this.form };
+        this.isSubmitting = true;
+
+        const formData = new FormData();
+        Object.keys(this.form).forEach((key) => {
+          formData.append(key, this.form[key]);
+        });
+
+        if (this.logoFile) {
+          formData.append("companyLogo", this.logoFile);
+        }
+
+        if (process.env.NODE_ENV === "development") {
+          for (let [key, value] of formData.entries()) {
+            console.log(
+              `${key}: ${value instanceof File ? value.name : value}`
+            );
+          }
+        }
+
+        const employerId =
+          this.userStore.employer?.id || this.authStore.user?.Employers?.id;
+
+        if (!employerId) {
+          throw new Error("Không thể xác định ID nhà tuyển dụng");
+        }
+
+        console.log("Đang cập nhật hồ sơ với employerId:", employerId);
+        const response = await updateEmployerProfile(employerId, formData);
+
+        if (response && response.data) {
+          this.userStore.employer = response.data;
+          if (response.data.companyLogo) {
+            this.logoPreview = this.getImageUrl(response.data.companyLogo);
+          }
+          this.logoFile = null;
+          toast.success("Cập nhật hồ sơ thành công!");
+        }
       } catch (error) {
         console.error("Lỗi khi lưu thông tin công ty:", error);
-        toast.error("Lỗi khi lưu thông tin công ty!");
+        toast.error("Lỗi khi lưu thông tin công ty. Vui lòng thử lại!");
+      } finally {
+        this.isSubmitting = false;
       }
     },
   },
   mounted() {
-    this.fetchEmployerInfo(); // Gọi API khi component được mount
+    console.log("authStore:", this.authStore);
+    console.log("userStore:", this.userStore);
+    this.fetchEmployerInfo();
   },
 };
 </script>
@@ -377,13 +436,19 @@ small.text-muted {
   transition: background-color 0.3s ease, transform 0.1s ease;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #0a58ca;
   transform: translateY(-1px);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 /* Trạng thái loading */

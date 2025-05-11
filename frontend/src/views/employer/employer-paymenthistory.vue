@@ -48,13 +48,9 @@
                 class="table-row"
               >
                 <td class="index-cell">
-                  {{
-                    (walletStore.currentPage - 1) * walletStore.pageSize +
-                    index +
-                    1
-                  }}
+                  {{ index + 1 }}
                 </td>
-                <td class="date-cell">{{ formatDate(payment.date) }}</td>
+                <td class="date-cell">{{ formatDate(payment.paymentDate) }}</td>
                 <td class="amount-cell">
                   <span class="expense-amount"
                     >-{{ formatNumber(payment.amount) }}</span
@@ -67,9 +63,9 @@
                   {{ formatNumber(payment.balanceAfter) }}
                 </td>
                 <td class="post-id-cell">
-                  <span class="post-id">{{ payment.postId }}</span>
+                  <span class="post-id">{{ payment.Jobs.id }}</span>
                 </td>
-                <td class="post-title-cell">{{ payment.postTitle }}</td>
+                <td class="post-title-cell">{{ payment.Jobs.jobName }}</td>
               </tr>
               <!-- Empty State -->
               <tr

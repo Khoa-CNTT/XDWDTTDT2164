@@ -4,6 +4,7 @@ const {
   authorizedRoute,
 } = require("../middlewares/auth.middleware");
 const applyJobsController = require("../controllers/applyJobs.controller");
+const { uploadPdf } = require("../config/uploadpdf.config");
 
 const router = express.Router();
 
@@ -12,7 +13,12 @@ const router = express.Router();
  * @desc    Ứng tuyển một công việc
  * @access  Private
  */
-router.post("/apply", protectedRoute, applyJobsController.applyJob);
+router.post(
+  "/apply",
+  protectedRoute,
+  uploadPdf.single("cvUpload"),
+  applyJobsController.applyJob
+);
 
 /**
  * @route GET /apply-jobs/get-candidates/:jobId
@@ -55,7 +61,7 @@ router.get(
  * @desc Đánh giá ứng viên ứng tuyển
  * @access Private
  */
-router.get(
+router.put(
   "/review-candidate/:applicationId",
   protectedRoute,
   authorizedRoute("employer"),
