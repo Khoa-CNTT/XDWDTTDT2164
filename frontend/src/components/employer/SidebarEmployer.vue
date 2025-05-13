@@ -21,7 +21,7 @@
         <ul class="sidebar-list">
           <router-link to="/" class="sidebar-item header text-dark">
             <i class="fa-solid fa-house"></i>
-            <span>Dashboard</span>
+            <span>Trang chủ</span>
           </router-link>
 
           <router-link
@@ -30,22 +30,6 @@
           >
             <i class="fa-solid fa-user"></i>
             Hồ Sơ Công Ty
-          </router-link>
-
-          <router-link
-            to="/employer-dashboard/employer-list"
-            class="sidebar-item header text-dark"
-          >
-            <i class="fa-solid fa-bookmark"></i>
-            Quản lý nhân viên
-          </router-link>
-
-          <router-link
-            to="/employer-dashboard/employer-newjob"
-            class="sidebar-item header text-dark"
-          >
-            <i class="fa-solid fa-play"></i>
-            Thêm mới nhân viên
           </router-link>
 
           <router-link

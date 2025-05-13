@@ -57,11 +57,11 @@ export const useJobStore = defineStore("job", {
       }
     },
 
-    async fetchJobsForEmployer(page, limit) {
+    async fetchJobsForEmployer(page, limit, employerId) {
       this.setLoadingState(true);
       this.resetError();
       try {
-        const response = await getJobsForEmployerApi(page, limit);
+        const response = await getJobsForEmployerApi(page, limit, employerId);
         if (!response || !response.data?.jobs) {
           throw new Error("Dữ liệu bài đăng không hợp lệ");
         }

@@ -14,8 +14,8 @@ class JobsController {
    */
   async createJob(req, res) {
     try {
-      const { employerId, id } = req.user;
-      const job = await jobsService.createJob(req.body, employerId, id);
+      const { id } = req.user;
+      const job = await jobsService.createJob(req.body, id);
       return resSuccess(
         res,
         "Tạo bài đăng công việc thành công",
@@ -86,7 +86,7 @@ class JobsController {
    */
   async getJobsForEmployer(req, res) {
     try {
-      const { employerId } = req.user;
+      const { employerId } = req.params;
       const data = await jobsService.getJobsForEmployer(employerId, req.query);
 
       return resSuccess(res, null, data);
