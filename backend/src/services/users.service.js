@@ -436,6 +436,17 @@ class UserService {
         }
       );
 
+      if (typeof candidateData.skillIds === "string") {
+        try {
+          candidateData.skillIds = JSON.parse(candidateData.skillIds);
+        } catch (error) {
+          throw new ApiError(
+            StatusCode.BAD_REQUEST,
+            "Danh sách kỹ năng không hợp lệ"
+          );
+        }
+      }
+
       // Tạo mới candidate skill
       await db.CandidateSkills.bulkCreate(
         candidateData.skillIds.map((skillId) => ({
@@ -455,10 +466,12 @@ class UserService {
       await transaction.rollback();
 
       // 🗑 Xóa file nếu có lỗi
-      if (filePath) {
+      if (candidateData.cvUrl) {
         try {
-          fs.unlinkSync(path.join(__dirname, "../uploads", filePath));
-          console.log(`🗑 File ${filePath} đã bị xóa do lỗi`);
+          fs.unlinkSync(
+            path.join(__dirname, "../uploads", candidateData.cvUrl)
+          );
+          console.log(`🗑 File ${candidateData.cvUrl} đã bị xóa do lỗi`);
         } catch (fsError) {
           console.error("❌ Lỗi khi xóa file:", fsError.message);
         }

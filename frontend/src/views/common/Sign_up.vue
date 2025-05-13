@@ -148,19 +148,56 @@
 <script>
 import { toast } from "vue3-toastify";
 import { registerApi } from "@apis/auth";
+
 export default {
   name: "SignUpPage",
   data() {
     return {
       isPasswordVisible: false,
       form: {
-        role: "candidate", // Mặc định chọn ứng viên
+        role: "candidate", // Default to candidate
         email: "",
         phoneNumber: "",
         fullName: "",
         password: "",
       },
+      errors: {
+        role: "",
+        email: "",
+        fullName: "",
+        phoneNumber: "",
+        password: "",
+      },
+      isSubmitting: false, // Track form submission state
     };
+  },
+  computed: {
+    passwordStrength() {
+      const password = this.form.password.trim();
+      if (!password) return { text: "", class: "" };
+
+      const hasLower = /[a-z]/.test(password);
+      const hasUpper = /[A-Z]/.test(password);
+      const hasDigit = /\d/.test(password);
+      const hasSpecial = /[@$!%*?&]/.test(password);
+      const lengthValid = password.length >= 6;
+
+      const strengthScore = [
+        hasLower,
+        hasUpper,
+        hasDigit,
+        hasSpecial,
+        lengthValid,
+      ].filter(Boolean).length;
+
+      if (strengthScore <= 2) {
+        return { text: "Yếu", class: "text-danger" };
+      } else if (strengthScore <= 4) {
+        return { text: "Trung bình", class: "text-warning" };
+      } else {
+        return { text: "Mạnh", class: "text-success" };
+      }
+    },
   },
   methods: {
     togglePasswordVisibility() {
@@ -168,32 +205,144 @@ export default {
     },
     setRole(role) {
       this.form.role = role;
+      this.errors.role = ""; // Clear role error when role is selected
+    },
+    validateForm() {
+      // Reset errors
+      this.errors = {
+        role: "",
+        email: "",
+        fullName: "",
+        phoneNumber: "",
+        password: "",
+      };
+
+      let isValid = true;
+
+      // Role validation
+      if (!["candidate", "employer"].includes(this.form.role)) {
+        this.errors.role =
+          "Vui lòng chọn vai trò (Ứng viên hoặc Nhà tuyển dụng).";
+        isValid = false;
+      }
+
+      // Email validation
+      const email = this.form.email.trim();
+      if (!email) {
+        this.errors.email = "Vui lòng nhập email.";
+        isValid = false;
+      } else if (email.length > 255) {
+        this.errors.email = "Email không được vượt quá 255 ký tự.";
+        isValid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        this.errors.email = "Vui lòng nhập email hợp lệ.";
+        isValid = false;
+      }
+
+      // Full name validation
+      const fullName = this.form.fullName.trim();
+      if (!fullName) {
+        this.errors.fullName = "Vui lòng nhập họ và tên.";
+        isValid = false;
+      } else if (fullName.length < 2) {
+        this.errors.fullName = "Họ và tên phải có ít nhất 2 ký tự.";
+        isValid = false;
+      } else if (fullName.length > 100) {
+        this.errors.fullName = "Họ và tên không được vượt quá 100 ký tự.";
+        isValid = false;
+      } else if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(fullName)) {
+        this.errors.fullName =
+          "Họ và tên chỉ được chứa chữ cái và khoảng trắng.";
+        isValid = false;
+      }
+
+      // Phone number validation (Vietnamese format)
+      const phoneNumber = this.form.phoneNumber.trim();
+      if (!phoneNumber) {
+        this.errors.phoneNumber = "Vui lòng nhập số điện thoại.";
+        isValid = false;
+      } else if (phoneNumber.length > 15) {
+        this.errors.phoneNumber = "Số điện thoại không được vượt quá 15 ký tự.";
+        isValid = false;
+      } else if (!/^(0|\+84)[0-9]{9,10}$/.test(phoneNumber)) {
+        this.errors.phoneNumber = "Vui lòng nhập số điện thoại hợp lệ.";
+        isValid = false;
+      }
+
+      // Password validation
+      const password = this.form.password.trim();
+      if (!password) {
+        this.errors.password = "Vui lòng nhập mật khẩu.";
+        isValid = false;
+      } else if (password.length < 6) {
+        this.errors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+        isValid = false;
+      } else if (password.length > 128) {
+        this.errors.password = "Mật khẩu không được vượt quá 128 ký tự.";
+        isValid = false;
+      } else if (
+        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(
+          password
+        )
+      ) {
+        this.errors.password =
+          "Mật khẩu phải chứa ít nhất một chữ cái in hoa, một chữ cái thường, một số và một ký tự đặc biệt.";
+        isValid = false;
+      }
+
+      return isValid;
     },
     async handleSignUp() {
+      if (this.isSubmitting) return;
+
+      // Validate form
+      if (!this.validateForm()) {
+        // Display first error as a toast
+        const firstError = Object.values(this.errors).find((error) => error);
+        if (firstError) {
+          toast.error(firstError, { autoClose: 3000 });
+        }
+        return;
+      }
+
+      this.isSubmitting = true;
+
       try {
-        const response = await registerApi(this.form);
-        toast.success(response?.message, { autoClose: 5000 });
-        // Chuyển hướng đến trang xác nhận OTP
+        const response = await registerApi({
+          ...this.form,
+          email: this.form.email.trim(),
+          fullName: this.form.fullName.trim(),
+          phoneNumber: this.form.phoneNumber.trim(),
+          password: this.form.password.trim(),
+        });
+        toast.success(response?.message || "Đăng ký thành công!", {
+          autoClose: 5000,
+        });
+
+        // Redirect to OTP page
         if (response?.status === "success") {
           this.$router.push({
             path: "/otp",
-            query: { email: this.form.email },
+            query: { email: this.form.email.trim() },
           });
         }
       } catch (error) {
+        console.log(error);
         const messages = error.response?.data?.data;
-        // Kiểm tra nếu `messages` là một mảng, hiển thị từng lỗi
         if (Array.isArray(messages)) {
           messages.forEach((msg) => {
             toast.error(msg.message, { autoClose: 3000 });
           });
         } else {
-          toast.error(messages || "Có lỗi xảy ra", { autoClose: 3000 });
+          toast.error(error.response.data.message || "Có lỗi xảy ra", {
+            autoClose: 3000,
+          });
         }
+      } finally {
+        this.isSubmitting = false;
       }
     },
     signUpWithGoogle() {
-      // Xử lý đăng ký bằng Google
       console.log("Sign up with Google");
     },
   },
