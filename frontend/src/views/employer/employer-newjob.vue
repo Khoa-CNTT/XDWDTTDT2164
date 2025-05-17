@@ -372,6 +372,7 @@ import { useJobTypeStore } from "@stores/useJobTypeStore";
 import { useExperienceStore } from "@stores/useExperienceStore";
 import { useRankStore } from "@stores/useRankStore";
 import { useJobStore } from "@stores/useJobStore";
+import { useAuthStore } from "@stores/useAuthStore";
 
 export default {
   name: "AddJob",
@@ -384,6 +385,7 @@ export default {
     const experienceStore = useExperienceStore();
     const rankStore = useRankStore();
     const jobStore = useJobStore();
+    const authStore = useAuthStore();
     return {
       categoryStore,
       salaryStore,
@@ -392,6 +394,7 @@ export default {
       experienceStore,
       rankStore,
       jobStore,
+      authStore,
     };
   },
   data() {
@@ -411,6 +414,7 @@ export default {
         rankId: "",
         expire: "",
         address: "",
+        employerId: "",
       },
       isSubmitting: false,
       minDate: new Date().toISOString().split("T")[0], // Today's date as minimum
@@ -574,8 +578,19 @@ export default {
         return;
       }
 
+      const employerId = this.authStore.user?.Employers?.id;
+      if (!employerId) {
+        toast.error("Không tìm thấy thông tin nhà tuyển dụng!");
+        this.isSubmitting = false;
+        return;
+      }
+
       try {
-        await this.jobStore.createNewJob(this.form);
+        const payload = {
+          ...this.form,
+          employerId: employerId, // Add employerId to the payload
+        };
+        await this.jobStore.createNewJob(payload);
         toast.success("Đã gửi thông tin công việc! Đang chuyển hướng...");
         this.$router.push("/employer-dashboard/employer-job-payment");
       } catch (error) {

@@ -233,6 +233,7 @@ class UserController {
    */
   async createCandidateProfile(req, res) {
     try {
+      console.log(req.body);
       const { id } = req.user;
       const { gender, dateOfBirth, address, workExperience, salary, skillIds } =
         req.body;

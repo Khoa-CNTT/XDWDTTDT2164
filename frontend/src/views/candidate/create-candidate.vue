@@ -49,30 +49,6 @@
     <div class="form-grid">
       <div class="form-column">
         <div class="form-group">
-          <label class="form-label">Tên đầy đủ *</label>
-          <input
-            v-model="profile.fullName"
-            class="form-input"
-            placeholder="Nguyễn Văn A"
-            :class="{ 'is-invalid': errors.fullName }"
-          />
-          <span class="error-text" v-if="errors.fullName">{{
-            errors.fullName
-          }}</span>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Số điện thoại *</label>
-          <input
-            v-model="profile.phone"
-            class="form-input"
-            placeholder="0123456789"
-            :class="{ 'is-invalid': errors.phone }"
-          />
-          <span class="error-text" v-if="errors.phone">{{ errors.phone }}</span>
-        </div>
-
-        <div class="form-group">
           <label class="form-label">Kinh nghiệm làm việc</label>
           <input
             v-model="profile.experience"
@@ -93,21 +69,46 @@
 
       <div class="form-column">
         <div class="form-group">
-          <label class="form-label">Danh mục làm việc</label>
-          <input
-            v-model="profile.workingdirectory"
+          <label class="form-label">Danh mục làm việc *</label>
+          <select
+            v-model="profile.categoryId"
             class="form-input"
-            placeholder="FullStack Development"
-          />
+            @change="fetchSkillsByCategory"
+            :class="{ 'is-invalid': errors.categoryId }"
+          >
+            <option value="" disabled selected>Chọn danh mục</option>
+            <option
+              v-for="category in categoryStore.categories"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.categoryName }}
+            </option>
+          </select>
+          <span class="error-text" v-if="errors.categoryId">{{
+            errors.categoryId
+          }}</span>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Vị trí ứng tuyển</label>
-          <input
-            v-model="profile.candidateposition"
+          <label class="form-label">Kỹ năng *</label>
+          <select
+            v-model="profile.skillIds"
             class="form-input"
-            placeholder="ReactJS, Node JS"
-          />
+            multiple
+            :class="{ 'is-invalid': errors.skillIds }"
+          >
+            <option
+              v-for="skill in skillStore.skills"
+              :key="skill.id"
+              :value="skill.id"
+            >
+              {{ skill.skillName }}
+            </option>
+          </select>
+          <span class="error-text" v-if="errors.skillIds">{{
+            errors.skillIds
+          }}</span>
         </div>
 
         <div class="form-group">
@@ -157,7 +158,13 @@
         class="save-button"
         :disabled="isLoading || !authStore.isAuthenticated"
       >
-        <i class="fas fa-save"></i>
+        <i v-if="!isLoading" class="fas fa-save"></i>
+        <span
+          v-if="isLoading"
+          class="spinner-border spinner-border-sm me-2"
+          role="status"
+          aria-hidden="true"
+        ></span>
         {{ isLoading ? "Đang lưu..." : "Lưu hồ sơ" }}
       </button>
     </div>
@@ -170,20 +177,22 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
 import { createCandidateProfile } from "@/apis/user";
+import { useCategoryStore } from "@/stores/useCategoryStore";
+import { useSkillStore } from "@/stores/useSkillStore";
 
 export default {
   name: "ProfileCreate",
   setup() {
     const authStore = useAuthStore();
     const router = useRouter();
+    const categoryStore = useCategoryStore();
+    const skillStore = useSkillStore();
 
     const profile = reactive({
-      fullName: "",
-      phone: "",
       experience: "",
       address: "",
-      workingdirectory: "",
-      candidateposition: "",
+      categoryId: "",
+      skillIds: [],
       date: "",
       expectedSalary: "",
       gender: "",
@@ -195,20 +204,38 @@ export default {
     const isLoading = ref(false);
     const errors = reactive({});
 
-    // Kiểm tra hồ sơ khi component được mount
-    onMounted(() => {
-      if (authStore.isAuthenticated && authStore.user.role !== "candidate") {
+    onMounted(async () => {
+      if (!authStore.isAuthenticated || !authStore.user) {
+        toast.error("Vui lòng đăng nhập để thêm hồ sơ", { autoClose: 3000 });
+        router.push("/login");
+        return;
+      }
+      if (authStore.user.role !== "candidate") {
+        toast.error("Chỉ ứng viên mới có thể tạo hồ sơ", { autoClose: 3000 });
         router.push("/");
+        return;
       }
       if (
-        authStore.isAuthenticated &&
         authStore.user.Candidates &&
         Object.keys(authStore.user.Candidates).length > 0
       ) {
         toast.info("Bạn đã có hồ sơ. Vui lòng chỉnh sửa hồ sơ hiện tại.", {
           autoClose: 3000,
         });
-        router.push("/");
+        router.push("/candidate-management");
+        return;
+      }
+
+      try {
+        await categoryStore.fetchCategories();
+        if (!categoryStore.categories.length) {
+          toast.warn("Không có danh mục việc làm nào được tải!", {
+            autoClose: 3000,
+          });
+        }
+      } catch (error) {
+        toast.error("Lỗi khi lấy danh mục việc làm!", { autoClose: 3000 });
+        console.error("Lỗi khi lấy danh mục:", error);
       }
     });
 
@@ -217,40 +244,31 @@ export default {
 
       let isValid = true;
 
-      if (!authStore.isAuthenticated || !authStore.candidateId) {
-        toast.error("Vui lòng đăng nhập để thêm hồ sơ");
-        return false;
-      }
-
-      if (
-        authStore.user.candidate &&
-        Object.keys(authStore.user.candidate).length > 0
-      ) {
-        toast.error("Bạn đã có hồ sơ. Vui lòng chỉnh sửa hồ sơ hiện tại.");
-        router.push("/");
-        return false;
-      }
-
-      if (!profile.fullName) {
-        errors.fullName = "Vui lòng nhập tên đầy đủ";
-        isValid = false;
-      }
-
-      if (!profile.phone) {
-        errors.phone = "Vui lòng nhập số điện thoại";
-        isValid = false;
-      } else if (!/^\d{10,11}$/.test(profile.phone)) {
-        errors.phone = "Số điện thoại không hợp lệ";
-        isValid = false;
-      }
-
       if (!profile.date) {
         errors.date = "Vui lòng chọn ngày sinh";
         isValid = false;
+      } else {
+        const birthDate = new Date(profile.date);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        if (age < 16) {
+          errors.date = "Bạn phải ít nhất 16 tuổi";
+          isValid = false;
+        }
       }
 
       if (!profile.gender) {
         errors.gender = "Vui lòng chọn giới tính";
+        isValid = false;
+      }
+
+      if (!profile.categoryId) {
+        errors.categoryId = "Vui lòng chọn danh mục làm việc";
+        isValid = false;
+      }
+
+      if (!profile.skillIds || profile.skillIds.length === 0) {
+        errors.skillIds = "Vui lòng chọn ít nhất một kỹ năng";
         isValid = false;
       }
 
@@ -259,13 +277,38 @@ export default {
         isValid = false;
       }
 
+      if (!isValid) {
+        const firstError = Object.values(errors)[0];
+        toast.error(firstError, { autoClose: 3000 });
+      }
+
       return isValid;
+    };
+
+    const fetchSkillsByCategory = async () => {
+      if (!profile.categoryId) {
+        skillStore.skills = [];
+        profile.skillIds = [];
+        return;
+      }
+
+      try {
+        await skillStore.fetchSkillByCategoryIds(profile.categoryId);
+        if (!skillStore.skills.length) {
+          toast.warn("Không có kỹ năng nào phù hợp với danh mục này!", {
+            autoClose: 3000,
+          });
+        }
+        profile.skillIds = [];
+      } catch (error) {
+        toast.error("Lỗi khi lấy danh sách kỹ năng!", { autoClose: 3000 });
+        console.error("Lỗi khi lấy kỹ năng:", error);
+      }
     };
 
     const handleCVUpload = (event) => {
       const file = event.target.files[0];
       if (file) {
-        // Kiểm tra định dạng
         if (
           ![
             "application/pdf",
@@ -283,7 +326,6 @@ export default {
           return;
         }
 
-        // Kiểm tra kích thước (5MB = 5 * 1024 * 1024 bytes)
         if (file.size > 5 * 1024 * 1024) {
           errors.cvFile = "Kích thước file không được vượt quá 5MB";
           cvFileName.value = "";
@@ -295,7 +337,6 @@ export default {
           return;
         }
 
-        // Lưu file và tạo URL tạm thời
         cvFileName.value = file.name;
         cvFile.value = file;
         if (cvUrl.value) {
@@ -321,39 +362,58 @@ export default {
     };
 
     const saveProfile = async () => {
-      if (!validateForm()) return;
+      if (isLoading.value) return;
+
+      console.log("Starting saveProfile...");
+      console.log("authStore:", {
+        isAuthenticated: authStore.isAuthenticated,
+        candidateId: authStore.candidateId,
+        user: authStore.user,
+      });
+      console.log("profile:", profile);
+
+      if (!validateForm()) {
+        console.log("Validation failed, errors:", errors);
+        return;
+      }
 
       isLoading.value = true;
 
       try {
-        // Chuẩn bị FormData
         const formData = new FormData();
-        formData.append("candidateId", authStore.candidateId);
-        formData.append("fullName", profile.fullName);
-        formData.append("phone", profile.phone);
-        formData.append("experience", profile.experience || "");
+        formData.append("candidateId", authStore.candidateId || "");
+        formData.append("workExperience", profile.experience || "");
         formData.append("address", profile.address || "");
-        formData.append("workingDirectory", profile.workingdirectory || "");
-        formData.append("candidatePosition", profile.candidateposition || "");
+        formData.append("categoryId", profile.categoryId || "");
+        formData.append("skillIds", JSON.stringify(profile.skillIds));
         formData.append("dateOfBirth", profile.date);
-        formData.append("expectedSalary", profile.expectedSalary || "");
+        formData.append("salary", profile.expectedSalary || "");
         formData.append("gender", profile.gender);
         if (cvFile.value) {
           formData.append("cv", cvFile.value);
         }
 
-        // Gọi API
+        console.log("FormData entries:");
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+
         const response = await createCandidateProfile(formData);
+        console.log("API response:", response);
 
         if (response.status === "success") {
-          toast.success("Hồ sơ đã được thêm thành công!");
-          router.push("/candidate-management");
+          toast.success("Hồ sơ đã được thêm thành công!", { autoClose: 3000 });
+          router.push("/");
         } else {
           throw new Error(response.message || "Lưu hồ sơ thất bại");
         }
       } catch (error) {
-        toast.error(error.message || "Có lỗi xảy ra khi lưu hồ sơ");
-        console.error(error);
+        console.error("Lỗi khi lưu hồ sơ:", error);
+        const message =
+          error.response?.data?.message ||
+          error.message ||
+          "Có lỗi xảy ra khi lưu hồ sơ";
+        toast.error(message, { autoClose: 3000 });
       } finally {
         isLoading.value = false;
       }
@@ -367,9 +427,12 @@ export default {
       isLoading,
       errors,
       authStore,
+      categoryStore,
+      skillStore,
       handleCVUpload,
       viewCV,
       saveProfile,
+      fetchSkillsByCategory,
     };
   },
 };
@@ -384,38 +447,6 @@ export default {
   color: #333;
   background-color: #f7f9fc;
   min-height: 100vh;
-}
-
-.profile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.welcome-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin: 0;
-}
-
-.back-home {
-  color: #4a5568;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-.back-home:hover {
-  color: #3182ce;
-  text-decoration: underline;
-}
-
-.back-home i {
-  margin-right: 0.5rem;
 }
 
 .profile-card {
@@ -627,6 +658,32 @@ export default {
   color: #a0aec0;
 }
 
+.form-input[multiple] {
+  height: auto;
+  min-height: 100px;
+  padding: 0.5rem;
+  overflow-y: auto;
+}
+
+.form-input[multiple] option {
+  padding: 0.5rem;
+}
+
+.form-input.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-input.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+.error-text {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
 .form-actions {
   margin-top: 2rem;
   display: flex;
@@ -683,15 +740,6 @@ export default {
 
   .profile-card {
     padding: 1.5rem;
-  }
-
-  .profile-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .back-home {
-    margin-top: 0.5rem;
   }
 
   .upload-section {

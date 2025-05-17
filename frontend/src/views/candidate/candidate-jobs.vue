@@ -7,13 +7,6 @@
       </div>
     </div>
     <div class="content-card">
-      <div class="filter-bar">
-        <span class="filter-label">Đã ứng tuyển</span>
-        <select v-model="timeFilter" class="time-filter" @change="fetchJobs">
-          <option value="6">6 tháng trước</option>
-          <option value="12">12 tháng trước</option>
-        </select>
-      </div>
       <div class="table-container">
         <!-- Loading State -->
         <div v-if="jobStore.isLoading" class="text-center py-5">
@@ -63,10 +56,16 @@
                 <span
                   :class="[
                     'status-badge',
-                    job.isApproved ? 'approved' : 'not-approved',
+                    job.Jobs.isApproved === 'Đã được duyệt'
+                      ? 'approved'
+                      : 'not-approved',
                   ]"
                 >
-                  {{ job.isApproved ? "Đã kiểm duyệt" : "Chưa kiểm duyệt" }}
+                  {{
+                    job.Jobs.isApproved === "Đã được duyệt"
+                      ? "Đã kiểm duyệt"
+                      : "Chưa kiểm duyệt"
+                  }}
                 </span>
               </td>
               <td class="action-buttons">

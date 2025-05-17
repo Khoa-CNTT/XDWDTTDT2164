@@ -174,12 +174,14 @@
 
 <script>
 import { useJobStore } from "@stores/useJobStore";
+import { useAuthStore } from "@stores/useAuthStore";
 
 export default {
   name: "JobManagement",
   setup() {
     const jobStore = useJobStore();
-    return { jobStore };
+    const authStore = useAuthStore();
+    return { jobStore, authStore };
   },
   methods: {
     getImageUrl(imagePath) {
@@ -188,7 +190,12 @@ export default {
     },
     async fetchJobs(page = 1) {
       try {
-        await this.jobStore.fetchJobsForEmployer(page, this.jobStore.pageSize);
+        const employerId = this.authStore.user.Employers.id;
+        await this.jobStore.fetchJobsForEmployer(
+          page,
+          this.jobStore.pageSize,
+          employerId
+        );
       } catch (error) {
         console.error("Lỗi khi lấy danh sách công việc:", error);
       }

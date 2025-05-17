@@ -18,13 +18,13 @@ class JobsService {
    * @param {Object} jobData - Dữ liệu bài đăng công việc
    * @returns {Promise<Object>} Bài đăng công việc được tạo
    */
-  async createJob(jobData, employerId, userId) {
+  async createJob(jobData, userId) {
     const transaction = await db.sequelize.transaction();
     try {
       const jobSlug = slugify(jobData.jobName, { lower: true });
 
       // Kiểm tra xem bài đăng công việc đã tồn tại chưa
-      const job = await this.findJobBySlug(jobSlug, employerId);
+      const job = await this.findJobBySlug(jobSlug, jobData.employerId);
 
       if (job) {
         throw new ApiError(
@@ -46,7 +46,7 @@ class JobsService {
           jobTypeId: jobData.jobTypeId,
           salaryId: jobData.salaryId,
           experienceId: jobData.experienceId,
-          employerId: employerId,
+          employerId: jobData.employerId,
           userId: userId,
           numberOfRecruits: jobData.numberOfRecruits,
           rankId: jobData.rankId,

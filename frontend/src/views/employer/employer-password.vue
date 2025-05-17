@@ -112,26 +112,52 @@ export default {
       this.isLoading = true;
 
       try {
+        // Trim inputs to remove leading/trailing whitespace
+        const oldPassword = this.oldPassword.trim();
+        const newPassword = this.newPassword.trim();
+        const confirmPassword = this.confirmPassword.trim();
+
         // Validate inputs
-        if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
+        if (!oldPassword || !newPassword || !confirmPassword) {
           this.error = "Vui lòng điền đầy đủ các trường.";
           return;
         }
 
-        if (this.newPassword.length < 6) {
+        // Check for minimum and maximum length
+        if (newPassword.length < 6) {
           this.error = "Mật khẩu mới phải có ít nhất 6 ký tự.";
           return;
         }
+        if (newPassword.length > 128) {
+          this.error = "Mật khẩu mới không được vượt quá 128 ký tự.";
+          return;
+        }
 
-        if (this.newPassword !== this.confirmPassword) {
+        // Check if new password is the same as old password
+        if (oldPassword === newPassword) {
+          this.error = "Mật khẩu mới phải khác với mật khẩu cũ.";
+          return;
+        }
+
+        // Password strength validation
+        const passwordStrengthRegex =
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+        if (!passwordStrengthRegex.test(newPassword)) {
+          this.error =
+            "Mật khẩu mới phải chứa ít nhất một chữ cái in hoa, một chữ cái thường, một số và một ký tự đặc biệt.";
+          return;
+        }
+
+        // Check if new password matches confirm password
+        if (newPassword !== confirmPassword) {
           this.error = "Mật khẩu mới và xác nhận mật khẩu không khớp.";
           return;
         }
 
         // Call API
         const data = {
-          oldPassword: this.oldPassword,
-          newPassword: this.newPassword,
+          oldPassword,
+          newPassword,
         };
         const response = await changePassword(data);
 

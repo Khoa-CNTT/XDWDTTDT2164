@@ -73,7 +73,7 @@ router.get(
  * @controller JobsController.getJobsForEmployer: Lấy danh sách bài đăng công việc
  */
 router.get(
-  "/get-jobs-employer",
+  "/get-jobs-employer/:employerId",
   protectedRoute,
   authorizedRoute("employer"),
   jobsController.getJobsForEmployer

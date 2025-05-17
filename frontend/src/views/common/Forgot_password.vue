@@ -51,7 +51,7 @@
                 v-if="isSubmitting"
                 class="spinner-border spinner-border-sm me-2"
               ></span>
-              Gửi mã xác nhận
+              Gửi yêu cầu
             </button>
 
             <div class="text-center back-link">
