@@ -38,14 +38,6 @@
               <i class="fas fa-map-marker-alt me-1"></i>
               {{ jobStore.job.Employers.companyAddress || "N/A" }}
             </p>
-            <p>
-              <i class="fas fa-phone me-1"></i>
-              {{ jobStore.job.Employers.companyPhone || "N/A" }}
-            </p>
-            <p>
-              <i class="fas fa-envelope me-1"></i>
-              {{ jobStore.job.Employers.companyEmail || "N/A" }}
-            </p>
           </div>
         </div>
         <hr />
@@ -67,15 +59,11 @@
         </div>
         <div class="job-details mt-4">
           <h4>Thời Gian Làm Việc</h4>
-          <p class="description-text">{{ jobStore.job.workTime || "N/A" }}</p>
+          <p class="description-text">{{ plainWorkTime }}</p>
         </div>
         <div class="job-details mt-4">
           <h4>Địa Chỉ Làm Việc</h4>
           <p class="description-text">{{ jobStore.job.address || "N/A" }}</p>
-        </div>
-        <div class="job-details mt-4">
-          <h4>Yêu Cầu Khác</h4>
-          <p class="description-text">{{ plainRequirements }}</p>
         </div>
         <hr />
         <div class="job-requirements mt-4">
@@ -100,7 +88,11 @@
               <input
                 type="text"
                 class="form-control"
-                :value="jobStore.job.JobSkills?.join(', ') || 'N/A'"
+                :value="
+                  jobStore.job.JobSkills?.map(
+                    (skill) => skill.Skills.skillName
+                  ) || 'N/A'
+                "
                 readonly
               />
               <label class="form-label">Cấp bậc</label>
@@ -205,8 +197,8 @@ export default {
       const html = this.jobStore.job?.benefit || "N/A";
       return this.convertToPlainText(html);
     },
-    plainRequirements() {
-      const html = this.jobStore.job?.requirements || "N/A";
+    plainWorkTime() {
+      const html = this.jobStore.job?.workTime || "N/A";
       return this.convertToPlainText(html);
     },
   },

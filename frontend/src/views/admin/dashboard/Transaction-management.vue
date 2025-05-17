@@ -167,9 +167,9 @@
             <th>Tên công ty</th>
             <th>Loại giao dịch</th>
             <th>Số tiền</th>
+            <th>Phương thức nạp tiền</th>
             <th>Trạng thái</th>
             <th>Thời gian</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody class="text-center align-middle">
@@ -186,10 +186,11 @@
             </td>
             <td>{{ transaction.transactionId }}</td>
             <td>
-              {{ transaction.Users.EmployerUsers[0].Employers.companyName }}
+              {{ transaction.Users.Employers.companyName }}
             </td>
             <td>{{ transaction.transactionType }}</td>
             <td>{{ formatCurrency(transaction.amount) }}</td>
+            <td>{{ transaction.paymentMethod }}</td>
             <td>
               <button
                 :class="
@@ -202,22 +203,6 @@
               </button>
             </td>
             <td>{{ formatDate(transaction.paymentDate) }}</td>
-            <td class="d-flex justify-content-center">
-              <button
-                class="btn btn-success me-2"
-                data-bs-toggle="modal"
-                data-bs-target="#update-modal"
-                @click="selectedTransaction = transaction"
-              >
-                Xem chi tiết
-              </button>
-              <button
-                class="btn btn-danger me-2"
-                @click="handleRefund(transaction.id)"
-              >
-                Hoàn Tiền
-              </button>
-            </td>
           </tr>
         </tbody>
       </table>
@@ -305,14 +290,14 @@
 </template>
 
 <script>
-import { Chart, registerables, BarController, PieController } from "chart.js";
+import { Chart, registerables } from "chart.js";
 import { debounce } from "lodash";
 import { useWalletStore } from "@/stores/useWalletStore";
 import { exportFileCsv, getPaymentTimeApi } from "@/apis/wallet";
 import { getPaymentOverview } from "@/apis/dashboard";
 
 // Register Chart.js components
-Chart.register(...registerables, BarController, PieController);
+Chart.register(...registerables);
 
 export default {
   name: "TransactionManagement",
@@ -345,17 +330,16 @@ export default {
           labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
           datasets: [
             {
-              label: "Phân bổ doanh thu",
               data: [3000000, 1500000, 500000],
               backgroundColor: [
-                "rgba(75, 192, 192, 0.6)",
-                "rgba(255, 99, 132, 0.6)",
-                "rgba(255, 206, 86, 0.6)",
+                "rgba(40, 167, 69, 0.8)",
+                "rgba(0, 123, 255, 0.8)",
+                "rgba(255, 193, 7, 0.8)",
               ],
               borderColor: [
-                "rgba(75, 192, 192, 1)",
-                "rgba(255, 99, 132, 1)",
-                "rgba(255, 206, 86, 1)",
+                "rgba(40, 167, 69, 1)",
+                "rgba(0, 123, 255, 1)",
+                "rgba(255, 193, 7, 1)",
               ],
               borderWidth: 1,
             },
@@ -365,17 +349,16 @@ export default {
           labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
           datasets: [
             {
-              label: "Phân bổ doanh thu",
               data: [40000000, 25000000, 5000000],
               backgroundColor: [
-                "rgba(75, 192, 192, 0.6)",
-                "rgba(255, 99, 132, 0.6)",
-                "rgba(255, 206, 86, 0.6)",
+                "rgba(40, 167, 69, 0.8)",
+                "rgba(0, 123, 255, 0.8)",
+                "rgba(255, 193, 7, 0.8)",
               ],
               borderColor: [
-                "rgba(75, 192, 192, 1)",
-                "rgba(255, 99, 132, 1)",
-                "rgba(255, 206, 86, 1)",
+                "rgba(40, 167, 69, 1)",
+                "rgba(0, 123, 255, 1)",
+                "rgba(255, 193, 7, 1)",
               ],
               borderWidth: 1,
             },
@@ -385,17 +368,16 @@ export default {
           labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
           datasets: [
             {
-              label: "Phân bổ doanh thu",
               data: [120000000, 70000000, 10000000],
               backgroundColor: [
-                "rgba(75, 192, 192, 0.6)",
-                "rgba(255, 99, 132, 0.6)",
-                "rgba(255, 206, 86, 0.6)",
+                "rgba(40, 167, 69, 0.8)",
+                "rgba(0, 123, 255, 0.8)",
+                "rgba(255, 193, 7, 0.8)",
               ],
               borderColor: [
-                "rgba(75, 192, 192, 1)",
-                "rgba(255, 99, 132, 1)",
-                "rgba(255, 206, 86, 1)",
+                "rgba(40, 167, 69, 1)",
+                "rgba(0, 123, 255, 1)",
+                "rgba(255, 193, 7, 1)",
               ],
               borderWidth: 1,
             },
@@ -460,9 +442,9 @@ export default {
         const response = await getPaymentOverview();
         this.todayRevenue = response.data.todayRevenue || 0;
         this.monthRevenue = response.data.monthRevenue || 0;
-        this.transactionStats = response.data || {
-          totalTransactions: 0,
-          failed: 0,
+        this.transactionStats = {
+          success: response.data.success || 0,
+          failed: response.data.failed || 0,
         };
         this.walletDeposits = response.data.totalWalletBalance || 0;
         this.error = null;
@@ -492,10 +474,7 @@ export default {
         if (this.startDate) query.startDate = this.startDate;
         if (this.endDate) query.endDate = this.endDate;
 
-        console.log("Đang gửi yêu cầu với query:", query);
         const response = await getPaymentTimeApi(query);
-        console.log("Dữ liệu nhận được:", response);
-
         this.revenueData = response.data || [];
       } catch (err) {
         this.revenueChartError = `Không thể tải dữ liệu biểu đồ: ${
@@ -530,16 +509,7 @@ export default {
         this.revenueChartInstance.destroy();
       }
 
-      if (this.revenueData.length === 0) {
-        console.warn("Không có dữ liệu để vẽ biểu đồ");
-        return;
-      }
-
-      if (!this.$refs.revenueChartCanvas) {
-        console.warn("Canvas chưa sẵn sàng");
-        setTimeout(() => {
-          this.updateRevenueChart();
-        }, 100);
+      if (this.revenueData.length === 0 || !this.$refs.revenueChartCanvas) {
         return;
       }
 
@@ -548,13 +518,15 @@ export default {
         const labels = this.revenueData.map((item) => item.display);
         const currentData = this.revenueData.map((item) => item.revenue);
         const previousData = this.revenueData.map((item) => item.previod);
-        const maxCount = Math.max(...currentData, ...previousData, 1);
 
-        console.log("Dữ liệu biểu đồ:", { labels, currentData, previousData });
-
+        // Đảm bảo canvas có đúng kích thước
         this.$refs.revenueChartCanvas.width =
-          this.$refs.revenueChartCanvas.parentNode.offsetWidth;
+          this.$refs.revenueChartCanvas.parentNode.clientWidth;
         this.$refs.revenueChartCanvas.height = 350;
+
+        // Tính toán các giá trị tối đa cho scale
+        const maxValue = Math.max(...currentData, ...previousData, 1);
+        const step = Math.ceil(maxValue / 5 / 1000000) * 1000000;
 
         this.revenueChartInstance = new Chart(ctx, {
           type: "bar",
@@ -562,55 +534,81 @@ export default {
             labels,
             datasets: [
               {
-                label: "Doanh thu hiện tại (VNĐ)",
+                label: "Doanh thu hiện tại",
                 data: currentData,
-                backgroundColor: currentData.map((count) =>
-                  count === Math.max(...currentData)
-                    ? "rgba(54, 162, 235, 1)"
-                    : "rgba(54, 162, 235, 0.7)"
-                ),
-                borderColor: "rgba(54, 162, 235, 1)",
+                backgroundColor: "rgba(40, 167, 69, 0.7)",
+                borderColor: "rgba(40, 167, 69, 1)",
                 borderWidth: 1,
-                borderRadius: 5,
+                borderRadius: 4,
+                barPercentage: 0.6,
+                categoryPercentage: 0.8,
               },
               {
-                label: "Doanh thu kỳ trước (VNĐ)",
+                label: "Doanh thu kỳ trước",
                 data: previousData,
-                backgroundColor: previousData.map((count) =>
-                  count === Math.max(...previousData)
-                    ? "rgba(108, 117, 125, 1)"
-                    : "rgba(108, 117, 125, 0.7)"
-                ),
-                borderColor: "rgba(108, 117, 125, 1)",
+                backgroundColor: "rgba(108, 117, 125, 0.5)",
+                borderColor: "rgba(108, 117, 125, 0.8)",
                 borderWidth: 1,
-                borderRadius: 5,
+                borderRadius: 4,
+                barPercentage: 0.6,
+                categoryPercentage: 0.8,
               },
             ],
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 10,
+                right: 20,
+                left: 10,
+                bottom: 0,
+              },
+            },
             scales: {
               y: {
                 beginAtZero: true,
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                  drawBorder: false,
+                },
                 ticks: {
-                  stepSize: Math.max(1000000, Math.ceil(maxCount / 10)),
-                  precision: 0,
-                  callback: (value) =>
-                    this.formatCurrency(value).replace("₫", ""),
+                  stepSize: step,
+                  callback: (value) => {
+                    if (value >= 1000000) {
+                      return (value / 1000000).toLocaleString("vi-VN") + " Tr";
+                    }
+                    return value.toLocaleString("vi-VN");
+                  },
+                  font: {
+                    size: 11,
+                  },
+                  color: "#6c757d",
                 },
                 title: {
                   display: true,
                   text: "Doanh thu (VNĐ)",
                   font: {
-                    size: 14,
+                    size: 12,
+                    weight: "normal",
                   },
+                  color: "#495057",
                 },
               },
               x: {
+                grid: {
+                  display: false,
+                  drawBorder: false,
+                },
                 ticks: {
                   maxRotation: 45,
                   minRotation: 45,
+                  autoSkip: true,
+                  font: {
+                    size: 11,
+                  },
+                  color: "#6c757d",
                 },
                 title: {
                   display: true,
@@ -619,8 +617,10 @@ export default {
                       ? "Thứ trong tuần"
                       : "Thời gian",
                   font: {
-                    size: 14,
+                    size: 12,
+                    weight: "normal",
                   },
+                  color: "#495057",
                 },
               },
             },
@@ -628,21 +628,43 @@ export default {
               legend: {
                 display: true,
                 position: "top",
-              },
-              tooltip: {
-                callbacks: {
-                  title: (tooltipItems) => tooltipItems[0].label,
-                  label: (context) =>
-                    `${context.dataset.label}: ${this.formatCurrency(
-                      context.raw
-                    )}`,
+                align: "end",
+                labels: {
+                  boxWidth: 12,
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  font: {
+                    size: 11,
+                  },
                 },
               },
+              tooltip: {
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                titleColor: "#212529",
+                bodyColor: "#212529",
+                borderColor: "#dee2e6",
+                borderWidth: 1,
+                padding: 10,
+                boxPadding: 6,
+                usePointStyle: true,
+                callbacks: {
+                  title: (tooltipItems) => tooltipItems[0].label,
+                  label: (context) => {
+                    const label = context.dataset.label || "";
+                    const value = context.raw;
+                    return `${label}: ${this.formatCurrency(value)}`;
+                  },
+                },
+              },
+            },
+            animation: {
+              duration: 1000,
+              easing: "easeOutQuart",
             },
           },
         });
       } catch (error) {
-        console.error("Lỗi khi vẽ biểu đồ:", error);
+        console.error("Lỗi khi vẽ biểu đồ doanh thu:", error);
       }
     },
 
@@ -651,30 +673,71 @@ export default {
         this.pieChartInstance.destroy();
       }
 
+      if (!this.$refs.pieChartCanvas) {
+        return;
+      }
+
       const ctx = this.$refs.pieChartCanvas.getContext("2d");
+
+      // Đảm bảo canvas có đúng kích thước
+      this.$refs.pieChartCanvas.width =
+        this.$refs.pieChartCanvas.parentNode.clientWidth;
+      this.$refs.pieChartCanvas.height = 350;
+
       this.pieChartInstance = new Chart(ctx, {
         type: "pie",
         data: this.pieData[this.selectedPieFilter],
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: 20,
+          },
           plugins: {
             legend: {
-              position: "top",
+              position: "bottom",
+              labels: {
+                padding: 20,
+                boxWidth: 12,
+                usePointStyle: true,
+                pointStyle: "circle",
+                font: {
+                  size: 11,
+                },
+              },
             },
             tooltip: {
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              titleColor: "#212529",
+              bodyColor: "#212529",
+              borderColor: "#dee2e6",
+              borderWidth: 1,
+              padding: 10,
               callbacks: {
-                label: (context) =>
-                  `${context.label}: ${this.formatCurrency(context.raw)}`,
+                label: (context) => {
+                  const label = context.label || "";
+                  const value = context.raw;
+                  const total = context.chart.data.datasets[0].data.reduce(
+                    (a, b) => a + b,
+                    0
+                  );
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${this.formatCurrency(
+                    value
+                  )} (${percentage}%)`;
+                },
               },
             },
           },
+          animation: {
+            animateRotate: true,
+            animateScale: true,
+            duration: 1000,
+            easing: "easeOutQuart",
+          },
+          cutout: "50%",
         },
       });
-    },
-
-    handleRefund(transactionId) {
-      console.log(`Hoàn tiền cho giao dịch ${transactionId}`);
     },
   },
   beforeUnmount() {
@@ -691,19 +754,18 @@ export default {
 <style scoped>
 /* Main Container */
 .transaction-management {
-  padding: 30px;
+  padding: 24px;
   max-width: 100%;
-  background: linear-gradient(to bottom, #f0f5ff, #f8fafc);
-  border-radius: 16px;
+  background: #f8f9fa;
   min-height: 100vh;
   font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Header */
 h2 {
-  font-size: 2.25rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #212529;
   margin-bottom: 15px;
   position: relative;
   display: inline-block;
@@ -714,48 +776,42 @@ h2:after {
   position: absolute;
   bottom: -8px;
   left: 0;
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(to right, #2563eb, #60a5fa);
-  border-radius: 4px;
+  width: 60px;
+  height: 3px;
+  background: #28a745;
+  border-radius: 2px;
 }
 
 .back-link {
-  font-size: 0.95rem;
-  color: #2563eb;
+  font-size: 0.9rem;
+  color: #0d6efd;
   text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  padding: 8px 16px;
-  background-color: rgba(37, 99, 235, 0.1);
-  border-radius: 8px;
-  width: fit-content;
+  gap: 6px;
+  transition: all 0.2s ease;
+  margin-top: 4px;
 }
 
 .back-link:hover {
-  color: #1e40af;
-  transform: translateX(-5px);
-  background-color: rgba(37, 99, 235, 0.15);
+  color: #0a58ca;
 }
 
 .back-link::before {
   content: "\f060";
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 /* Alert */
 .alert-danger {
-  background: #fee2e2;
-  border: none;
-  border-radius: 8px;
-  padding: 1rem;
-  font-size: 0.95rem;
-  color: #991b1b;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #f8d7da;
+  border: 1px solid #f5c2c7;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #842029;
 }
 
 /* Header Layout */
@@ -766,277 +822,237 @@ h2:after {
 
 /* Buttons */
 .btn {
-  border-radius: 8px;
+  border-radius: 4px;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .btn-success {
-  background: #10b981;
+  background: #198754;
   border: none;
   color: #ffffff;
-  padding: 8px 16px;
+  padding: 0.45rem 1rem;
   font-size: 0.9rem;
 }
 
 .btn-success:hover {
-  background: #059669;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  background: #157347;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .btn-danger {
-  background: #dc2626;
+  background: #dc3545;
   border: none;
   color: #ffffff;
-  padding: 8px 16px;
+  padding: 0.45rem 1rem;
   font-size: 0.9rem;
 }
 
 .btn-danger:hover {
-  background: #b91c1c;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+  background: #bb2d3b;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .btn-outline-primary {
-  border-color: #2563eb;
-  color: #2563eb;
-  padding: 8px 16px;
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+  padding: 0.45rem 1rem;
   font-size: 0.9rem;
+  background-color: transparent;
 }
 
 .btn-outline-primary:hover {
-  background: #2563eb;
+  background: #0d6efd;
   color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-primary:disabled {
+  color: #6c757d;
+  border-color: #6c757d;
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .btn-sm {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
 }
 
 /* Revenue Cards */
 .row.mb-4 {
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.col-lg-3.col-md-6 {
-  transition: transform 0.4s ease;
-}
-
-.col-lg-3.col-md-6:hover {
-  transform: translateY(-8px);
+  margin-bottom: 20px !important;
 }
 
 .card {
   border: none;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   background: #ffffff;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  height: 100%;
 }
 
 .card:hover {
-  box-shadow: 0 12px 40px rgba(14, 30, 73, 0.12);
-  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-body {
-  padding: 24px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .card-body h5 {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #495057;
   margin: 0;
-  text-transform: uppercase;
 }
 
 .card-body p.text-success,
 .card-body span.text-success {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #047857;
-  position: relative;
-  display: inline-block;
-}
-
-.card-body p.text-success:before,
-.card-body span.text-success:before {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #047857, #10b981);
-  border-radius: 2px;
-  opacity: 0.6;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #198754;
+  margin-bottom: 0;
 }
 
 .card-body span.text-danger {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  color: #dc2626;
+  color: #dc3545;
 }
 
 /* Chart Cards */
-.row {
-  gap: 20px;
-}
-
-.col-lg-7.col-md-12,
-.col-lg-5.col-md-12 {
-  transition: transform 0.4s ease;
-}
-
-.col-lg-7.col-md-12:hover,
-.col-lg-5.col-md-12:hover {
-  transform: translateY(-5px);
-}
-
 .card.p-3 {
-  padding: 24px !important;
+  padding: 1rem !important;
 }
 
 .card.p-3 h5 {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e5eaef;
+  color: #212529;
+  margin-bottom: 0.75rem;
 }
 
 .form-control-sm {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .form-control-sm:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   outline: none;
 }
 
 .form-select {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   cursor: pointer;
 }
 
 .form-select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   outline: none;
 }
 
 canvas {
   width: 100% !important;
   max-height: 350px !important;
-  padding: 10px;
 }
 
 /* Table */
 .card.mt-5 {
-  margin-top: 30px;
+  margin-top: 1.5rem !important;
 }
 
 .table {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   border-collapse: separate;
   border-spacing: 0;
   background: #ffffff;
+  width: 100%;
 }
 
 .table th,
 .table td {
-  padding: 12px;
-  border-color: #e5e7eb;
+  padding: 0.75rem;
+  border-color: #dee2e6;
   vertical-align: middle;
 }
 
 .table th {
-  background: #d1fae5;
-  color: #065f46;
+  background: #d1e7dd;
+  color: #0f5132;
   font-weight: 600;
-  text-transform: uppercase;
   font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .table td {
-  color: #1f2937;
+  color: #212529;
 }
 
 .table-hover tbody tr:hover {
-  background: #f8fafc;
-  transition: background 0.2s ease;
+  background: #f8f9fa;
 }
 
 /* Badges */
 .badge {
-  padding: 8px 16px;
-  border-radius: 16px;
-  font-size: 0.8rem;
+  padding: 0.35em 0.65em;
+  border-radius: 50rem;
+  font-size: 0.75rem;
   font-weight: 500;
   border: none;
+  cursor: default;
 }
 
 .badge.bg-success {
-  background: #d1fae5;
-  color: #065f46;
+  background: #d1e7dd !important;
+  color: #0f5132 !important;
 }
 
 .badge.bg-danger {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #f8d7da !important;
+  color: #842029 !important;
 }
 
 /* Pagination */
 .d-flex.justify-content-between.p-3 {
-  border-top: 1px solid #e5e7eb;
-  padding: 16px !important;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem !important;
 }
 
 /* Loading & Error States */
 .text-center.py-5 {
-  padding: 30px;
-  color: #64748b;
-  font-size: 1rem;
+  padding: 2rem 0;
+  color: #6c757d;
+  font-size: 0.95rem;
 }
 
 .text-center.py-5 i {
-  font-size: 1.5rem;
-  color: #2563eb;
-  margin-bottom: 10px;
+  font-size: 1.25rem;
+  color: #6c757d;
+  margin-right: 0.5rem;
 }
 
 .text-center.py-5 i.fa-spinner {
-  font-size: 2rem;
   animation: spin 1s linear infinite;
 }
 
@@ -1047,39 +1063,34 @@ canvas {
 }
 
 .text-danger {
-  color: #dc2626;
-  font-size: 0.95rem;
-  padding: 30px;
+  color: #dc3545;
 }
 
 /* Modal */
 .modal-dialog {
-  max-width: 600px;
+  max-width: 500px;
 }
 
 .modal-content {
-  border-radius: 16px;
+  border-radius: 6px;
   border: none;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
-  background: #f1f5f9;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 18px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
 }
 
 .modal-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #212529;
 }
 
 .btn-close {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  opacity: 0.6;
+  opacity: 0.5;
   transition: opacity 0.2s ease;
 }
 
@@ -1088,50 +1099,122 @@ canvas {
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 1rem;
 }
 
 .modal-body p {
-  margin: 12px 0;
+  margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: #475569;
+  color: #212529;
 }
 
 .modal-body strong {
-  color: #1f2937;
   font-weight: 600;
 }
 
 .modal-footer {
-  border-top: 1px solid #e5e7eb;
-  padding: 16px;
+  border-top: 1px solid #dee2e6;
+  padding: 0.75rem;
 }
 
 .btn-secondary {
-  background: #6b7280;
+  background: #6c757d;
   border: none;
   color: #ffffff;
-  padding: 8px 16px;
+  padding: 0.45rem 1rem;
 }
 
 .btn-secondary:hover {
-  background: #4b5563;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);
+  background: #5c636a;
+}
+
+/* Equal height columns */
+.row {
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: calc(-1 * var(--bs-gutter-y));
+  margin-right: calc(-0.5 * var(--bs-gutter-x));
+  margin-left: calc(-0.5 * var(--bs-gutter-x));
+}
+
+.row > * {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+  margin-top: var(--bs-gutter-y);
+}
+
+.col-lg-3 {
+  margin-bottom: 1rem;
 }
 
 /* Responsive */
-@media (max-width: 992px) {
-  .row.mb-4,
-  .row {
-    gap: 20px;
+@media (min-width: 992px) {
+  .col-lg-3 {
+    flex: 0 0 auto;
+    width: 25%;
   }
 
-  .col-lg-3.col-md-6,
-  .col-lg-7.col-md-12,
-  .col-lg-5.col-md-12 {
-    flex: 0 0 100%;
-    max-width: 100%;
+  .col-lg-5 {
+    flex: 0 0 auto;
+    width: 41.66666667%;
+  }
+
+  .col-lg-7 {
+    flex: 0 0 auto;
+    width: 58.33333333%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .col-md-6 {
+    flex: 0 0 auto;
+    width: 50%;
+  }
+
+  .col-md-12 {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .transaction-management {
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .card.p-3 {
+    padding: 0.75rem !important;
+  }
+
+  .form-select,
+  .form-control-sm {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  canvas {
+    max-height: 250px !important;
   }
 
   .d-flex.gap-2 {
@@ -1139,84 +1222,19 @@ canvas {
   }
 }
 
-@media (max-width: 768px) {
-  .transaction-management {
-    padding: 20px;
-  }
-
-  h2 {
-    font-size: 1.75rem;
-  }
-
-  .d-flex.justify-content-between {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .btn-success {
-    width: 100%;
-  }
-
-  .table th,
-  .table td {
-    padding: 8px;
-    font-size: 0.8rem;
-  }
-
-  .card-body h5 {
-    font-size: 1rem;
-  }
-
-  .card-body p.text-success,
-  .card-body span.text-success {
-    font-size: 1.25rem;
-  }
-
-  .form-select,
-  .form-control-sm {
-    width: 100%;
-  }
-
-  canvas {
-    max-height: 300px !important;
-  }
-
-  .d-flex.gap-2 {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-@media (max-width: 576px) {
-  h2 {
-    font-size: 1.5rem;
-  }
-
-  .table {
-    font-size: 0.8rem;
-  }
-
+@media (max-width: 575.98px) {
   .btn-success,
   .btn-danger,
   .btn-outline-primary,
   .btn-secondary {
-    padding: 6px 12px;
-    font-size: 0.8rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
 
-  .card-body p.text-success,
-  .card-body span.text-success,
-  .card-body span.text-danger {
-    font-size: 1rem;
-  }
-
-  .modal-dialog {
-    margin: 16px;
-  }
-
-  canvas {
-    max-height: 280px !important;
+  .d-flex.justify-content-between.p-3 {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center !important;
   }
 }
 </style>

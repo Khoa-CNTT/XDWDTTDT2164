@@ -408,7 +408,7 @@
                         type="text"
                         class="form-control"
                         id="userName"
-                        :value="authStore.user?.name || 'Chưa cung cấp'"
+                        :value="authStore.user?.fullName || 'Chưa cung cấp'"
                         readonly
                       />
                     </div>
@@ -430,7 +430,7 @@
                         type="tel"
                         class="form-control"
                         id="userPhone"
-                        :value="authStore.user?.phone || 'Chưa cung cấp'"
+                        :value="authStore.user?.phoneNumber || 'Chưa cung cấp'"
                         readonly
                       />
                     </div>

@@ -29,7 +29,6 @@
                 <th>STT</th>
                 <th>Mã công ty</th>
                 <th>Tên công ty</th>
-                <th>Số điện thoại</th>
                 <th>Trạng thái</th>
                 <th>Kiểm duyệt</th>
                 <th>Ngày khởi tạo</th>
@@ -48,7 +47,6 @@
                 </td>
                 <td>{{ employer.companyTaxCode || "N/A" }}</td>
                 <td>{{ employer.companyName || "N/A" }}</td>
-                <td>{{ employer.phoneNumber || "N/A" }}</td>
                 <td>
                   <span
                     :class="[

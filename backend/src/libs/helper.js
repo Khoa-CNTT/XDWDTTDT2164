@@ -47,13 +47,15 @@ const convertPdfToText = async (file) => {
 };
 
 const parseGeminiResult = (resultText) => {
-  const matchScoreRegex = /Điểm đánh giá:\s*([0-9.]+)%/;
+  const matchScoreRegex = /Điểm đánh giá:\s*([\d.]+)\/100%/;
   const suitableRegex = /Mức độ phù hợp:\s*(.+)/;
   const commentRegex = /Nhận xét:\s*(.+)/s;
 
   const scoreMatch = resultText.match(matchScoreRegex);
   const suitableMatch = resultText.match(suitableRegex);
   const commentMatch = resultText.match(commentRegex);
+
+  console.log(scoreMatch);
 
   return {
     matchScore: scoreMatch ? parseFloat(scoreMatch[1]) : null,

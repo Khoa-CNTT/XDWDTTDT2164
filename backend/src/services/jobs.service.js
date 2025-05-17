@@ -18,7 +18,7 @@ class JobsService {
    * @param {Object} jobData - Dữ liệu bài đăng công việc
    * @returns {Promise<Object>} Bài đăng công việc được tạo
    */
-  async createJob(jobData, employerId, userId) {
+  async createJob(jobData, userId) {
     const transaction = await db.sequelize.transaction();
     try {
       const jobSlug = slugify(jobData.jobName, { lower: true });
