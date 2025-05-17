@@ -117,7 +117,7 @@ async function moderateApplyJob(apply, job) {
 
   const prompt = `Bạn là một chuyên gia nhân sự có kinh nghiệm tuyển dụng trong nhiều lĩnh vực. Dưới đây là một bài ứng tuyển, hãy đọc kỹ và đưa ra đánh giá theo các tiêu chí sau:
 
-1. Độ phù hợp với yêu cầu công việc (dựa trên kinh nghiệm, kỹ năng, học vấn).
+1. Độ phù hợp với yêu cầu công việc (dựa trên kinh nghiệm, cấp bậc, kỹ năng, học vấn).
 2. Khả năng truyền đạt, trình bày rõ ràng, mạch lạc.
 3. Mức độ nghiêm túc, chuyên nghiệp của ứng viên.
 4. Ngữ pháp, chính tả, và văn phong.
@@ -131,14 +131,14 @@ Nội dung ứng tuyển:
 
 Yêu cầu công việc:
 [${job.description || "Không có yêu cầu rõ ràng"}]
-
+[${job.candidateRequirements || "Không có yêu cầu rõ ràng"}]
 ---
 
 Hãy trả lời theo định dạng sau:
 
-Điểm đánh giá (theo %): [số điểm /100%]  
-Mức độ phù hợp: [Phù hợp / Không phù hợp / Cần xem xét]  
-Nhận xét: [viết nhận xét chi tiết, khoảng 5-7 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên]
+Điểm đánh giá (theo %): số điểm /100% 
+Mức độ phù hợp: Phù hợp / Không phù hợp / Cần xem xét  
+Nhận xét: viết nhận xét chi tiết, khoảng 5-7 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên
 
 Chỉ trả lời theo đúng định dạng yêu cầu, không thêm nội dung khác. `;
 

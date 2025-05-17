@@ -403,7 +403,7 @@ export default {
 
         if (response.status === "success") {
           toast.success("Hồ sơ đã được thêm thành công!", { autoClose: 3000 });
-          router.push("/candidate-management");
+          router.push("/");
         } else {
           throw new Error(response.message || "Lưu hồ sơ thất bại");
         }

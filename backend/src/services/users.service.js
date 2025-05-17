@@ -322,7 +322,7 @@ class UserService {
     const industry = query.industry || ""; // Tìm kiếm theo ngành nghề
 
     const whereClause = {
-      isApproved: true,
+      isApproved: "Đã kiểm duyệt",
     };
 
     if (search) {
@@ -358,6 +358,7 @@ class UserService {
       employers,
     };
   }
+
   /**
    * Lấy danh sách nhà tuyển dụng cho admin
    * @returns {Promise<Object>} - Danh sách nhà tuyển dụng cho admin

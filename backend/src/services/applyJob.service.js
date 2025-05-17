@@ -108,7 +108,6 @@ class ApplyJobService {
     let parseResult;
     try {
       const aiResult = await moderateApplyJob(cvText, job);
-      console.log(aiResult);
       parseResult = parseGeminiResult(aiResult);
       console.log(parseResult);
       if (!parseResult || typeof parseResult.matchScore !== "number") {
