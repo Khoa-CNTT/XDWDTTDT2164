@@ -54,7 +54,7 @@
               </router-link>
             </li>
             <li class="dropdown-item">
-              <router-link to="/admin-dashboard/user-managerment">
+              <router-link to="/admin-dashboard/user-management">
                 <i class="fas fa-user"></i>
                 <span>Quản lý người dùng</span>
               </router-link>
