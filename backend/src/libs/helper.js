@@ -49,18 +49,27 @@ const convertPdfToText = async (file) => {
 const parseGeminiResult = (resultText) => {
   const matchScoreRegex = /Điểm đánh giá:\s*([\d.]+)\/100%/;
   const suitableRegex = /Mức độ phù hợp:\s*(.+)/;
-  const commentRegex = /Nhận xét:\s*(.+)/s;
+  const commentRegex = /Nhận xét:\s*(.+?)\n(?:Kỹ năng|Kinh nghiệm):/s;
+  const skillsRegex = /Kỹ năng:\s*(.+?)\n(?:Kinh nghiệm:)/s;
+  const experienceRegex = /Kinh nghiệm:\s*(.+)/s;
 
   const scoreMatch = resultText.match(matchScoreRegex);
   const suitableMatch = resultText.match(suitableRegex);
   const commentMatch = resultText.match(commentRegex);
-
-  console.log(scoreMatch);
+  const skillsMatch = resultText.match(skillsRegex);
+  const experienceMatch = resultText.match(experienceRegex);
 
   return {
     matchScore: scoreMatch ? parseFloat(scoreMatch[1]) : null,
     isSuitable: suitableMatch ? suitableMatch[1].trim() : null,
     moderateReview: commentMatch ? commentMatch[1].trim() : null,
+    skills: skillsMatch
+      ? skillsMatch[1]
+          .trim()
+          .split(/,\s*|\n|•|-|\*/)
+          .filter(Boolean)
+      : [],
+    experience: experienceMatch ? experienceMatch[1].trim() : null,
   };
 };
 

@@ -42,7 +42,7 @@
               id="uploadImage"
               ref="uploadImage"
               class="d-none"
-              accept=".jpg,.png, .webp"
+              accept=".jpg,.png,.webp"
               @change="previewImage"
             />
           </div>
@@ -142,17 +142,30 @@
                 <label class="form-label">
                   <i class="fas fa-industry me-2 text-primary"></i>Lĩnh vực hoạt
                   động
+                  <span class="required">*</span>
                 </label>
-                <select class="form-select" v-model="form.companyIndustry">
+                <select
+                  class="form-select"
+                  v-model="form.companyIndustry"
+                  required
+                  :disabled="categoryStore.isLoading"
+                >
                   <option value="" disabled selected>Chọn lĩnh vực</option>
-                  <option value="IT">Công nghệ thông tin</option>
-                  <option value="Finance">Tài chính - Ngân hàng</option>
-                  <option value="Education">Giáo dục - Đào tạo</option>
-                  <option value="Manufacturing">Sản xuất</option>
-                  <option value="Retail">Bán lẻ</option>
-                  <option value="Healthcare">Y tế - Dược</option>
-                  <option value="Other">Khác</option>
+                  <option
+                    v-for="category in categoryStore.categories"
+                    :key="category.id"
+                    :value="category.categoryName"
+                  >
+                    {{ category.categoryName }}
+                  </option>
                 </select>
+                <small v-if="categoryStore.error" class="text-danger">
+                  {{ categoryStore.error }}
+                </small>
+                <div v-if="categoryStore.isLoading" class="text-muted mt-1">
+                  <i class="fas fa-spinner fa-spin me-1"></i> Đang tải danh sách
+                  lĩnh vực...
+                </div>
               </div>
             </div>
 
@@ -224,7 +237,11 @@
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  :disabled="isLoading || !authStore.isAuthenticated"
+                  :disabled="
+                    isLoading ||
+                    !authStore.isAuthenticated ||
+                    categoryStore.isLoading
+                  "
                 >
                   <i class="fas fa-plus-circle me-2"></i>
                   {{ isLoading ? "Đang lưu..." : "Tạo hồ sơ công ty" }}
@@ -244,18 +261,21 @@
 
 <script>
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useCategoryStore } from "@/stores/useCategoryStore"; // Import useCategoryStore
 import { useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
-import { createEmployerProfile } from "@/apis/user"; // Import API
+import { createEmployerProfile } from "@/apis/user";
 
 export default {
   name: "EmployerProfileCreate",
   setup() {
     const authStore = useAuthStore();
+    const categoryStore = useCategoryStore(); // Khởi tạo categoryStore
     const router = useRouter();
 
     return {
       authStore,
+      categoryStore,
       router,
     };
   },
@@ -279,7 +299,7 @@ export default {
       },
     };
   },
-  mounted() {
+  async mounted() {
     // Kiểm tra nếu đã có hồ sơ
     if (
       this.authStore.isAuthenticated &&
@@ -291,6 +311,9 @@ export default {
       );
       this.router.push("/employer-dashboard/employer-info");
     }
+
+    // Gọi API lấy danh sách category
+    await this.categoryStore.fetchCategories();
   },
   methods: {
     previewImage(event) {
@@ -366,6 +389,11 @@ export default {
         return false;
       }
 
+      if (!this.form.companyIndustry) {
+        this.error = "Vui lòng chọn lĩnh vực hoạt động";
+        return false;
+      }
+
       if (!this.form.companyDescription) {
         this.error = "Vui lòng nhập mô tả công ty";
         return false;
@@ -384,10 +412,6 @@ export default {
       return true;
     },
     async saveProfile() {
-      console.log("Bắt đầu lưu hồ sơ");
-      console.log("Trạng thái xác thực:", this.authStore.isAuthenticated);
-      console.log("Form data:", this.form);
-
       if (!this.validateForm()) return;
 
       this.isLoading = true;
@@ -428,7 +452,7 @@ export default {
           };
           this.previewLogo = null;
           toast.success("Hồ sơ công ty đã được tạo thành công!");
-          this.router.push("/employer-management");
+          this.router.push("/employer-dashboard/employer-info");
         }, 3000);
       } catch (err) {
         this.error =
@@ -458,7 +482,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 /* Container chính */
 .container-fluid {

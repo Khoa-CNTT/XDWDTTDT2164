@@ -590,9 +590,11 @@ export default {
           ...this.form,
           employerId: employerId, // Add employerId to the payload
         };
-        await this.jobStore.createNewJob(payload);
+        const response = await this.jobStore.createNewJob(payload);
         toast.success("Đã gửi thông tin công việc! Đang chuyển hướng...");
-        this.$router.push("/employer-dashboard/employer-job-payment");
+        this.$router.push(
+          `/employer-dashboard/employer-job-payment/${response.data.id}`
+        );
       } catch (error) {
         toast.error("Lỗi khi thêm mới bài đăng công việc!");
         console.error("Lỗi khi thêm mới bài đăng công việc:", error);

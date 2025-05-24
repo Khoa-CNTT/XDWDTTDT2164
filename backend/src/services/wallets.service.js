@@ -10,6 +10,14 @@ const dotenv = require("dotenv").config();
 const { Op } = require("sequelize");
 const { Parser } = require("json2csv");
 const dayjs = require("dayjs");
+const {
+  VNPay,
+  ignoreLogger,
+  ProductCode,
+  VnpLocale,
+  dateFormat,
+  verifyReturnUrl,
+} = require("vnpay");
 
 const config = {
   app_id: "2553",
@@ -426,6 +434,125 @@ class WalletsService {
       await transaction.rollback();
       console.error("Error in callbackMoMo:", error);
       throw error;
+    }
+  }
+
+  async depositToWalleWithVnPay(amount, userId) {
+    const vnpay = new VNPay({
+      tmnCode: "B3OL1JU5",
+      secureSecret: "GPJ329XTIMRPZGHUT3SAT13K0IQI7P35",
+      vnpayHost: "https://sandbox.vnpayment.vn",
+      testMode: true,
+      hashAlgorithm: "SHA512",
+      loggerFn: ignoreLogger,
+    });
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const promotionAmount = caculatePromotionAmount(amount);
+
+    const txnRef = "TXN" + Date.now() + Math.floor(Math.random() * 10000);
+
+    const paymentUrl = await vnpay.buildPaymentUrl({
+      vnp_Amount: amount,
+      vnp_IpAddr: "127.0.0.1",
+      vnp_TxnRef: txnRef,
+      vnp_OrderInfo: "Nạp tiền vào tài khoản",
+      vnp_OrderType: ProductCode.Other,
+      vnp_ReturnUrl: "http://localhost:5001/api/wallets/callback-vnpay",
+      vnp_Locale: VnpLocale.VN, // 'vn' hoặc 'en'
+      vnp_CreateDate: dateFormat(new Date()), // tùy chọn, mặc định là thời gian hiện tại
+      vnp_ExpireDate: dateFormat(tomorrow), // tùy chọn
+    });
+
+    await db.Payments.create({
+      userId,
+      amount: amount,
+      promotionAmount,
+      transactionType: "Nạp tiền",
+      currency: "VND",
+      paymentMethod: "VNPAY",
+      transactionId: txnRef,
+      paymentDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+    });
+
+    return paymentUrl;
+  }
+
+  async callbackVnpay(query) {
+    const vnpay = new VNPay({
+      tmnCode: "B3OL1JU5",
+      secureSecret: "HLQ6OPTLK6X37K5GFZB7Q8YIETZ7HTLO",
+      vnpayHost: "https://sandbox.vnpayment.vn",
+      testMode: true,
+      hashAlgorithm: "SHA512",
+      loggerFn: () => {},
+    });
+
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      // 1. Verify hash (bảo mật)
+      const isValid = vnpay.verifyReturnUrl(query);
+      if (!isValid) {
+        throw new Error("Xác thực VNPAY thất bại");
+      }
+
+      // 2. Kiểm tra mã kết quả
+      if (query.vnp_ResponseCode !== "00") {
+        throw new Error("Thanh toán thất bại hoặc bị hủy");
+      }
+
+      // 3. Tìm payment theo vnp_TxnRef
+      const payment = await db.Payments.findOne({
+        where: { transactionId: query.vnp_TxnRef },
+        transaction,
+      });
+
+      if (!payment) {
+        throw new Error(
+          `Không tìm thấy payment với transactionId ${query.vnp_TxnRef}`
+        );
+      }
+
+      // 4. Nếu đã xử lý rồi thì bỏ qua
+      if (payment.status === "Thành công") {
+        await transaction.commit();
+        return { message: "Giao dịch đã được xử lý trước đó" };
+      }
+
+      // 5. Cập nhật payment
+      payment.status = "Thành công";
+      await payment.save({ transaction });
+
+      // 6. Cập nhật wallet
+      const wallet = await db.Wallets.findOne({
+        where: { userId: payment.userId },
+        transaction,
+      });
+
+      if (wallet) {
+        wallet.balance =
+          parseFloat(wallet.balance) + parseFloat(payment.amount);
+        await wallet.save({ transaction });
+      } else {
+        await db.Wallets.create(
+          {
+            userId: payment.userId,
+            balance: payment.amount,
+            currently: "VND",
+          },
+          { transaction }
+        );
+      }
+
+      await transaction.commit();
+      return { status: "Thành công" };
+    } catch (error) {
+      await transaction.rollback();
+      console.log("Lỗi callback VNPAY:", error);
+      return { message: "Lỗi xử lý giao dịch", error: error.message };
     }
   }
 

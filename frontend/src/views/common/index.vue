@@ -54,7 +54,7 @@
                 alt=""
                 style="width: 50px; height: 50px; object-fit: cover"
               />
-              <div>
+              <div style="padding-left: 10px">
                 <h5 class="category-name">{{ category.categoryName }}</h5>
                 <p class="category-jobs">
                   ({{ category.Jobs.length }} vị trí đăng mới)

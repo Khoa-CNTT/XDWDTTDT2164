@@ -70,6 +70,15 @@ router.post(
  */
 router.post("/callback-momo", walletsController.callbackMoMo);
 
+router.post(
+  "/deposit-vnpay",
+  protectedRoute,
+  authorizedRoute("employer"),
+  walletsController.depositToWalletWithVnpay
+);
+
+router.get("/callback-vnpay", walletsController.callbackVnpay);
+
 /**
  * @route GET /get-wallet
  * @desc Lấy ra ví người dùng

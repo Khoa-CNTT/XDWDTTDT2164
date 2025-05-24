@@ -628,33 +628,24 @@ class JobsService {
         { transaction }
       );
 
-      // Gọi kiểm duyệt AI
+      // Kiểm duyệt với Gemini
       const moderationResult = await moderateJob(job);
-      const result = parse(moderationResult);
-      console.log(result);
+      const result = parseGeminiResultMatch(moderationResult);
+      console.log("Moderation result", result);
 
       if (result.result === "Không duyệt") {
-        // Cập nhật trạng thái bị từ chối
-        await db.Jobs.update(
-          { isApproved: "Đã bị từ chối" },
-          { where: { id: job.id }, transaction }
-        );
-
-        // Thông báo cho admin
+        // Gửi thông báo đến admin
         const admins = await this.getAdminList({ transaction });
-
         const notifications = admins.map((admin) => ({
           userId: admin.id,
           message: `Bài đăng "${job.jobName}" đã bị AI từ chối kiểm duyệt. Vui lòng kiểm tra lại.`,
           type: "moderation",
         }));
-
         await db.Notifications.bulkCreate(notifications, { transaction });
       } else {
-        // Cập nhật trạng thái được duyệt
         await db.Jobs.update(
           { isApproved: "Đã được duyệt" },
-          { where: { id: job.id }, transaction }
+          { where: { id: id }, transaction }
         );
       }
 
@@ -703,10 +694,89 @@ class JobsService {
    * @param {string} id - ID của bài đăng công việc
    * @returns {Promise<Object>} Bài đăng công việc được kiểm duyệt
    */
+  async createNotification(userId, message, transaction) {
+    return db.Notifications.create(
+      {
+        userId,
+        message,
+        type: "job",
+        isRead: false,
+      },
+      { transaction }
+    );
+  }
+
+  async handleRefund(job, transaction) {
+    const employer = await db.Employers.findOne({
+      where: { id: job.employerId },
+      transaction,
+    });
+    if (!employer) {
+      throw new ApiError(
+        StatusCode.NOT_FOUND,
+        `Nhà tuyển dụng với id ${job.employerId} không tồn tại`
+      );
+    }
+
+    const payment = await db.Payments.findOne({
+      where: {
+        jobId: job.id,
+        transactionType: "Thanh toán",
+      },
+      transaction,
+    });
+    if (!payment) {
+      throw new ApiError(
+        StatusCode.BAD_REQUEST,
+        "Không tìm thấy giao dịch thanh toán để hoàn tiền"
+      );
+    }
+
+    const refundAmount = parseFloat(payment.amount);
+    if (isNaN(refundAmount) || refundAmount <= 0) {
+      throw new ApiError(
+        StatusCode.BAD_REQUEST,
+        "Số tiền thanh toán không hợp lệ để hoàn tiền"
+      );
+    }
+
+    const wallet = await db.Wallets.findOne({
+      where: { userId: payment.userId },
+      transaction,
+    });
+
+    const currentBalance = parseFloat(wallet.balance);
+    const newBalance = currentBalance + refundAmount;
+
+    await db.Wallets.update(
+      { balance: newBalance },
+      { where: { id: wallet.id }, transaction }
+    );
+
+    await db.Payments.create(
+      {
+        employerId: job.employerId,
+        userId: payment.userId,
+        amount: refundAmount,
+        balanceBefore: currentBalance,
+        balanceAfter: newBalance,
+        transactionType: "Hoàn tiền",
+        note: `Hoàn tiền cho bài đăng công việc ${job.jobName} không được kiểm duyệt`,
+        currency: "VND",
+        paymentDate: new Date(),
+        jobId: job.id,
+      },
+      { transaction }
+    );
+
+    console.log(
+      `Refunded ${refundAmount} to employer ${job.employerId}. New balance: ${newBalance}`
+    );
+  }
+
   async verifyJob(id, data) {
     const transaction = await db.sequelize.transaction();
     try {
-      // Kiểm tra bài đăng công việc
       const job = await this.findJobById(id);
       if (!job) {
         throw new ApiError(
@@ -715,117 +785,39 @@ class JobsService {
         );
       }
 
-      // Cập nhật trạng thái bài đăng
       if (data.status === "Đã được duyệt") {
         job.isApproved = "Đã được duyệt";
 
-        // Tạo thông báo cho nhà tuyển dụng
-        await db.Notifications.create(
-          {
-            userId: job.userId,
-            message: `Bài đăng công việc ${job.jobName} đã được ${job.isApproved}.`,
-            type: "job",
-            isRead: false,
-          },
-          { transaction }
+        await this.createNotification(
+          job.userId,
+          `Bài đăng công việc "${job.jobName}" đã được duyệt.`,
+          transaction
         );
       } else {
-        job.isApproved = "Không được duyệt";
+        job.isApproved = "Đã bị từ chối";
         job.rejectionReason = data.rejectionReason;
+        job.rejectionCount = (job.rejectionCount || 0) + 1;
 
-        // Hoàn tiền cho nhà tuyển dụng
-        // const employer = await db.Employers.findOne({
-        //   where: { id: job.employerId },
-        //   transaction,
-        // });
+        await this.createNotification(
+          job.userId,
+          `Bài đăng công việc "${job.jobName}" đã bị từ chối. Lý do: ${job.rejectionReason}`,
+          transaction
+        );
 
-        // if (!employer) {
-        //   throw new ApiError(
-        //     StatusCode.NOT_FOUND,
-        //     `Nhà tuyển dụng với id ${job.employerId} không tồn tại`
-        //   );
-        // }
-
-        // // Lấy số tiền đã thanh toán từ bảng Payments
-        // const payment = await db.Payments.findOne({
-        //   where: {
-        //     jobId: job.id,
-        //     transactionType: "Thanh toán", // Giả sử "Thanh toán" là loại giao dịch khi đăng bài
-        //   },
-        //   transaction,
-        // });
-
-        // if (!payment) {
-        //   throw new ApiError(
-        //     StatusCode.BAD_REQUEST,
-        //     "Không tìm thấy giao dịch thanh toán để hoàn tiền"
-        //   );
-        // } else {
-        //   const refundAmount = parseFloat(payment.amount);
-        //   if (isNaN(refundAmount) || refundAmount <= 0) {
-        //     throw new ApiError(
-        //       StatusCode.BAD_REQUEST,
-        //       "Số tiền thanh toán không hợp lệ để hoàn tiền"
-        //     );
-        //   }
-
-        //   // Cập nhật số dư ví của employer (dùng wallet_balance)
-        //   const wallet = await db.Wallets.findOne({
-        //     where: { userId: job.employerId },
-        //     transaction,
-        //   });
-        //   const currentBalance = parseFloat(wallet.balance);
-        //   const newBalance = currentBalance + refundAmount;
-        //   await db.Wallets.update(
-        //     { balance: newBalance },
-        //     { where: { id: wallet.id }, transaction }
-        //   );
-        //   console.log(
-        //     `Refunded ${refundAmount} to employer ${job.employerId}. New balance: ${newBalance}`
-        //   );
-
-        //   // Tạo bản ghi hoàn tiền trong bảng Payments
-        //   await db.Payments.create(
-        //     {
-        //       id: DataTypes.UUIDV4(),
-        //       employerId: job.employerId,
-        //       userId: job.employerId,
-        //       amount: refundAmount,
-        //       balanceBefore: currentBalance,
-        //       balanceAfter: newBalance,
-        //       transactionType: "Hoàn tiền",
-        //       note: `Hoàn tiền cho bài đăng công việc ${job.jobName} không được kiểm duyệt`,
-        //       currency: "VND",
-        //       paymentDate: new Date(),
-        //       jobId: job.id,
-        //     },
-        //     { transaction }
-        //   );
-        //   console.log(`Created refund payment for job ${job.id}`);
-        // }
+        if (job.rejectionCount >= 3) {
+          await this.handleRefund(job, transaction);
+        }
       }
 
-      // lưu bài đăng
       await job.save({ transaction });
 
-      // Tạo thông báo cho nhà tuyển dụng
-      await db.Notifications.create(
-        {
-          userId: job.userId,
-          message: `Bài đăng công việc ${job.jobName} đã  ${job.isApproved}. Vui lòng cập nhật lại`,
-          type: "job",
-          isRead: false,
-        },
-        { transaction }
-      );
-
-      // Xóa cache liên quan đến bài đăng cụ thể
       const cacheKeys = [
-        `jobs:${job.id}`, // Cache của bài đăng cụ thể
-        `jobs:employer:${job.employerId}`, // Cache danh sách bài đăng của nhà tuyển dụng
-        "jobs:visible", // Cache danh sách bài đăng hiển thị
+        `jobs:${job.id}`,
+        `jobs:employer:${job.employerId}`,
+        "jobs:visible",
       ];
-      await redisClient.del(cacheKeys);
+      await Promise.all(cacheKeys.map((key) => redisClient.del(key)));
+
       console.log(`Cleared cache for keys: ${cacheKeys.join(", ")}`);
 
       await transaction.commit();

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { toast } from "vue3-toastify";
-import { loginApi } from "@apis/auth";
+import { loginApi, logoutApi } from "@apis/auth";
 import { getInfoApi } from "@apis/user";
 
 export const useAuthStore = defineStore("auth", {
@@ -57,11 +57,11 @@ export const useAuthStore = defineStore("auth", {
     },
 
     // Đăng xuất người dùng
-    logout() {
+    async logout() {
       this.user = null;
       this.token = null;
+      await logoutApi();
       localStorage.removeItem("token");
-      toast.success("Đã đăng xuất thành công!");
     },
 
     // Khởi tạo auth khi F5 hoặc load lại trang

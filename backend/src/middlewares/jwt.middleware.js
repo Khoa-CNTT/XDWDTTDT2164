@@ -7,14 +7,10 @@ const jwt = require("jsonwebtoken");
  * @param {string} role - Vai trò của người dùng
  * @returns {string} - Access token đã được ký
  */
-const generateAccessToken = (id, email, role, employerRole, employerId) => {
-  return jwt.sign(
-    { id, email, role, employerRole, employerId },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_ACCESS_EXPIRES || "1d",
-    }
-  );
+const generateAccessToken = (id, email, role) => {
+  return jwt.sign({ id, email, role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_ACCESS_EXPIRES || "1d",
+  });
 };
 
 /**

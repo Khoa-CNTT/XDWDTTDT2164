@@ -13,7 +13,6 @@ class ApplyJobController {
    */
   async applyJob(req, res) {
     try {
-      console.log(req.file);
       const applyData = {
         jobId: req.body.jobId,
         candidateId: req.body.candidateId,

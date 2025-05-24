@@ -19,6 +19,15 @@ export const depositZalopayApi = async (data) => {
 };
 
 /**
+ * Nạp tiền vào tài khoản theo phương thức vnpay
+ * @returns {Promise<void>} - Trả về data
+ */
+export const depositVnpayApi = async (data) => {
+  const response = await api.post("/api/wallets/deposit-vnpay", data);
+  return response.data;
+};
+
+/**
  * Lấy ra ví người dùng
  * @returns {Promise<void>} - Trả về data
  */

@@ -35,9 +35,9 @@
               @change="applyFilters"
             >
               <option value="">Chọn tỉnh thành phố</option>
-              <option value="Hà Nội">Hà Nội</option>
-              <option value="Đà Nẵng">Đà Nẵng</option>
-              <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+              <option v-for="city in cities" :key="city" :value="city">
+                {{ city }}
+              </option>
             </select>
 
             <!-- Danh mục việc làm -->
@@ -48,9 +48,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn danh mục việc làm</option>
-              <option value="CNTT">Công nghệ thông tin</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Kế toán">Kế toán / Tài chính</option>
+              <option
+                v-for="category in categoryStore.categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.categoryName }}
+              </option>
             </select>
 
             <!-- Hình thức làm việc -->
@@ -61,10 +65,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn hình thức làm việc</option>
-              <option value="freelance">Freelance</option>
-              <option value="full-time">Toàn thời gian</option>
-              <option value="part-time">Bán thời gian</option>
-              <option value="temporary">Tạm thời</option>
+              <option
+                v-for="jobType in jobTypeStore.jobTypes"
+                :key="jobType.id"
+                :value="jobType.id"
+              >
+                {{ jobType.jobTypeName }}
+              </option>
             </select>
 
             <!-- Cấp bậc -->
@@ -75,10 +82,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn cấp bậc</option>
-              <option value="all">Tất cả</option>
-              <option value="staff">Nhân viên</option>
-              <option value="teamlead">Trưởng nhóm</option>
-              <option value="manager">Trưởng/Phó phòng</option>
+              <option
+                v-for="rank in rankStore.ranks"
+                :key="rank.id"
+                :value="rank.id"
+              >
+                {{ rank.rankName }}
+              </option>
             </select>
 
             <!-- Cấp độ kinh nghiệm -->
@@ -89,11 +99,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn cấp độ kinh nghiệm</option>
-              <option value="intern">Thực tập sinh</option>
-              <option value="fresh">Mới ra trường</option>
-              <option value="1y">1 năm</option>
-              <option value="2y">2 năm</option>
-              <option value="3y">3 năm</option>
+              <option
+                v-for="experience in experienceStore.experiences"
+                :key="experience.id"
+                :value="experience.id"
+              >
+                {{ experience.experienceName }}
+              </option>
             </select>
 
             <!-- Mức lương -->
@@ -104,11 +116,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn mức lương</option>
-              <option value="0-10">Dưới 10 triệu</option>
-              <option value="10-20">10 - 20 triệu</option>
-              <option value="20-30">20 - 30 triệu</option>
-              <option value="30-50">30 - 50 triệu</option>
-              <option value="50+">Trên 50 triệu</option>
+              <option
+                v-for="salary in salaryStore.salaries"
+                :key="salary.id"
+                :value="salary.id"
+              >
+                {{ salary.salaryName }}
+              </option>
             </select>
           </div>
         </div>
@@ -275,6 +289,11 @@ import { useRoute, useRouter } from "vue-router";
 import { useJobStore } from "@stores/useJobStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useSaveJobsStore } from "@/stores/useSaveJobStore";
+import { useCategoryStore } from "@stores/useCategoryStore";
+import { useJobTypeStore } from "@stores/useJobTypeStore";
+import { useRankStore } from "@stores/useRankStore";
+import { useExperienceStore } from "@stores/useExperienceStore";
+import { useSalaryStore } from "@stores/useSalaryStore";
 import { ref, watch, computed, onMounted } from "vue";
 import { toast } from "vue3-toastify";
 
@@ -286,6 +305,21 @@ export default {
     const authStore = useAuthStore();
     const jobStore = useJobStore();
     const saveJobStore = useSaveJobsStore();
+    const categoryStore = useCategoryStore();
+    const jobTypeStore = useJobTypeStore();
+    const rankStore = useRankStore();
+    const experienceStore = useExperienceStore();
+    const salaryStore = useSalaryStore();
+
+    // Danh sách tỉnh thành phố (có thể thay bằng API)
+    const cities = ref([
+      "Hà Nội",
+      "Đà Nẵng",
+      "TP. Hồ Chí Minh",
+      "Cần Thơ",
+      "Hải Phòng",
+      // Thêm các tỉnh thành khác nếu cần
+    ]);
 
     const filters = ref({
       search: "",
@@ -342,7 +376,6 @@ export default {
           page: filters.value.page,
           limit: jobStore.pageSize,
         });
-        // Thêm isSaving cho mỗi job
         jobStore.jobs = jobStore.jobs.map((job) => ({
           ...job,
           isSaving: job.isSaving || false,
@@ -350,6 +383,22 @@ export default {
       } catch (error) {
         jobStore.error =
           error.response?.data?.message || "Lỗi khi lấy danh sách công việc";
+        toast.error(jobStore.error, { autoClose: 3000 });
+      }
+    };
+
+    const fetchFilterData = async () => {
+      try {
+        await Promise.all([
+          categoryStore.fetchCategories(),
+          jobTypeStore.fetchJobTypes(),
+          rankStore.fetchRanks(),
+          experienceStore.fetchExperiences(),
+          salaryStore.fetchSalaries(),
+        ]);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu bộ lọc:", error);
+        toast.error("Không thể tải dữ liệu bộ lọc", { autoClose: 3000 });
       }
     };
 
@@ -375,11 +424,15 @@ export default {
       try {
         if (saveJobStore.jobs.some((savedJob) => savedJob.jobId === jobId)) {
           await saveJobStore.delJob(jobId);
+          toast.success("Đã xóa công việc khỏi danh sách lưu", {
+            autoClose: 3000,
+          });
         } else {
           await saveJobStore.saveJobs({
             candidateId: authStore.candidateId,
             jobId,
           });
+          toast.success("Đã lưu công việc", { autoClose: 3000 });
         }
       } catch (error) {
         console.error("Toggle save job failed:", error);
@@ -449,14 +502,16 @@ export default {
       { immediate: true }
     );
 
-    onMounted(() => {
+    onMounted(async () => {
+      await fetchFilterData();
       if (authStore.isAuthenticated) {
-        saveJobStore.fetchSaveJobs();
+        await saveJobStore.fetchSaveJobs();
       }
     });
 
     return {
       filters,
+      cities,
       applyFilters,
       toggleSaveJob,
       changePage,
@@ -467,6 +522,11 @@ export default {
       authStore,
       formatPostedAt,
       saveJobStore,
+      categoryStore,
+      jobTypeStore,
+      rankStore,
+      experienceStore,
+      salaryStore,
     };
   },
 };
