@@ -268,7 +268,6 @@ export default {
       try {
         await this.authStore.logout();
         this.isMenuOpen = false;
-        toast.success("Đăng xuất thành công!");
         this.router.push("/");
       } catch (error) {
         toast.error("Lỗi khi đăng xuất");

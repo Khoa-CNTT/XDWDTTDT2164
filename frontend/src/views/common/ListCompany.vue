@@ -42,9 +42,9 @@
                   @change="applyFilters"
                 >
                   <option value="">Chọn tỉnh thành phố</option>
-                  <option value="Hà Nội">Hà Nội</option>
-                  <option value="Đà Nẵng">Đà Nẵng</option>
-                  <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                  <option v-for="city in cities" :key="city" :value="city">
+                    {{ city }}
+                  </option>
                 </select>
                 <i class="fa-solid fa-chevron-down select-icon"></i>
               </div>
@@ -58,17 +58,32 @@
                   v-model="filters.industry"
                   class="sidebar-select"
                   @change="applyFilters"
+                  :disabled="categoryStore.isLoading"
                 >
                   <option value="">Chọn ngành nghề</option>
-                  <option value="CNTT">Công nghệ thông tin</option>
-                  <option value="Tài chính">Tài chính / Ngân hàng</option>
-                  <option value="Marketing">Marketing / Truyền thông</option>
+                  <option
+                    v-for="category in categoryStore.categories"
+                    :key="category.id"
+                    :value="category.categoryName"
+                  >
+                    {{ category.categoryName }}
+                  </option>
                 </select>
                 <i class="fa-solid fa-chevron-down select-icon"></i>
+                <div v-if="categoryStore.isLoading" class="loading-overlay">
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                </div>
+              </div>
+              <div v-if="categoryStore.error" class="text-danger mt-2">
+                {{ categoryStore.error }}
               </div>
             </div>
 
-            <button class="apply-filter-btn" @click="applyFilters">
+            <button
+              class="apply-filter-btn"
+              @click="applyFilters"
+              :disabled="categoryStore.isLoading"
+            >
               <i class="fa-solid fa-filter me-2"></i>Áp dụng bộ lọc
             </button>
           </div>
@@ -143,13 +158,14 @@
                       <router-link
                         :to="`/company/${employer.companySlug}`"
                         class="company-name"
+                        :data-verified="employer.isVerified || false"
                       >
                         {{ employer.companyName || "N/A" }}
                       </router-link>
                       <div class="company-tags">
                         <span class="tag" v-if="employer.industry">
                           <i class="fa-solid fa-briefcase"></i
-                          >{{ employer.industry }}
+                          >{{ getCategoryName(employer.industry) }}
                         </span>
                         <span class="tag" v-if="employer.companyAddress">
                           <i class="fa-solid fa-location-dot"></i
@@ -229,12 +245,13 @@
     </div>
   </div>
 </template>
-
 <script>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useCategoryStore } from "@/stores/useCategoryStore";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "CompanyList",
@@ -243,6 +260,17 @@ export default {
     const router = useRouter();
     const authStore = useAuthStore();
     const employersStore = useUserStore();
+    const categoryStore = useCategoryStore();
+
+    // Danh sách tỉnh thành phố (có thể thay bằng API)
+    const cities = ref([
+      "Hà Nội",
+      "Đà Nẵng",
+      "TP. Hồ Chí Minh",
+      "Cần Thơ",
+      "Hải Phòng",
+      // Thêm các tỉnh thành khác nếu cần
+    ]);
 
     const filters = ref({
       search: "",
@@ -275,7 +303,6 @@ export default {
         query.view = filters.value.view;
       if (filters.value.page > 1) query.page = filters.value.page.toString();
 
-      // Replace current route with new query parameters without reloading
       router.replace({ query });
     };
 
@@ -297,8 +324,25 @@ export default {
           limit: employersStore.pageSize,
         });
       } catch (err) {
-        // Error handled by store
+        toast.error(employersStore.error || "Lỗi khi lấy danh sách công ty", {
+          autoClose: 3000,
+        });
       }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        await categoryStore.fetchCategories();
+      } catch (error) {
+        toast.error("Không thể tải danh sách ngành nghề", { autoClose: 3000 });
+      }
+    };
+
+    const getCategoryName = (categoryId) => {
+      const category = categoryStore.categories.find(
+        (cat) => cat.id === categoryId
+      );
+      return category ? category.categoryName : "N/A";
     };
 
     const changePage = (page) => {
@@ -350,7 +394,7 @@ export default {
     );
 
     onMounted(async () => {
-      // Initial fetch is handled by watch
+      await fetchCategories();
       if (authStore.isAuthenticated && authStore.candidateId) {
         // Fetch saved companies if save feature is needed
         // await employersStore.fetchSavedCompanies();
@@ -359,12 +403,15 @@ export default {
 
     return {
       employersStore,
+      categoryStore,
       filters,
+      cities,
       paginationPages,
       applyFilters,
       changePage,
       getCompanyLogo,
       handleImageError,
+      getCategoryName,
     };
   },
 };

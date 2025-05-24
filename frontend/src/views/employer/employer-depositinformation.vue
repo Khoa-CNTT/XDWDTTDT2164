@@ -263,9 +263,7 @@ export default {
         } else if (this.paymentMethod === "ZALOPAY") {
           redirectUrl = await this.walletStore.depositZalopay(payload);
         } else if (this.paymentMethod === "VNPAY") {
-          console.log("Gửi yêu cầu nạp tiền qua VNPAY:", payload);
-          toast.success("Yêu cầu nạp tiền thành công! Đang chuyển hướng...");
-          return;
+          redirectUrl = await this.walletStore.depositVnpay(payload);
         } else {
           toast.error("Phương thức thanh toán không hợp lệ!");
           return;

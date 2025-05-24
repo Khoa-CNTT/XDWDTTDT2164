@@ -18,6 +18,5 @@ export const loginApi = async (data) => {
 
 export const logoutApi = async () => {
   const response = await api.post("/api/auth/logout");
-  localStorage.removeItem("token");
   return response.data;
 };

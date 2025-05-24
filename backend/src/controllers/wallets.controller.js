@@ -79,6 +79,30 @@ class WalletsController {
     }
   }
 
+  async depositToWalletWithVnpay(req, res) {
+    try {
+      const { id } = req.user;
+      const { amount } = req.body;
+      const result = await walletsService.depositToWalleWithVnPay(amount, id);
+      return resSuccess(res, null, result);
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
+
+  async callbackVnpay(req, res) {
+    try {
+      const result = await walletsService.callbackVnpay(req.query, res);
+      if (result.status === "Thành công") {
+        return res.redirect(
+          "http://localhost:5173/employer-dashboard/employer-recharge"
+        );
+      }
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
+
   /**
    * Lấy ra ví người dùng
    * @param {Object} req - Request object

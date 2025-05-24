@@ -489,7 +489,7 @@
                       @change="clearCvSelection"
                     />
                     <label class="form-check-label" for="profileCv"
-                      >Chọn CV từ hồ sơ</label
+                      >Chọn CV online</label
                     >
                   </div>
 
@@ -523,36 +523,42 @@
                   </div>
 
                   <!-- Profile CV Selection -->
+                  <!-- Profile CV Selection -->
                   <div
                     v-if="applicationForm.cvOption === 'profile'"
                     class="mb-3"
                   >
-                    <select
-                      v-model="applicationForm.profileCvId"
-                      class="form-select"
-                      id="profileCvSelect"
-                      :class="{
-                        'is-invalid': applicationForm.errors.profileCvId,
-                      }"
-                    >
-                      <option value="" disabled>Chọn một CV từ hồ sơ</option>
-                      <option
-                        v-for="cv in profileCvs"
-                        :key="cv.id"
-                        :value="cv.id"
-                      >
-                        {{ cv.name || `CV ${cv.id}` }} (Cập nhật:
-                        {{ formatDate(cv.updatedAt) }})
-                      </option>
-                    </select>
+                    <div v-if="profileCvs.length">
+                      <p class="form-label">CV Online của bạn</p>
+                      <div class="cv-info">
+                        <span
+                          >{{ profileCvs[0].name }} (Cập nhật:
+                          {{ formatDate(profileCvs[0].updatedAt) }})</span
+                        >
+                        <a
+                          :href="profileCvs[0].url"
+                          target="_blank"
+                          class="text-primary ms-2"
+                        >
+                          <i class="fa-solid fa-eye me-1"></i>Xem CV
+                        </a>
+                      </div>
+                      <!-- Ẩn profileCvId vì chỉ có một CV -->
+                      <input
+                        type="hidden"
+                        v-model="applicationForm.profileCvId"
+                        value="online_cv"
+                      />
+                    </div>
+                    <div v-else class="text-muted mt-2">
+                      Bạn chưa có CV online trong hồ sơ. Vui lòng tải lên CV mới
+                      hoặc chọn tùy chọn tải lên CV.
+                    </div>
                     <div
                       v-if="applicationForm.errors.profileCvId"
-                      class="invalid-feedback"
+                      class="invalid-feedback d-block"
                     >
                       {{ applicationForm.errors.profileCvId }}
-                    </div>
-                    <div v-if="!profileCvs.length" class="text-muted mt-2">
-                      Không có CV nào trong hồ sơ. Vui lòng tải lên CV mới.
                     </div>
                   </div>
 
@@ -630,10 +636,6 @@ export default {
     );
 
     const checkLoginStatus = () => {
-      console.log("authStore:", {
-        isAuthenticated: authStore.isAuthenticated,
-        user: authStore.user,
-      });
       if (!authStore.isAuthenticated || !authStore.user) {
         toast.error("Vui lòng đăng nhập để ứng tuyển", {
           onClick: () => router.push("/login"),
@@ -644,7 +646,6 @@ export default {
     };
 
     const openApplyModal = () => {
-      console.log("checkLoginStatus:", checkLoginStatus());
       if (!checkLoginStatus()) return;
 
       // Reset form
@@ -659,11 +660,9 @@ export default {
 
       // Mở modal
       const modalElement = document.getElementById("applyJobModal");
-      console.log("modalElement:", modalElement);
       if (modalElement) {
         try {
           const modal = new Modal(modalElement);
-          console.log("Modal instance:", modal);
           modal.show();
         } catch (error) {
           console.error("Lỗi khi khởi tạo modal:", error);
@@ -699,9 +698,9 @@ export default {
       }
       if (
         applicationForm.value.cvOption === "profile" &&
-        !applicationForm.value.profileCvId
+        !profileCvs.value.length
       ) {
-        applicationForm.value.errors.profileCvId = "Vui lòng chọn một CV";
+        applicationForm.value.errors.profileCvId = "Bạn chưa có CV online";
         isValid = false;
       }
 
@@ -709,7 +708,6 @@ export default {
         return;
       }
 
-      // Giả lập gửi form
       applyLoading.value = true;
       try {
         const formData = {
@@ -717,11 +715,16 @@ export default {
           candidateId: authStore.user.Candidates.id,
           coverLetter: applicationForm.value.introduction,
           cvOption: applicationForm.value.cvOption,
-          cvUpload: applicationForm.value.cvFile,
         };
-        console.log("Form data:", formData);
 
-        // TODO: Gọi API gửi ứng tuyển ở đây
+        // Xử lý CV theo tùy chọn
+        if (applicationForm.value.cvOption === "upload") {
+          formData.cvUpload = applicationForm.value.cvFile;
+        } else if (applicationForm.value.cvOption === "profile") {
+          formData.cvUrl = profileCvs.value[0]?.url; // Lấy URL của CV online
+        }
+
+        // Gọi API ứng tuyển
         await applyToJobApi(formData);
 
         toast.success("Ứng tuyển thành công!");
@@ -789,8 +792,6 @@ export default {
         relatedJobs.value = Array.isArray(response.data.jobsRelateds)
           ? response.data.jobsRelateds
           : [];
-
-        console.log(relatedJobs);
       } catch (err) {
         error.value = err.message || "Có lỗi xảy ra khi tải dữ liệu";
         toast.error(error.value);
@@ -800,17 +801,47 @@ export default {
     };
 
     const fetchProfileCvs = async () => {
-      if (!authStore.isAuthenticated || !authStore.candidateId) return;
+      console.log("authStore.isAuthenticated:", authStore.isAuthenticated);
+      console.log("authStore.user:", authStore.user);
+      console.log("authStore.user.Candidates:", authStore.user?.Candidates);
+
+      if (!authStore.isAuthenticated || !authStore.user?.Candidates) {
+        console.log("Không có thông tin người dùng hoặc chưa đăng nhập");
+        profileCvs.value = [];
+        toast.info(
+          "Bạn chưa có CV online trong hồ sơ. Vui lòng tải lên CV mới."
+        );
+        return;
+      }
 
       try {
-        // Giả lập danh sách CV (thay bằng API thực khi có)
-        profileCvs.value = [
-          { id: 1, name: "CV Java Developer", updatedAt: "2025-04-01" },
-          { id: 2, name: "CV Full Stack", updatedAt: "2025-03-15" },
-        ];
+        // Kiểm tra xem có cvUrl trong authStore.user.Candidates hay không
+        if (authStore.user.Candidates.cvUrl) {
+          // Ghép với base URL của dịch vụ lưu trữ
+          const baseUrl = "http://localhost:5001/uploads/";
+          const cvUrl = `${baseUrl}${authStore.user.Candidates.cvUrl}`;
+          console.log("cvUrl:", cvUrl);
+
+          profileCvs.value = [
+            {
+              id: "online_cv",
+              name: "CV Online",
+              updatedAt:
+                authStore.user.Candidates.updatedAt || new Date().toISOString(),
+              url: cvUrl,
+            },
+          ];
+        } else {
+          console.log("Không tìm thấy cvUrl trong Candidates");
+          profileCvs.value = [];
+          toast.info(
+            "Bạn chưa có CV online trong hồ sơ. Vui lòng tải lên CV mới."
+          );
+        }
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách CV:", error);
+        console.error("Lỗi khi lấy thông tin CV:", error);
         profileCvs.value = [];
+        toast.error("Lỗi khi lấy thông tin CV");
       }
     };
 
@@ -908,7 +939,7 @@ export default {
 
     onMounted(async () => {
       try {
-        if (authStore.isAuthenticated && authStore.candidateId) {
+        if (authStore.isAuthenticated && authStore.user) {
           await Promise.all([
             saveJobStore.fetchSaveJobs(1, saveJobStore.pageSize),
             fetchProfileCvs(),

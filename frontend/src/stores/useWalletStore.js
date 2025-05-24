@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { toast } from "vue3-toastify";
 import {
   depositMomoApi,
+  depositVnpayApi,
   depositZalopayApi,
   getHistoryDepositApi,
   getHistoryPaymentApi,
@@ -57,6 +58,20 @@ export const useWalletStore = defineStore("wallet", {
         return response.data.order_url;
       } catch (error) {
         this.handleError(error, "Lỗi khi nạp tiền bằng zalopay");
+        throw error;
+      } finally {
+        this.setLoadingState(false);
+      }
+    },
+
+    async depositVnpay(data) {
+      this.setLoadingState(true);
+      this.resetError();
+      try {
+        const response = await depositVnpayApi(data);
+        return response.data;
+      } catch (error) {
+        this.handleError(error, "Lỗi khi nạp tiền bằng vnpay");
         throw error;
       } finally {
         this.setLoadingState(false);

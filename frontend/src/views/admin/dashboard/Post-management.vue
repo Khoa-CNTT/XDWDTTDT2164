@@ -96,16 +96,18 @@
                         Xem chi tiết
                       </router-link>
                       <button
-                        v-if="job.status === 'Chờ kiểm duyệt'"
+                        v-if="job.isApproved === 'Chờ kiểm duyệt'"
                         class="btn btn-success btn-sm me-2"
                         @click="approveJob(job.id)"
+                        :disabled="jobStore.isLoading"
                       >
                         Duyệt
                       </button>
                       <button
-                        v-if="job.status === 'Chờ kiểm duyệt'"
+                        v-if="job.isApproved === 'Chờ kiểm duyệt'"
                         class="btn btn-danger btn-sm"
                         @click="openRejectModal(job.id)"
+                        :disabled="jobStore.isLoading"
                       >
                         Từ chối
                       </button>
@@ -116,8 +118,11 @@
             </table>
           </div>
 
-          <!-- Pagination -->
-          <nav v-if="jobStore.totalPages > 1" aria-label="Page navigation">
+          <!-- Pagination (only show if totalItems >= 8) -->
+          <nav
+            v-if="jobStore.totalItems >= 8 && jobStore.totalPages > 1"
+            aria-label="Page navigation"
+          >
             <ul class="pagination justify-content-center mt-4">
               <li
                 class="page-item"
@@ -131,12 +136,18 @@
                 </button>
               </li>
               <li
-                v-for="page in jobStore.totalPages"
+                v-for="page in paginationPages"
                 :key="page"
                 class="page-item"
-                :class="{ active: jobStore.currentPage === page }"
+                :class="{
+                  active: jobStore.currentPage === page,
+                  disabled: page === '...',
+                }"
               >
-                <button class="page-link" @click="goToPage(page)">
+                <button
+                  class="page-link"
+                  @click="page !== '...' && goToPage(page)"
+                >
                   {{ page }}
                 </button>
               </li>
@@ -199,7 +210,7 @@
               type="button"
               class="btn btn-danger"
               @click="confirmRejectJob"
-              :disabled="!rejectReason.trim()"
+              :disabled="!rejectReason.trim() || jobStore.isLoading"
             >
               Từ chối
             </button>
@@ -210,7 +221,6 @@
     <div v-if="showRejectModal" class="modal-backdrop fade show"></div>
   </div>
 </template>
-
 <script>
 import { useJobStore } from "@stores/useJobStore";
 import { toast } from "vue3-toastify";

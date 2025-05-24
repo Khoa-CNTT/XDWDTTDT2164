@@ -174,6 +174,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         field: "rejection_reason",
       },
+      rejectionCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: "rejection_count",
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",
