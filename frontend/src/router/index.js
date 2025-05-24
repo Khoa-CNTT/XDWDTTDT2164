@@ -207,6 +207,10 @@ const routes = [
         path: "page-not-found",
         component: () => import("@/views/common/Pagenotfound.vue"),
       },
+      {
+        path: "conditions",
+        component: () => import("@/views/common/Conditions.vue"),
+      },
       { path: "list", component: () => import("@/views/common/List.vue") },
       {
         path: "list-company",

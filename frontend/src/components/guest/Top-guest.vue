@@ -42,6 +42,11 @@
               >Giới Thiệu
             </router-link>
           </li>
+          <li class="nav-item">
+            <router-link class="nav-link" aria-current="page" to="/conditions"
+              >Điều Khoản
+            </router-link>
+          </li>
         </ul>
 
         <!-- Guest view - Only shown when not logged in -->
