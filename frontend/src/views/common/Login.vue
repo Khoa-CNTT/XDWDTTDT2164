@@ -39,7 +39,7 @@
 
             <div class="mb-3">
               <label class="form-label">Mật khẩu</label>
-              <div class="password-toggle input-group">
+              <div class="input-group password-input-group">
                 <span class="input-group-text">
                   <i class="fas fa-lock"></i>
                 </span>
@@ -50,9 +50,10 @@
                   v-model="form.password"
                   required
                 />
-                <span
-                  class="input-group-text password-eye"
-                  @click.prevent="togglePasswordVisibility"
+                <button
+                  type="button"
+                  class="input-group-text password-toggle-btn"
+                  @click="togglePasswordVisibility"
                 >
                   <i
                     :class="[
@@ -60,7 +61,7 @@
                       isPasswordVisible ? 'fa-eye' : 'fa-eye-slash',
                     ]"
                   ></i>
-                </span>
+                </button>
               </div>
               <div class="text-end mt-2">
                 <router-link to="/forgot-password" class="forgot-link"
@@ -286,50 +287,78 @@ export default defineComponent({
 
 .login-form .input-group {
   border-radius: 8px;
-  overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.login-form .input-group:focus-within {
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+  border-color: #007bff;
 }
 
 .login-form .input-group-text {
-  background-color: white;
+  background-color: #f8f9fa;
   border: none;
+  border-right: 1px solid #e9ecef;
   color: #6c757d;
-  border-right: 1px solid #f0f0f0;
   padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+  margin: 0;
 }
 
 .login-form .form-control {
   border: none;
   padding: 0.75rem 1rem;
   font-size: 15px;
-  height: auto;
+  height: 48px;
   background-color: white;
-  transition: all 0.2s ease-in-out;
+  flex: 1;
+  outline: none;
+  box-shadow: none;
 }
 
 .login-form .form-control:focus {
-  box-shadow: none;
   background-color: #f9f9f9;
+  box-shadow: none;
+  outline: none;
 }
 
-.login-form .input-group:focus-within {
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
-}
-
-/* Password toggle */
-.password-toggle {
+/* Password input group specific styling */
+.password-input-group {
   position: relative;
 }
 
-.password-eye {
+.password-toggle-btn {
+  background-color: #f8f9fa;
+  border: none;
+  border-left: 1px solid #e9ecef;
+  color: #6c757d;
   cursor: pointer;
-  background-color: white !important;
-  border: none !important;
-  border-left: 1px solid #f0f0f0 !important;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+  transition: all 0.2s ease;
+  margin: 0;
 }
 
-.password-eye:hover {
+.password-toggle-btn:hover {
+  background-color: #e9ecef;
   color: #007bff;
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Forgot password link */
@@ -372,45 +401,6 @@ export default defineComponent({
   cursor: not-allowed;
 }
 
-/* Separator */
-.separator {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 20px 0;
-}
-
-.separator::before,
-.separator::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.separator span {
-  padding: 0 15px;
-  color: #6c757d;
-  font-size: 14px;
-}
-
-/* Google button */
-.btn-google {
-  background-color: white;
-  border: 1px solid #ced4da;
-  color: #333;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.btn-google:hover:not(:disabled) {
-  background-color: #f8f9fa;
-  border-color: #dc3545;
-  color: #dc3545;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
 /* Register prompt */
 .register-prompt {
   font-size: 15px;
@@ -448,9 +438,25 @@ export default defineComponent({
     font-size: 1.5rem;
   }
 
-  .login-btn,
-  .btn-google {
+  .login-btn {
     padding: 0.6rem 1rem !important;
+  }
+
+  .login-form .input-group-text,
+  .password-toggle-btn {
+    min-width: 40px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .login-form .form-control {
+    height: 40px;
+    padding: 0.5rem 0.75rem;
+    font-size: 14px;
+  }
+
+  .login-form .input-group-text,
+  .password-toggle-btn {
+    height: 40px;
   }
 }
 </style>

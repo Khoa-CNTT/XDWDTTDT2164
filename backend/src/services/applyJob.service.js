@@ -55,7 +55,7 @@ class ApplyJobService {
 
     // Xử lý CV
     let cvText = "";
-    if (applyJobData.cvUpload) {
+    if (applyJobData.cvUpload && !applyJobData.cvOnline) {
       if (!applyJobData.cvUpload.endsWith(".pdf")) {
         throw new ApiError(StatusCode.BAD_REQUEST, "CV phải là file PDF");
       }
@@ -80,7 +80,8 @@ class ApplyJobService {
         );
       }
       try {
-        cvText = await convertPdfToText(candidate.cvUrl);
+        const cvPath = path.join(__dirname, "../uploads", candidate.cvUrl);
+        cvText = await convertPdfToText(cvPath);
       } catch (error) {
         throw new ApiError(
           StatusCode.INTERNAL_SERVER_ERROR,
@@ -108,6 +109,7 @@ class ApplyJobService {
     let parseResult;
     try {
       const aiResult = await moderateApplyJob(cvText, job);
+      console.log(aiResult);
       parseResult = parseGeminiResult(aiResult);
       console.log(parseResult);
       if (!parseResult || typeof parseResult.matchScore !== "number") {
@@ -137,6 +139,8 @@ class ApplyJobService {
           matchScore: parseResult.matchScore,
           isSuitable: parseResult.isSuitable,
           moderatorReview: parseResult.moderateReview,
+          skillsMatch: parseResult.skills,
+          experienceMatch: parseResult.experience,
         },
         { transaction }
       );

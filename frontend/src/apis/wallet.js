@@ -19,6 +19,15 @@ export const depositZalopayApi = async (data) => {
 };
 
 /**
+ * Nạp tiền vào tài khoản theo phương thức vnpay
+ * @returns {Promise<void>} - Trả về data
+ */
+export const depositVnpayApi = async (data) => {
+  const response = await api.post("/api/wallets/deposit-vnpay", data);
+  return response.data;
+};
+
+/**
  * Lấy ra ví người dùng
  * @returns {Promise<void>} - Trả về data
  */
@@ -80,5 +89,16 @@ export const exportFileCsv = async () => {
  */
 export const getPaymentTimeApi = async () => {
   const response = await api.get("/api/wallets/get-payments-time");
+  return response.data;
+};
+
+/**
+ * Phân bổ doanh thu
+ * @returns {Promise<void>}
+ */
+export const getPaymentChartApi = async (period) => {
+  const response = await api.get("/api/wallets/get-payments-chart", {
+    params: { period },
+  });
   return response.data;
 };

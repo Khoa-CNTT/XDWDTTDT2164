@@ -107,7 +107,6 @@
               </button>
             </div>
           </div>
-
           <div v-if="revenueChartLoading" class="text-center py-5">
             <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
           </div>
@@ -134,7 +133,7 @@
             <h5>Phân bổ doanh thu</h5>
             <select
               v-model="selectedPieFilter"
-              @change="updatePieChart"
+              @change="fetchPieChartData"
               class="form-select"
               style="width: 120px"
             >
@@ -143,7 +142,28 @@
               <option value="year">Theo năm</option>
             </select>
           </div>
-          <canvas ref="pieChartCanvas" style="min-height: 350px"></canvas>
+          <div v-if="pieChartLoading" class="text-center py-5">
+            <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+          </div>
+          <div v-else-if="pieChartError" class="text-center py-5 text-danger">
+            <i class="fas fa-exclamation-triangle"></i> {{ pieChartError }}
+          </div>
+          <div
+            v-else-if="
+              pieChartData &&
+              pieChartData.datasets[0].data.every((v) => v === 0)
+            "
+            class="text-center py-5"
+          >
+            <i class="fas fa-info-circle"></i> Không có dữ liệu cho khoảng thời
+            gian này
+          </div>
+          <div v-else-if="pieChartData" class="chart-container">
+            <canvas ref="pieChartCanvas"></canvas>
+          </div>
+          <div v-else class="text-center py-5">
+            <i class="fas fa-info-circle"></i> Đang khởi tạo biểu đồ...
+          </div>
         </div>
       </div>
     </div>
@@ -159,76 +179,105 @@
       <div v-else-if="!paymentStore.payments.length" class="text-center py-5">
         <i class="fas fa-info-circle"></i> Không có giao dịch nào.
       </div>
-      <table v-else class="table table-bordered table-hover">
-        <thead class="table-success text-center align-middle">
-          <tr>
-            <th>STT</th>
-            <th>Mã giao dịch</th>
-            <th>Tên công ty</th>
-            <th>Loại giao dịch</th>
-            <th>Số tiền</th>
-            <th>Phương thức nạp tiền</th>
-            <th>Trạng thái</th>
-            <th>Thời gian</th>
-          </tr>
-        </thead>
-        <tbody class="text-center align-middle">
-          <tr
-            v-for="(transaction, index) in paymentStore.payments"
-            :key="transaction.id"
-          >
-            <td>
-              {{
-                (paymentStore.currentPage - 1) * paymentStore.pageSize +
-                index +
-                1
-              }}
-            </td>
-            <td>{{ transaction.transactionId }}</td>
-            <td>
-              {{ transaction.Users.Employers.companyName }}
-            </td>
-            <td>{{ transaction.transactionType }}</td>
-            <td>{{ formatCurrency(transaction.amount) }}</td>
-            <td>{{ transaction.paymentMethod }}</td>
-            <td>
+      <div v-else>
+        <table class="table table-bordered table-hover">
+          <thead class="table-success text-center align-middle">
+            <tr>
+              <th>STT</th>
+              <th>Mã giao dịch</th>
+              <th>Tên công ty</th>
+              <th>Loại giao dịch</th>
+              <th>Số tiền</th>
+              <th>Phương thức nạp tiền</th>
+              <th>Trạng thái</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody class="text-center align-middle">
+            <tr
+              v-for="(transaction, index) in paymentStore.payments"
+              :key="transaction.id"
+              @click="openTransactionModal(transaction)"
+              style="cursor: pointer"
+            >
+              <td>
+                {{
+                  (paymentStore.currentPage - 1) * paymentStore.pageSize +
+                  index +
+                  1
+                }}
+              </td>
+              <td>{{ transaction.transactionId }}</td>
+              <td>{{ transaction.Users?.Employers?.companyName || "N/A" }}</td>
+              <td>{{ transaction.transactionType }}</td>
+              <td>{{ formatCurrency(transaction.amount) }}</td>
+              <td>{{ transaction.paymentMethod }}</td>
+              <td>
+                <span
+                  :class="[
+                    'badge',
+                    transaction.status === 'Thành công'
+                      ? 'bg-success text-light'
+                      : 'bg-danger text-light',
+                  ]"
+                >
+                  {{ transaction.status }}
+                </span>
+              </td>
+              <td>{{ formatDate(transaction.paymentDate) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination (only show if totalItems >= 8) -->
+        <nav
+          v-if="paymentStore.totalItems >= 8 && paymentStore.totalPages > 1"
+          aria-label="Page navigation"
+          class="p-3"
+        >
+          <ul class="pagination justify-content-center mb-0">
+            <li
+              class="page-item"
+              :class="{ disabled: paymentStore.currentPage === 1 }"
+            >
               <button
-                :class="
-                  transaction.status === 'Thành công'
-                    ? 'badge bg-success text-light'
-                    : 'badge bg-danger text-light'
-                "
+                class="page-link"
+                @click="goToPage(paymentStore.currentPage - 1)"
               >
-                {{ transaction.status }}
+                <i class="fas fa-chevron-left"></i>
               </button>
-            </td>
-            <td>{{ formatDate(transaction.paymentDate) }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div
-        v-if="paymentStore.payments.length"
-        class="d-flex justify-content-between align-items-center p-3"
-      >
-        <div>
-          Trang {{ paymentStore.currentPage }} / {{ paymentStore.totalPages }}
-        </div>
-        <div>
-          <button
-            class="btn btn-outline-primary me-2"
-            :disabled="paymentStore.currentPage === 1"
-            @click="paymentStore.previousPage"
-          >
-            Trang trước
-          </button>
-          <button
-            class="btn btn-outline-primary"
-            :disabled="paymentStore.currentPage >= paymentStore.totalPages"
-            @click="paymentStore.nextPage"
-          >
-            Trang sau
-          </button>
-        </div>
+            </li>
+            <li
+              v-for="page in paginationPages"
+              :key="page"
+              class="page-item"
+              :class="{
+                active: paymentStore.currentPage === page,
+                disabled: page === '...',
+              }"
+            >
+              <button
+                class="page-link"
+                @click="page !== '...' && goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            </li>
+            <li
+              class="page-item"
+              :class="{
+                disabled: paymentStore.currentPage === paymentStore.totalPages,
+              }"
+            >
+              <button
+                class="page-link"
+                @click="goToPage(paymentStore.currentPage + 1)"
+              >
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
 
@@ -252,10 +301,7 @@
             </p>
             <p v-if="selectedTransaction">
               <strong>Tên công ty:</strong>
-              {{
-                selectedTransaction.Users?.EmployerUsers[0]?.Employers
-                  .companyName || "N/A"
-              }}
+              {{ selectedTransaction.Users?.Employers?.companyName || "N/A" }}
             </p>
             <p v-if="selectedTransaction">
               <strong>Loại giao dịch:</strong>
@@ -264,6 +310,10 @@
             <p v-if="selectedTransaction">
               <strong>Số tiền:</strong>
               {{ formatCurrency(selectedTransaction.amount) }}
+            </p>
+            <p v-if="selectedTransaction">
+              <strong>Phương thức nạp tiền:</strong>
+              {{ selectedTransaction.paymentMethod }}
             </p>
             <p v-if="selectedTransaction">
               <strong>Trạng thái:</strong> {{ selectedTransaction.status }}
@@ -290,20 +340,64 @@
 </template>
 
 <script>
+import { computed } from "vue";
 import { Chart, registerables } from "chart.js";
 import { debounce } from "lodash";
 import { useWalletStore } from "@/stores/useWalletStore";
-import { exportFileCsv, getPaymentTimeApi } from "@/apis/wallet";
+import {
+  exportFileCsv,
+  getPaymentTimeApi,
+  getPaymentChartApi,
+} from "@/apis/wallet";
 import { getPaymentOverview } from "@/apis/dashboard";
+import { Modal } from "bootstrap";
 
 // Register Chart.js components
+console.log("Chart.js version:", Chart.version);
 Chart.register(...registerables);
 
 export default {
   name: "TransactionManagement",
   setup() {
     const paymentStore = useWalletStore();
-    return { paymentStore };
+
+    // Tính toán các trang hiển thị trong phân trang
+    const paginationPages = computed(() => {
+      const totalPages = paymentStore.totalPages;
+      const currentPage = paymentStore.currentPage;
+      const maxPagesToShow = 5; // Số trang tối đa hiển thị
+      const pages = [];
+
+      if (totalPages <= maxPagesToShow) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        const startPage = Math.max(
+          1,
+          currentPage - Math.floor(maxPagesToShow / 2)
+        );
+        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (startPage > 1) {
+          pages.push(1);
+          if (startPage > 2) pages.push("...");
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          pages.push(i);
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) pages.push("...");
+          pages.push(totalPages);
+        }
+      }
+
+      return pages;
+    });
+
+    return { paymentStore, paginationPages };
   },
   data() {
     return {
@@ -325,65 +419,9 @@ export default {
       showDatePickers: false,
       startDate: "",
       endDate: "",
-      pieData: {
-        day: {
-          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
-          datasets: [
-            {
-              data: [3000000, 1500000, 500000],
-              backgroundColor: [
-                "rgba(40, 167, 69, 0.8)",
-                "rgba(0, 123, 255, 0.8)",
-                "rgba(255, 193, 7, 0.8)",
-              ],
-              borderColor: [
-                "rgba(40, 167, 69, 1)",
-                "rgba(0, 123, 255, 1)",
-                "rgba(255, 193, 7, 1)",
-              ],
-              borderWidth: 1,
-            },
-          ],
-        },
-        month: {
-          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
-          datasets: [
-            {
-              data: [40000000, 25000000, 5000000],
-              backgroundColor: [
-                "rgba(40, 167, 69, 0.8)",
-                "rgba(0, 123, 255, 0.8)",
-                "rgba(255, 193, 7, 0.8)",
-              ],
-              borderColor: [
-                "rgba(40, 167, 69, 1)",
-                "rgba(0, 123, 255, 1)",
-                "rgba(255, 193, 7, 1)",
-              ],
-              borderWidth: 1,
-            },
-          ],
-        },
-        year: {
-          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
-          datasets: [
-            {
-              data: [120000000, 70000000, 10000000],
-              backgroundColor: [
-                "rgba(40, 167, 69, 0.8)",
-                "rgba(0, 123, 255, 0.8)",
-                "rgba(255, 193, 7, 0.8)",
-              ],
-              borderColor: [
-                "rgba(40, 167, 69, 1)",
-                "rgba(0, 123, 255, 1)",
-                "rgba(255, 193, 7, 1)",
-              ],
-              borderWidth: 1,
-            },
-          ],
-        },
-      },
+      pieChartData: null,
+      pieChartLoading: false,
+      pieChartError: null,
     };
   },
   mounted() {
@@ -391,7 +429,7 @@ export default {
     this.paymentStore.fetchPayments(1, this.paymentStore.pageSize);
     this.$nextTick(() => {
       this.fetchRevenueData();
-      this.updatePieChart();
+      this.fetchPieChartData();
     });
   },
   watch: {
@@ -400,6 +438,16 @@ export default {
         if (newData.length > 0) {
           this.$nextTick(() => {
             this.updateRevenueChart();
+          });
+        }
+      },
+      deep: true,
+    },
+    pieChartData: {
+      handler(newData) {
+        if (newData && !newData.datasets[0].data.every((v) => v === 0)) {
+          this.$nextTick(() => {
+            this.updatePieChart();
           });
         }
       },
@@ -441,9 +489,9 @@ export default {
       try {
         const response = await getPaymentOverview();
         this.todayRevenue = response.data.todayRevenue || 0;
-        this.monthRevenue = response.data.monthRevenue || 0;
+        this.monthRevenue = response.data.thisMonthRevenue || 0;
         this.transactionStats = {
-          success: response.data.success || 0,
+          success: response.data.totalTransactions || 0,
           failed: response.data.failed || 0,
         };
         this.walletDeposits = response.data.totalWalletBalance || 0;
@@ -486,6 +534,66 @@ export default {
       }
     },
 
+    async fetchPieChartData() {
+      try {
+        this.pieChartLoading = true;
+        this.pieChartError = null;
+        this.pieChartData = null;
+
+        const response = await getPaymentChartApi(this.selectedPieFilter);
+        const apiData = response.data || [];
+
+        // Aggregate data
+        const aggregatedData = {
+          walletTopUp: 0,
+          payment: 0,
+          refund: 0,
+        };
+
+        apiData.forEach((item) => {
+          aggregatedData.walletTopUp += Number(item.walletTopUp) || 0;
+          aggregatedData.payment += Number(item.payment) || 0;
+          aggregatedData.refund += Number(item.refund) || 0;
+        });
+
+        console.log("Aggregated data:", aggregatedData);
+
+        // Create pie chart dataset
+        this.pieChartData = {
+          labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
+          datasets: [
+            {
+              data: [
+                aggregatedData.payment,
+                aggregatedData.walletTopUp,
+                aggregatedData.refund,
+              ],
+              backgroundColor: [
+                "rgba(40, 167, 69, 0.8)",
+                "rgba(0, 123, 255, 0.8)",
+                "rgba(255, 193, 7, 0.8)",
+              ],
+              borderColor: [
+                "rgba(40, 167, 69, 1)",
+                "rgba(0, 123, 255, 1)",
+                "rgba(255, 193, 7, 1)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        };
+
+        console.log("pieChartData:", this.pieChartData);
+      } catch (err) {
+        this.pieChartError = `Không thể tải dữ liệu biểu đồ: ${
+          err.message || "Lỗi không xác định"
+        }`;
+        console.error("Lỗi khi lấy dữ liệu biểu đồ phân bổ:", err);
+      } finally {
+        this.pieChartLoading = false;
+      }
+    },
+
     async handleExportCsv() {
       try {
         const response = await exportFileCsv();
@@ -504,6 +612,22 @@ export default {
       }
     },
 
+    openTransactionModal(transaction) {
+      this.selectedTransaction = transaction;
+      const modal = new Modal(document.getElementById("update-modal"));
+      modal.show();
+    },
+
+    async goToPage(page) {
+      if (
+        page >= 1 &&
+        page <= this.paymentStore.totalPages &&
+        page !== this.paymentStore.currentPage
+      ) {
+        await this.paymentStore.fetchPayments(page, this.paymentStore.pageSize);
+      }
+    },
+
     updateRevenueChart() {
       if (this.revenueChartInstance) {
         this.revenueChartInstance.destroy();
@@ -519,12 +643,10 @@ export default {
         const currentData = this.revenueData.map((item) => item.revenue);
         const previousData = this.revenueData.map((item) => item.previod);
 
-        // Đảm bảo canvas có đúng kích thước
         this.$refs.revenueChartCanvas.width =
           this.$refs.revenueChartCanvas.parentNode.clientWidth;
         this.$refs.revenueChartCanvas.height = 350;
 
-        // Tính toán các giá trị tối đa cho scale
         const maxValue = Math.max(...currentData, ...previousData, 1);
         const step = Math.ceil(maxValue / 5 / 1000000) * 1000000;
 
@@ -581,33 +703,23 @@ export default {
                     }
                     return value.toLocaleString("vi-VN");
                   },
-                  font: {
-                    size: 11,
-                  },
+                  font: { size: 11 },
                   color: "#6c757d",
                 },
                 title: {
                   display: true,
                   text: "Doanh thu (VNĐ)",
-                  font: {
-                    size: 12,
-                    weight: "normal",
-                  },
+                  font: { size: 12, weight: "normal" },
                   color: "#495057",
                 },
               },
               x: {
-                grid: {
-                  display: false,
-                  drawBorder: false,
-                },
+                grid: { display: false, drawBorder: false },
                 ticks: {
                   maxRotation: 45,
                   minRotation: 45,
                   autoSkip: true,
-                  font: {
-                    size: 11,
-                  },
+                  font: { size: 11 },
                   color: "#6c757d",
                 },
                 title: {
@@ -616,10 +728,7 @@ export default {
                     this.selectedRevenueFilter === "weekday"
                       ? "Thứ trong tuần"
                       : "Thời gian",
-                  font: {
-                    size: 12,
-                    weight: "normal",
-                  },
+                  font: { size: 12, weight: "normal" },
                   color: "#495057",
                 },
               },
@@ -633,9 +742,7 @@ export default {
                   boxWidth: 12,
                   usePointStyle: true,
                   pointStyle: "circle",
-                  font: {
-                    size: 11,
-                  },
+                  font: { size: 11 },
                 },
               },
               tooltip: {
@@ -669,75 +776,86 @@ export default {
     },
 
     updatePieChart() {
+      console.log("updatePieChart called");
+      console.log("pieChartCanvas ref:", this.$refs.pieChartCanvas);
+      console.log("pieChartData:", this.pieChartData);
+
       if (this.pieChartInstance) {
         this.pieChartInstance.destroy();
       }
 
-      if (!this.$refs.pieChartCanvas) {
+      if (!this.$refs.pieChartCanvas || !this.pieChartData) {
+        console.warn("Canvas or data missing, cannot render pie chart");
         return;
       }
 
-      const ctx = this.$refs.pieChartCanvas.getContext("2d");
+      try {
+        const ctx = this.$refs.pieChartCanvas.getContext("2d");
+        console.log("Canvas dimensions:", {
+          width: this.$refs.pieChartCanvas.width,
+          height: this.$refs.pieChartCanvas.height,
+          clientWidth: this.$refs.pieChartCanvas.parentNode.clientWidth,
+        });
+        this.$refs.pieChartCanvas.width =
+          this.$refs.pieChartCanvas.parentNode.clientWidth;
+        this.$refs.pieChartCanvas.height = 350;
 
-      // Đảm bảo canvas có đúng kích thước
-      this.$refs.pieChartCanvas.width =
-        this.$refs.pieChartCanvas.parentNode.clientWidth;
-      this.$refs.pieChartCanvas.height = 350;
-
-      this.pieChartInstance = new Chart(ctx, {
-        type: "pie",
-        data: this.pieData[this.selectedPieFilter],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: {
-            padding: 20,
-          },
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: {
-                padding: 20,
-                boxWidth: 12,
-                usePointStyle: true,
-                pointStyle: "circle",
-                font: {
-                  size: 11,
+        this.pieChartInstance = new Chart(ctx, {
+          type: "pie",
+          data: this.pieChartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: 20 },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  padding: 20,
+                  boxWidth: 12,
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  font: { size: 11 },
+                },
+              },
+              tooltip: {
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                titleColor: "#212529",
+                bodyColor: "#212529",
+                borderColor: "#dee2e6",
+                borderWidth: 1,
+                padding: 10,
+                callbacks: {
+                  label: (context) => {
+                    const label = context.label || "";
+                    const value = context.raw;
+                    const total = context.chart.data.datasets[0].data.reduce(
+                      (a, b) => a + b,
+                      0
+                    );
+                    const percentage = total
+                      ? Math.round((value / total) * 100)
+                      : 0;
+                    return `${label}: ${this.formatCurrency(
+                      value
+                    )} (${percentage}%)`;
+                  },
                 },
               },
             },
-            tooltip: {
-              backgroundColor: "rgba(255, 255, 255, 0.95)",
-              titleColor: "#212529",
-              bodyColor: "#212529",
-              borderColor: "#dee2e6",
-              borderWidth: 1,
-              padding: 10,
-              callbacks: {
-                label: (context) => {
-                  const label = context.label || "";
-                  const value = context.raw;
-                  const total = context.chart.data.datasets[0].data.reduce(
-                    (a, b) => a + b,
-                    0
-                  );
-                  const percentage = Math.round((value / total) * 100);
-                  return `${label}: ${this.formatCurrency(
-                    value
-                  )} (${percentage}%)`;
-                },
-              },
+            animation: {
+              animateRotate: true,
+              animateScale: true,
+              duration: 1000,
+              easing: "easeOutQuart",
             },
+            cutout: "50%",
           },
-          animation: {
-            animateRotate: true,
-            animateScale: true,
-            duration: 1000,
-            easing: "easeOutQuart",
-          },
-          cutout: "50%",
-        },
-      });
+        });
+        console.log("Pie chart initialized:", this.pieChartInstance);
+      } catch (error) {
+        console.error("Error initializing pie chart:", error);
+      }
     },
   },
   beforeUnmount() {
@@ -1034,9 +1152,37 @@ canvas {
 }
 
 /* Pagination */
-.d-flex.justify-content-between.p-3 {
-  border-top: 1px solid #dee2e6;
-  padding: 1rem !important;
+.pagination {
+  margin-top: 0;
+}
+
+.page-item .page-link {
+  border-radius: 4px;
+  margin: 0 5px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.page-item.active .page-link {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: #ffffff;
+}
+
+.page-item:not(.disabled) .page-link:hover {
+  background: #e9ecef;
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.page-item.disabled .page-link {
+  cursor: not-allowed;
+  color: #6c757d;
+  background: #f8f9fa;
 }
 
 /* Loading & Error States */
@@ -1220,6 +1366,16 @@ canvas {
   .d-flex.gap-2 {
     flex-wrap: wrap;
   }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .page-link {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 575.98px) {
@@ -1231,10 +1387,14 @@ canvas {
     margin-bottom: 0.5rem;
   }
 
-  .d-flex.justify-content-between.p-3 {
-    flex-direction: column;
-    gap: 10px;
-    align-items: center !important;
+  .pagination {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .page-link {
+    padding: 4px 8px;
+    font-size: 0.75rem;
   }
 }
 </style>

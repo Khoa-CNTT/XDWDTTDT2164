@@ -4,12 +4,20 @@ const crypto = require("crypto");
 const moment = require("moment");
 const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
-const db = require("../models");
+const { fn, col, literal, Op } = require("sequelize");
+const db = require("../models"); // Giả sử bạn có file models
 const { caculatePromotionAmount } = require("../libs/helper");
 const dotenv = require("dotenv").config();
-const { Op } = require("sequelize");
 const { Parser } = require("json2csv");
 const dayjs = require("dayjs");
+const {
+  VNPay,
+  ignoreLogger,
+  ProductCode,
+  VnpLocale,
+  dateFormat,
+  verifyReturnUrl,
+} = require("vnpay");
 
 const config = {
   app_id: "2553",
@@ -429,6 +437,125 @@ class WalletsService {
     }
   }
 
+  async depositToWalleWithVnPay(amount, userId) {
+    const vnpay = new VNPay({
+      tmnCode: "B3OL1JU5",
+      secureSecret: "GPJ329XTIMRPZGHUT3SAT13K0IQI7P35",
+      vnpayHost: "https://sandbox.vnpayment.vn",
+      testMode: true,
+      hashAlgorithm: "SHA512",
+      loggerFn: ignoreLogger,
+    });
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const promotionAmount = caculatePromotionAmount(amount);
+
+    const txnRef = "TXN" + Date.now() + Math.floor(Math.random() * 10000);
+
+    const paymentUrl = await vnpay.buildPaymentUrl({
+      vnp_Amount: amount,
+      vnp_IpAddr: "127.0.0.1",
+      vnp_TxnRef: txnRef,
+      vnp_OrderInfo: "Nạp tiền vào tài khoản",
+      vnp_OrderType: ProductCode.Other,
+      vnp_ReturnUrl: "http://localhost:5001/api/wallets/callback-vnpay",
+      vnp_Locale: VnpLocale.VN, // 'vn' hoặc 'en'
+      vnp_CreateDate: dateFormat(new Date()), // tùy chọn, mặc định là thời gian hiện tại
+      vnp_ExpireDate: dateFormat(tomorrow), // tùy chọn
+    });
+
+    await db.Payments.create({
+      userId,
+      amount: amount,
+      promotionAmount,
+      transactionType: "Nạp tiền",
+      currency: "VND",
+      paymentMethod: "VNPAY",
+      transactionId: txnRef,
+      paymentDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+    });
+
+    return paymentUrl;
+  }
+
+  async callbackVnpay(query) {
+    const vnpay = new VNPay({
+      tmnCode: "B3OL1JU5",
+      secureSecret: "HLQ6OPTLK6X37K5GFZB7Q8YIETZ7HTLO",
+      vnpayHost: "https://sandbox.vnpayment.vn",
+      testMode: true,
+      hashAlgorithm: "SHA512",
+      loggerFn: () => {},
+    });
+
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      // 1. Verify hash (bảo mật)
+      const isValid = vnpay.verifyReturnUrl(query);
+      if (!isValid) {
+        throw new Error("Xác thực VNPAY thất bại");
+      }
+
+      // 2. Kiểm tra mã kết quả
+      if (query.vnp_ResponseCode !== "00") {
+        throw new Error("Thanh toán thất bại hoặc bị hủy");
+      }
+
+      // 3. Tìm payment theo vnp_TxnRef
+      const payment = await db.Payments.findOne({
+        where: { transactionId: query.vnp_TxnRef },
+        transaction,
+      });
+
+      if (!payment) {
+        throw new Error(
+          `Không tìm thấy payment với transactionId ${query.vnp_TxnRef}`
+        );
+      }
+
+      // 4. Nếu đã xử lý rồi thì bỏ qua
+      if (payment.status === "Thành công") {
+        await transaction.commit();
+        return { message: "Giao dịch đã được xử lý trước đó" };
+      }
+
+      // 5. Cập nhật payment
+      payment.status = "Thành công";
+      await payment.save({ transaction });
+
+      // 6. Cập nhật wallet
+      const wallet = await db.Wallets.findOne({
+        where: { userId: payment.userId },
+        transaction,
+      });
+
+      if (wallet) {
+        wallet.balance =
+          parseFloat(wallet.balance) + parseFloat(payment.amount);
+        await wallet.save({ transaction });
+      } else {
+        await db.Wallets.create(
+          {
+            userId: payment.userId,
+            balance: payment.amount,
+            currently: "VND",
+          },
+          { transaction }
+        );
+      }
+
+      await transaction.commit();
+      return { status: "Thành công" };
+    } catch (error) {
+      await transaction.rollback();
+      console.log("Lỗi callback VNPAY:", error);
+      return { message: "Lỗi xử lý giao dịch", error: error.message };
+    }
+  }
+
   /**
    * Lấy ra ví người dùng
    * @param {string} userId - Mã người dùng
@@ -526,9 +653,6 @@ class WalletsService {
    */
   async getPaymentTime({ period = "month", startDate, endDate }) {
     try {
-      const { fn, col, literal, Op } = require("sequelize");
-      const db = require("../models"); // Giả sử bạn có file models
-
       const periodFormats = {
         day: "%Y-%m-%d",
         month: "%Y-%m",
@@ -674,6 +798,83 @@ class WalletsService {
     const csv = json2csvParser.parse(payments);
 
     return "\uFEFF" + csv;
+  }
+
+  /**
+   * biểu đồ phân bổ doanh thu
+   * @returns {Promise<Array>}
+   */
+  async getPaymentChart(period) {
+    const weekdayMap = {
+      0: "Chủ Nhật",
+      1: "Thứ Hai",
+      2: "Thứ Ba",
+      3: "Thứ Tư",
+      4: "Thứ Năm",
+      5: "Thứ Sáu",
+      6: "Thứ Bảy",
+    };
+
+    let format;
+
+    switch (period) {
+      case "day":
+        format = "%Y-%m-%d";
+        break;
+      case "month":
+        format = "%Y-%m";
+        break;
+      case "year":
+        format = "%Y";
+        break;
+      case "weekday":
+        format = "%w"; // weekday (0 = Sunday, 1 = Monday, ...)
+        break;
+      default:
+        throw new Error("Invalid period type");
+    }
+
+    const payments = await db.Payments.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("created_at"), format), "period"],
+        [
+          fn(
+            "SUM",
+            literal(
+              `CASE WHEN transaction_type = 'Nạp tiền' THEN amount ELSE 0 END`
+            )
+          ),
+          "walletTopUp",
+        ],
+        [
+          fn(
+            "SUM",
+            literal(
+              `CASE WHEN transaction_type = 'Thanh toán' THEN amount ELSE 0 END`
+            )
+          ),
+          "payment",
+        ],
+        [
+          fn(
+            "SUM",
+            literal(
+              `CASE WHEN transaction_type = 'Hoàn tiền' THEN amount ELSE 0 END`
+            )
+          ),
+          "refund",
+        ],
+      ],
+      group: [fn("DATE_FORMAT", col("created_at"), format)],
+      raw: true,
+    });
+
+    return payments.map((item) => ({
+      label: period === "weekday" ? weekdayMap[item.period] : item.period,
+      walletTopUp: parseFloat(item.walletTopUp),
+      payment: parseFloat(item.payment),
+      refund: parseFloat(item.refund),
+    }));
   }
 }
 

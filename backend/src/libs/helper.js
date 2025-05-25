@@ -47,23 +47,37 @@ const convertPdfToText = async (file) => {
 };
 
 const parseGeminiResult = (resultText) => {
-  const matchScoreRegex = /Điểm đánh giá:\s*([\d.]+)\/100%/;
-  const suitableRegex = /Mức độ phù hợp:\s*(.+)/;
-  const commentRegex = /Nhận xét:\s*(.+)/s;
+  const matchScoreRegex = /Điểm đánh giá.*?:\s*([\d.]+)\/100%/i;
+  const suitableRegex =
+    /Mức độ phù hợp.*?:\s*(Phù hợp|Không phù hợp|Cần xem xét)/i;
+  const commentRegex =
+    /Nhận xét.*?:\s*([\s\S]*?)(?=\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - Kỹ năng:|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - Kinh nghiệm:|$)/i;
+  const skillsRegex =
+    /Kỹ năng.*?:\s*([\s\S]*?)(?=\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - Kinh nghiệm:|$)/i;
+  const experienceRegex = /Kinh nghiệm.*?:\s*([\s\S]*)/i;
 
   const scoreMatch = resultText.match(matchScoreRegex);
   const suitableMatch = resultText.match(suitableRegex);
   const commentMatch = resultText.match(commentRegex);
+  const skillsMatch = resultText.match(skillsRegex);
+  const experienceMatch = resultText.match(experienceRegex);
 
-  console.log(scoreMatch);
+  const skillsList = skillsMatch
+    ? skillsMatch[1]
+        .trim()
+        .split(/[,.\n•\-*]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
 
   return {
     matchScore: scoreMatch ? parseFloat(scoreMatch[1]) : null,
     isSuitable: suitableMatch ? suitableMatch[1].trim() : null,
     moderateReview: commentMatch ? commentMatch[1].trim() : null,
+    skills: skillsList.length > 0 ? skillsList.join(", ") : null,
+    experience: experienceMatch ? experienceMatch[1].trim() : null,
   };
 };
-
 const parseGeminiResultMatch = (resultText) => {
   console.log("Parsing Gemini result:", resultText);
 

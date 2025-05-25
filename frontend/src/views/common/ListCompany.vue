@@ -42,9 +42,9 @@
                   @change="applyFilters"
                 >
                   <option value="">Chọn tỉnh thành phố</option>
-                  <option value="Hà Nội">Hà Nội</option>
-                  <option value="Đà Nẵng">Đà Nẵng</option>
-                  <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                  <option v-for="city in cities" :key="city" :value="city">
+                    {{ city }}
+                  </option>
                 </select>
                 <i class="fa-solid fa-chevron-down select-icon"></i>
               </div>
@@ -58,17 +58,32 @@
                   v-model="filters.industry"
                   class="sidebar-select"
                   @change="applyFilters"
+                  :disabled="categoryStore.isLoading"
                 >
                   <option value="">Chọn ngành nghề</option>
-                  <option value="CNTT">Công nghệ thông tin</option>
-                  <option value="Tài chính">Tài chính / Ngân hàng</option>
-                  <option value="Marketing">Marketing / Truyền thông</option>
+                  <option
+                    v-for="category in categoryStore.categories"
+                    :key="category.id"
+                    :value="category.categoryName"
+                  >
+                    {{ category.categoryName }}
+                  </option>
                 </select>
                 <i class="fa-solid fa-chevron-down select-icon"></i>
+                <div v-if="categoryStore.isLoading" class="loading-overlay">
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                </div>
+              </div>
+              <div v-if="categoryStore.error" class="text-danger mt-2">
+                {{ categoryStore.error }}
               </div>
             </div>
 
-            <button class="apply-filter-btn" @click="applyFilters">
+            <button
+              class="apply-filter-btn"
+              @click="applyFilters"
+              :disabled="categoryStore.isLoading"
+            >
               <i class="fa-solid fa-filter me-2"></i>Áp dụng bộ lọc
             </button>
           </div>
@@ -97,30 +112,6 @@
                   Hiển thị
                   <strong>{{ employersStore.employers.length }}</strong> công ty
                 </p>
-                <div class="filters">
-                  <div class="select-wrapper me-2">
-                    <select
-                      v-model="filters.sort"
-                      class="filter-select"
-                      @change="applyFilters"
-                    >
-                      <option value="newest">Mới nhất</option>
-                      <option value="size">Quy mô lớn nhất</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down select-icon"></i>
-                  </div>
-                  <div class="select-wrapper">
-                    <select
-                      v-model="filters.view"
-                      class="filter-select"
-                      @change="applyFilters"
-                    >
-                      <option value="all">Tất cả</option>
-                      <option value="verified">Đã xác minh</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down select-icon"></i>
-                  </div>
-                </div>
               </div>
 
               <!-- Company Cards Container -->
@@ -143,6 +134,7 @@
                       <router-link
                         :to="`/company/${employer.companySlug}`"
                         class="company-name"
+                        :data-verified="employer.isVerified || false"
                       >
                         {{ employer.companyName || "N/A" }}
                       </router-link>
@@ -229,12 +221,13 @@
     </div>
   </div>
 </template>
-
 <script>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useCategoryStore } from "@/stores/useCategoryStore";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "CompanyList",
@@ -243,6 +236,17 @@ export default {
     const router = useRouter();
     const authStore = useAuthStore();
     const employersStore = useUserStore();
+    const categoryStore = useCategoryStore();
+
+    // Danh sách tỉnh thành phố (có thể thay bằng API)
+    const cities = ref([
+      "Hà Nội",
+      "Đà Nẵng",
+      "TP. Hồ Chí Minh",
+      "Cần Thơ",
+      "Hải Phòng",
+      // Thêm các tỉnh thành khác nếu cần
+    ]);
 
     const filters = ref({
       search: "",
@@ -275,7 +279,6 @@ export default {
         query.view = filters.value.view;
       if (filters.value.page > 1) query.page = filters.value.page.toString();
 
-      // Replace current route with new query parameters without reloading
       router.replace({ query });
     };
 
@@ -297,8 +300,25 @@ export default {
           limit: employersStore.pageSize,
         });
       } catch (err) {
-        // Error handled by store
+        toast.error(employersStore.error || "Lỗi khi lấy danh sách công ty", {
+          autoClose: 3000,
+        });
       }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        await categoryStore.fetchCategories();
+      } catch (error) {
+        toast.error("Không thể tải danh sách ngành nghề", { autoClose: 3000 });
+      }
+    };
+
+    const getCategoryName = (categoryId) => {
+      const category = categoryStore.categories.find(
+        (cat) => cat.id === categoryId
+      );
+      return category ? category.categoryName : "N/A";
     };
 
     const changePage = (page) => {
@@ -350,7 +370,7 @@ export default {
     );
 
     onMounted(async () => {
-      // Initial fetch is handled by watch
+      await fetchCategories();
       if (authStore.isAuthenticated && authStore.candidateId) {
         // Fetch saved companies if save feature is needed
         // await employersStore.fetchSavedCompanies();
@@ -359,12 +379,15 @@ export default {
 
     return {
       employersStore,
+      categoryStore,
       filters,
+      cities,
       paginationPages,
       applyFilters,
       changePage,
       getCompanyLogo,
       handleImageError,
+      getCategoryName,
     };
   },
 };
@@ -372,6 +395,10 @@ export default {
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
 
 .company-list {
   font-family: "Roboto", sans-serif;
@@ -603,14 +630,17 @@ export default {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   transition: all 0.3s ease;
   border: 1px solid transparent;
   animation: fadeInUp 0.5s ease forwards;
   opacity: 0;
+  height: 140px; /* Fixed height for consistency */
+  overflow: hidden;
+  width: 100%;
 }
 
 .company-card:hover {
@@ -621,22 +651,24 @@ export default {
 
 .company-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
+  overflow: hidden;
 }
 
 .logo-container {
-  width: 80px;
-  height: 80px;
-  border-radius: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 20px;
+  margin-right: 16px;
   border: 1px solid #e2e8f0;
-  padding: 10px;
+  padding: 8px;
   background: #ffffff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .company-logo {
@@ -647,16 +679,23 @@ export default {
 
 .company-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .company-name {
   font-family: "Montserrat", sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1e293b;
   text-decoration: none;
-  margin-bottom: 12px;
-  display: block;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s ease;
 }
 
@@ -667,48 +706,52 @@ export default {
 .company-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .company-tags .tag {
   background: #f8fafc;
   color: #64748b;
-  padding: 7px 12px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
   border: 1px solid #e2e8f0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px; /* Prevent tags from stretching too wide */
 }
 
 .company-tags .tag i {
-  margin-right: 6px;
+  margin-right: 5px;
   color: #94a3b8;
 }
 
 .company-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .detail-button {
   background: transparent;
   border: 2px solid #3b82f6;
   color: #3b82f6;
-  padding: 10px 18px;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
   text-align: center;
-}
-
-.detail-button:hover {
-  background-color: #3b82f6;
-  color: #ffffff;
+  white-space: nowrap;
 }
 
 /* Pagination */
@@ -861,8 +904,26 @@ export default {
   }
 
   .logo-container {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .company-card {
+    height: 130px;
+  }
+
+  .company-name {
+    font-size: 1rem;
+  }
+
+  .company-tags .tag {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .detail-button {
+    font-size: 0.85rem;
+    padding: 6px 14px;
   }
 }
 
@@ -895,15 +956,31 @@ export default {
   .company-card {
     flex-direction: column;
     align-items: flex-start;
+    height: 200px;
+  }
+
+  .company-content {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
   }
 
   .company-actions {
-    margin-top: 20px;
-    align-self: stretch;
+    margin-top: 12px;
+    align-self: flex-end;
   }
 
   .detail-button {
-    width: 100%;
+    width: auto;
+  }
+
+  .company-name {
+    font-size: 0.95rem;
+  }
+
+  .company-tags .tag {
+    font-size: 0.7rem;
+    padding: 4px 8px;
   }
 }
 
@@ -926,23 +1003,25 @@ export default {
 
   .company-content {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
 
   .logo-container {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     margin-right: 0;
+    width: 48px;
+    height: 48px;
   }
 
   .company-tags {
-    justify-content: center;
-    gap: 8px;
+    justify-content: flex-start;
+    gap: 6px;
   }
 
   .company-tags .tag {
-    padding: 5px 10px;
-    font-size: 0.8rem;
+    padding: 4px 6px;
+    font-size: 0.65rem;
   }
 
   .filter-select {
@@ -958,6 +1037,19 @@ export default {
   .page-link {
     padding: 8px 12px;
     font-size: 0.85rem;
+  }
+
+  .company-card {
+    height: 220px;
+  }
+
+  .company-name {
+    font-size: 0.9rem;
+  }
+
+  .detail-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 }
 
@@ -1006,13 +1098,14 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   background: #3b82f6;
   color: white;
   border-radius: 50%;
-  font-size: 12px;
-  margin-left: 10px;
+  font-size: 10px;
+  margin-left: 8px;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 </style>

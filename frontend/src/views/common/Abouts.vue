@@ -22,34 +22,20 @@
                                 class="img-fluid image-item" alt="Office environment" />
                         </div>
                         <div class="col-12">
-                            <img src="https://cdn.tgdd.vn/hoi-dap/1229433/khoang-cach-tu-mat-den-man-hinh-may-tinh-laptop-bao-nhieu-la-an-toan%20(1)-800x534.jpg"
+                            <img src="https://media.cnn.com/api/v1/images/stellar/prod/240117205958-online-job-hunting-stock-image-restricted.jpg?c=original"
                                 class="img-fluid image-item" alt="Workstation" />
                         </div>
-                        <div class="container mt-5">
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    <h2><b>4M</b></h2>
-                                    <p>4 triệu người dùng hoạt động hằng ngày</p>
-                                </div>
-                                <div class="col-lg-4">
-                                    <h2><b>12k</b></h2>
-                                    <p>hơn 12k vị trí công việc mở</p>
-                                </div>
-                                <div class="col-lg-4">
-                                    <h2><b>20M</b></h2>
-                                    <p>hơn 20 triệu câu chuyện được chia sẻ</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 mb-4">
+                    
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
                         <div class="row">
                             <div class="col-12 mb-3">
                                 <img src="https://inkythuatso.com/uploads/thumbnails/800/2023/03/hinh-anh-nam-ngoi-lam-viec-voi-may-tinh-1-14-10-34-16.jpg"
                                     class="img-fluid image-item" alt="Professional working" />
                             </div>
                             <div class="col-12">
-                                <img src="https://a0.muscache.com/im/pictures/f06bce03-0dc2-4719-acf8-25ec189ca8cf.jpg"
+                                <img src="https://toomva.com/images/posts/2024/01/phan-biet-work-job-career-employment-1.png"
                                     class="img-fluid image-item" alt="Modern workspace" />
                             </div>
                         </div>
@@ -58,7 +44,6 @@
                         <img src="https://images.pexels.com/photos/3182800/pexels-photo-3182800.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                             class="img-fluid image-item" alt="Team collaboration" />
                     </div>
-                </div>
             </div>
 
             <!-- Statistics -->

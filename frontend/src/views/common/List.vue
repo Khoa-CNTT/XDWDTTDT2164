@@ -35,9 +35,9 @@
               @change="applyFilters"
             >
               <option value="">Chọn tỉnh thành phố</option>
-              <option value="Hà Nội">Hà Nội</option>
-              <option value="Đà Nẵng">Đà Nẵng</option>
-              <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+              <option v-for="city in cities" :key="city" :value="city">
+                {{ city }}
+              </option>
             </select>
 
             <!-- Danh mục việc làm -->
@@ -48,9 +48,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn danh mục việc làm</option>
-              <option value="CNTT">Công nghệ thông tin</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Kế toán">Kế toán / Tài chính</option>
+              <option
+                v-for="category in categoryStore.categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.categoryName }}
+              </option>
             </select>
 
             <!-- Hình thức làm việc -->
@@ -61,10 +65,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn hình thức làm việc</option>
-              <option value="freelance">Freelance</option>
-              <option value="full-time">Toàn thời gian</option>
-              <option value="part-time">Bán thời gian</option>
-              <option value="temporary">Tạm thời</option>
+              <option
+                v-for="jobType in jobTypeStore.jobTypes"
+                :key="jobType.id"
+                :value="jobType.id"
+              >
+                {{ jobType.jobTypeName }}
+              </option>
             </select>
 
             <!-- Cấp bậc -->
@@ -75,10 +82,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn cấp bậc</option>
-              <option value="all">Tất cả</option>
-              <option value="staff">Nhân viên</option>
-              <option value="teamlead">Trưởng nhóm</option>
-              <option value="manager">Trưởng/Phó phòng</option>
+              <option
+                v-for="rank in rankStore.ranks"
+                :key="rank.id"
+                :value="rank.id"
+              >
+                {{ rank.rankName }}
+              </option>
             </select>
 
             <!-- Cấp độ kinh nghiệm -->
@@ -89,11 +99,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn cấp độ kinh nghiệm</option>
-              <option value="intern">Thực tập sinh</option>
-              <option value="fresh">Mới ra trường</option>
-              <option value="1y">1 năm</option>
-              <option value="2y">2 năm</option>
-              <option value="3y">3 năm</option>
+              <option
+                v-for="experience in experienceStore.experiences"
+                :key="experience.id"
+                :value="experience.id"
+              >
+                {{ experience.experienceName }}
+              </option>
             </select>
 
             <!-- Mức lương -->
@@ -104,11 +116,13 @@
               @change="applyFilters"
             >
               <option value="">Chọn mức lương</option>
-              <option value="0-10">Dưới 10 triệu</option>
-              <option value="10-20">10 - 20 triệu</option>
-              <option value="20-30">20 - 30 triệu</option>
-              <option value="30-50">30 - 50 triệu</option>
-              <option value="50+">Trên 50 triệu</option>
+              <option
+                v-for="salary in salaryStore.salaries"
+                :key="salary.id"
+                :value="salary.id"
+              >
+                {{ salary.salaryName }}
+              </option>
             </select>
           </div>
         </div>
@@ -143,7 +157,7 @@
 
               <!-- Job Card -->
               <div v-for="job in jobStore.jobs" :key="job.id">
-                <div class="job-card">
+                <div class="job-card" @click="goToJobDetail(job.jobSlug)">
                   <div class="job-content">
                     <img
                       :src="getCompanyLogo(job.Employers.companyLogo)"
@@ -155,6 +169,7 @@
                       <router-link
                         :to="`/job/${job.jobSlug}`"
                         class="job-title"
+                        @click.stop
                         >{{ job.jobName }}</router-link
                       >
                       <div class="job-tags">
@@ -190,7 +205,7 @@
                           (savedJob) => savedJob.jobId === job.id
                         ) && authStore.isAuthenticated,
                     }"
-                    @click="toggleSaveJob(job.id)"
+                    @click.stop="toggleSaveJob(job.id)"
                     :disabled="job.isSaving"
                   >
                     <i
@@ -275,6 +290,11 @@ import { useRoute, useRouter } from "vue-router";
 import { useJobStore } from "@stores/useJobStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useSaveJobsStore } from "@/stores/useSaveJobStore";
+import { useCategoryStore } from "@stores/useCategoryStore";
+import { useJobTypeStore } from "@stores/useJobTypeStore";
+import { useRankStore } from "@stores/useRankStore";
+import { useExperienceStore } from "@stores/useExperienceStore";
+import { useSalaryStore } from "@stores/useSalaryStore";
 import { ref, watch, computed, onMounted } from "vue";
 import { toast } from "vue3-toastify";
 
@@ -286,6 +306,21 @@ export default {
     const authStore = useAuthStore();
     const jobStore = useJobStore();
     const saveJobStore = useSaveJobsStore();
+    const categoryStore = useCategoryStore();
+    const jobTypeStore = useJobTypeStore();
+    const rankStore = useRankStore();
+    const experienceStore = useExperienceStore();
+    const salaryStore = useSalaryStore();
+
+    // Danh sách tỉnh thành phố (có thể thay bằng API)
+    const cities = ref([
+      "Hà Nội",
+      "Đà Nẵng",
+      "TP. Hồ Chí Minh",
+      "Cần Thơ",
+      "Hải Phòng",
+      // Thêm các tỉnh thành khác nếu cần
+    ]);
 
     const filters = ref({
       search: "",
@@ -342,7 +377,6 @@ export default {
           page: filters.value.page,
           limit: jobStore.pageSize,
         });
-        // Thêm isSaving cho mỗi job
         jobStore.jobs = jobStore.jobs.map((job) => ({
           ...job,
           isSaving: job.isSaving || false,
@@ -350,12 +384,35 @@ export default {
       } catch (error) {
         jobStore.error =
           error.response?.data?.message || "Lỗi khi lấy danh sách công việc";
+        toast.error(jobStore.error, { autoClose: 3000 });
+      }
+    };
+
+    const fetchFilterData = async () => {
+      try {
+        await Promise.all([
+          categoryStore.fetchCategories(),
+          jobTypeStore.fetchJobTypes(),
+          rankStore.fetchRanks(),
+          experienceStore.fetchExperiences(),
+          salaryStore.fetchSalaries(),
+        ]);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu bộ lọc:", error);
+        toast.error("Không thể tải dữ liệu bộ lọc", { autoClose: 3000 });
       }
     };
 
     const toggleSaveJob = async (jobId) => {
       if (!authStore.isAuthenticated) {
         toast.error("Bạn cần phải đăng nhập để lưu công việc", {
+          autoClose: 3000,
+        });
+        return;
+      }
+
+      if (authStore.user.role !== "candidate") {
+        toast.error("Chỉ ứng viên mới có thể lưu công việc", {
           autoClose: 3000,
         });
         return;
@@ -375,6 +432,9 @@ export default {
       try {
         if (saveJobStore.jobs.some((savedJob) => savedJob.jobId === jobId)) {
           await saveJobStore.delJob(jobId);
+          toast.success("Đã xóa công việc khỏi danh sách lưu", {
+            autoClose: 3000,
+          });
         } else {
           await saveJobStore.saveJobs({
             candidateId: authStore.candidateId,
@@ -396,6 +456,10 @@ export default {
       filters.value.page = page;
       updateQueryParams();
       fetchJobs();
+    };
+
+    const goToJobDetail = (jobSlug) => {
+      router.push(`/job/${jobSlug}`);
     };
 
     const paginationPages = computed(() => {
@@ -449,14 +513,16 @@ export default {
       { immediate: true }
     );
 
-    onMounted(() => {
-      if (authStore.isAuthenticated) {
-        saveJobStore.fetchSaveJobs();
+    onMounted(async () => {
+      await fetchFilterData();
+      if (authStore.isAuthenticated && authStore.user.Candidates) {
+        await saveJobStore.fetchSaveJobs();
       }
     });
 
     return {
       filters,
+      cities,
       applyFilters,
       toggleSaveJob,
       changePage,
@@ -467,6 +533,12 @@ export default {
       authStore,
       formatPostedAt,
       saveJobStore,
+      categoryStore,
+      jobTypeStore,
+      rankStore,
+      experienceStore,
+      salaryStore,
+      goToJobDetail,
     };
   },
 };
@@ -474,6 +546,10 @@ export default {
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
 
 .job-list {
   font-family: "Roboto", sans-serif;
@@ -597,13 +673,17 @@ export default {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   margin-bottom: 20px;
   transition: all 0.3s ease;
   border: 1px solid transparent;
+  cursor: pointer;
+  height: 160px; /* Fixed height for consistency */
+  overflow: hidden;
+  width: 100%;
 }
 
 .job-card:hover {
@@ -614,34 +694,42 @@ export default {
 
 .job-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
+  overflow: hidden;
 }
 
 .job-logo {
-  width: 70px;
-  height: 70px;
-  border-radius: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
   object-fit: cover;
-  margin-right: 20px;
+  margin-right: 16px;
   border: 1px solid #e2e8f0;
-  padding: 5px;
+  padding: 4px;
   background: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .job-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .job-title {
   font-family: "Montserrat", sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1e293b;
   text-decoration: none;
-  margin-bottom: 12px;
-  display: block;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s ease;
 }
 
@@ -652,37 +740,50 @@ export default {
 .job-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
 }
 
 .job-tags .tag {
   background: #f8fafc;
   color: #64748b;
-  padding: 7px 12px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
   border: 1px solid #e2e8f0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Prevent tags from stretching too wide */
 }
 
 .job-tags .tag i {
-  margin-right: 6px;
+  margin-right: 5px;
   color: #94a3b8;
 }
 
 .job-badges {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .badge {
-  padding: 7px 14px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .badge-type {
@@ -694,15 +795,21 @@ export default {
   background: transparent;
   border: 2px solid #e2e8f0;
   color: #64748b;
-  padding: 10px 18px;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .save-button:hover {
@@ -723,7 +830,7 @@ export default {
 }
 
 .save-button i {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* Pagination */
@@ -785,8 +892,27 @@ export default {
   }
 
   .job-logo {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .job-card {
+    height: 140px;
+  }
+
+  .job-title {
+    font-size: 1rem;
+  }
+
+  .job-tags .tag,
+  .badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .save-button {
+    font-size: 0.85rem;
+    padding: 6px 14px;
   }
 }
 
@@ -814,11 +940,28 @@ export default {
   .job-card {
     flex-direction: column;
     align-items: flex-start;
+    height: 220px;
+  }
+
+  .job-content {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
   }
 
   .save-button {
-    margin-top: 20px;
+    margin-top: 12px;
     align-self: flex-end;
+  }
+
+  .job-title {
+    font-size: 0.95rem;
+  }
+
+  .job-tags .tag,
+  .badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
   }
 }
 
@@ -845,27 +988,38 @@ export default {
   }
 
   .job-logo {
-    margin-bottom: 15px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
     margin-right: 0;
   }
 
   .job-tags {
-    gap: 8px;
+    gap: 6px;
   }
 
-  .job-tags .tag {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
-
+  .job-tags .tag,
   .badge {
-    padding: 5px 10px;
+    padding: 4px 6px;
+    font-size: 0.65rem;
+  }
+
+  .save-button {
+    padding: 6px 12px;
     font-size: 0.8rem;
   }
 
   .page-link {
     padding: 8px 12px;
     font-size: 0.85rem;
+  }
+
+  .job-card {
+    height: 240px;
+  }
+
+  .job-title {
+    font-size: 0.9rem;
   }
 }
 

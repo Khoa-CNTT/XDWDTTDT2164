@@ -13,12 +13,12 @@ class ApplyJobController {
    */
   async applyJob(req, res) {
     try {
-      console.log(req.file);
       const applyData = {
         jobId: req.body.jobId,
         candidateId: req.body.candidateId,
-        cvUpload: req.file.filename,
         coverLetter: req.body.coverLetter,
+        cvOnline: req.body.cvOnline,
+        cvUpload: req.file && req.file.filename ? req.file.filename : undefined,
       };
       const result = await applyJobService.applyJob(applyData);
 
@@ -86,9 +86,11 @@ class ApplyJobController {
   async reviewCandidate(req, res) {
     try {
       const { applicationId } = req.params;
+      const { reviewCandidate } = req.body;
+      console.log(reviewCandidate);
       const data = await applyJobService.reviewCandidate(
         applicationId,
-        req.body
+        reviewCandidate
       );
       return resSuccess(res, null, data);
     } catch (error) {

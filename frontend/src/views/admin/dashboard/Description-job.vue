@@ -244,7 +244,7 @@ export default {
     async rejectJob() {
       if (!confirm("Xác nhận từ chối bài đăng này?")) return;
       try {
-        await verifyJobApi(this.route.params.jobId, "Đã bị từ chối");
+        await verifyJobApi(this.route.params.jobId, "Đã bị kiểm duyệt");
         toast.success("Bài đăng đã bị từ chối.");
         this.router.push("/admin-dashboard/post-management");
       } catch (error) {

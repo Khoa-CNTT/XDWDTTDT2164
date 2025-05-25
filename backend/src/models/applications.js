@@ -66,6 +66,14 @@ module.exports = (sequelize, DataTypes) => {
         field: "employer_review",
         allowNull: true,
       },
+      skillsMatch: {
+        type: DataTypes.TEXT,
+        field: "skills_match",
+      },
+      experienceMatch: {
+        type: DataTypes.TEXT,
+        field: "experience_match",
+      },
       deletedAt: {
         type: DataTypes.DATE,
         field: "deleted_at",

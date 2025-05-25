@@ -40,9 +40,7 @@
             <tbody class="text-center align-middle">
               <tr v-for="(user, index) in userStore.users" :key="user.id">
                 <td>
-                  {{
-                    (userStore.currentPage - 1) * userStore.pageSize + index + 1
-                  }}
+                  {{ index + 1 }}
                 </td>
                 <td>{{ user.fullName }}</td>
                 <td>{{ user.email }}</td>

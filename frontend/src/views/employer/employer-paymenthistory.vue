@@ -85,7 +85,7 @@
 
         <!-- Pagination -->
         <div
-          v-if="walletStore.historyPayments?.length"
+          v-if="walletStore.historyPayments?.length >= 8"
           class="pagination-container"
         >
           <div class="pagination">

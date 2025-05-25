@@ -42,6 +42,11 @@
               >Giới Thiệu
             </router-link>
           </li>
+          <li class="nav-item">
+            <router-link class="nav-link" aria-current="page" to="/conditions"
+              >Điều Khoản
+            </router-link>
+          </li>
         </ul>
 
         <!-- Guest view - Only shown when not logged in -->
@@ -221,7 +226,7 @@ export default {
       ) {
         return this.authStore.user.Employers.companyName || "Nhà tuyển dụng";
       }
-      return "Admin";
+      return "Người dùng";
     },
     userAvatar() {
       if (!this.authStore.isAuthenticated || !this.authStore.user) {
@@ -268,7 +273,6 @@ export default {
       try {
         await this.authStore.logout();
         this.isMenuOpen = false;
-        toast.success("Đăng xuất thành công!");
         this.router.push("/");
       } catch (error) {
         toast.error("Lỗi khi đăng xuất");

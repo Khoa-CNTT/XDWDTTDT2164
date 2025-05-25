@@ -77,71 +77,45 @@ async function moderateJob(job) {
     return "Kiểm duyệt: Không duyệt. Lý do: Lỗi khi kiểm duyệt nội dung. Vui lòng thử lại.";
   }
 }
+
 async function moderateApplyJob(apply, job) {
   const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-  const prompt = `Bạn là một chuyên gia nhân sự có kinh nghiệm tuyển dụng trong nhiều lĩnh vực. Dưới đây là một bài ứng tuyển, hãy đọc kỹ và đưa ra đánh giá theo các tiêu chí sau:
+  const prompt = `Bạn là một chuyên gia nhân sự dày dạn kinh nghiệm trong việc đánh giá ứng viên ở nhiều ngành nghề khác nhau.
 
-1. Độ phù hợp với yêu cầu công việc (dựa trên kinh nghiệm, kỹ năng, học vấn).
-2. Khả năng truyền đạt, trình bày rõ ràng, mạch lạc.
-3. Mức độ nghiêm túc, chuyên nghiệp của ứng viên.
-4. Ngữ pháp, chính tả, và văn phong.
-5. Tổng thể: ứng viên có phù hợp với vị trí này hay không?
-
----
-
-Nội dung ứng tuyển:
-[Ứng viên viết: ${apply}]
----
-
-Yêu cầu công việc:
-[${job.description || "Không có yêu cầu rõ ràng"}]
-
----
-
-Hãy trả lời theo định dạng sau:
-
-Điểm đánh giá (theo %): [số điểm /100%]  
-Mức độ phù hợp: [Phù hợp / Không phù hợp / Cần xem xét]  
-Nhận xét: [viết nhận xét chi tiết, khoảng 5-7 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên]
-
-Chỉ trả lời theo đúng định dạng yêu cầu, không thêm nội dung khác. `;
-
-  const result = await model.generateContent(prompt);
-  const response = result.response.text().trim();
-
-  return response;
-}
-async function moderateApplyJob(apply, job) {
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-  const prompt = `Bạn là một chuyên gia nhân sự có kinh nghiệm tuyển dụng trong nhiều lĩnh vực. Dưới đây là một bài ứng tuyển, hãy đọc kỹ và đưa ra đánh giá theo các tiêu chí sau:
+Dưới đây là một bài ứng tuyển cho một vị trí cụ thể. Hãy đọc kỹ nội dung ứng tuyển và mô tả công việc, sau đó đánh giá ứng viên theo các tiêu chí sau:
 
 1. Độ phù hợp với yêu cầu công việc (dựa trên kinh nghiệm, cấp bậc, kỹ năng, học vấn).
-2. Khả năng truyền đạt, trình bày rõ ràng, mạch lạc.
+2. Khả năng truyền đạt và trình bày rõ ràng, mạch lạc.
 3. Mức độ nghiêm túc, chuyên nghiệp của ứng viên.
 4. Ngữ pháp, chính tả, và văn phong.
 5. Tổng thể: ứng viên có phù hợp với vị trí này hay không?
 
 ---
 
-Nội dung ứng tuyển:
-[Ứng viên viết: ${apply}]
+**Nội dung ứng tuyển (do ứng viên viết):**
+${apply}
+
 ---
 
-Yêu cầu công việc:
-[${job.description || "Không có yêu cầu rõ ràng"}]
-[${job.candidateRequirements || "Không có yêu cầu rõ ràng"}]
+**Mô tả công việc:**
+${job.description || "Không có mô tả rõ ràng"}
+
+**Yêu cầu ứng viên:**
+${job.candidateRequirements || "Không có yêu cầu cụ thể"}
+
 ---
 
-Hãy trả lời theo định dạng sau:
+**Yêu cầu đầu ra - Chỉ trả lời đúng theo định dạng dưới đây, không thêm bất kỳ phần thừa nào:**
 
-Điểm đánh giá (theo %): số điểm /100% 
-Mức độ phù hợp: Phù hợp / Không phù hợp / Cần xem xét  
-Nhận xét: viết nhận xét chi tiết, khoảng 5-7 câu về lý do đánh giá, điểm mạnh/yếu của ứng viên
+- Điểm đánh giá (theo %):ví dụ: 85/100% 
+- Mức độ phù hợp:Phù hợp / Không phù hợp / Cần xem xét
+- Nhận xét:Viết khoảng 5–7 câu, nêu rõ lý do đánh giá, điểm mạnh và điểm yếu của ứng viên
+- Kỹ năng:Liệt kê danh sách kỹ năng chính của ứng viên
+- Kinh nghiệm:Tóm tắt kinh nghiệm nổi bật, nếu không có ghi rõ là chưa có kinh nghiệm
 
-Chỉ trả lời theo đúng định dạng yêu cầu, không thêm nội dung khác. `;
-
+*Không được thêm lời chào, giới thiệu, hay giải thích gì thêm ngoài nội dung trên.*
+`;
   const result = await model.generateContent(prompt);
   const response = result.response.text().trim();
 

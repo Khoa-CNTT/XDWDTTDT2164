@@ -234,7 +234,17 @@
               <button
                 class="apply-button"
                 @click="openApplyModal"
-                :disabled="saveJobStore.isLoading || applyLoading"
+                :disabled="
+                  saveJobStore.isLoading ||
+                  applyLoading ||
+                  !isCandidate ||
+                  !authStore.isAuthenticated
+                "
+                :title="
+                  isCandidate
+                    ? 'Ứng tuyển ngay cho công việc'
+                    : 'Chỉ ứng viên mới có thể ứng tuyển'
+                "
                 aria-label="Ứng tuyển ngay cho công việc"
               >
                 <i class="fas fa-paper-plane me-2"></i>Ứng tuyển ngay
@@ -489,7 +499,7 @@
                       @change="clearCvSelection"
                     />
                     <label class="form-check-label" for="profileCv"
-                      >Chọn CV từ hồ sơ</label
+                      >Chọn CV online</label
                     >
                   </div>
 
@@ -527,32 +537,36 @@
                     v-if="applicationForm.cvOption === 'profile'"
                     class="mb-3"
                   >
-                    <select
-                      v-model="applicationForm.profileCvId"
-                      class="form-select"
-                      id="profileCvSelect"
-                      :class="{
-                        'is-invalid': applicationForm.errors.profileCvId,
-                      }"
-                    >
-                      <option value="" disabled>Chọn một CV từ hồ sơ</option>
-                      <option
-                        v-for="cv in profileCvs"
-                        :key="cv.id"
-                        :value="cv.id"
-                      >
-                        {{ cv.name || `CV ${cv.id}` }} (Cập nhật:
-                        {{ formatDate(cv.updatedAt) }})
-                      </option>
-                    </select>
+                    <div v-if="profileCvs.length">
+                      <p class="form-label">CV Online của bạn</p>
+                      <div class="cv-info">
+                        <span
+                          >{{ profileCvs[0].name }} (Cập nhật:
+                          {{ formatDate(profileCvs[0].updatedAt) }})</span
+                        >
+                        <a
+                          :href="profileCvs[0].url"
+                          target="_blank"
+                          class="text-primary ms-2"
+                        >
+                          <i class="fa-solid fa-eye me-1"></i>Xem CV
+                        </a>
+                      </div>
+                      <input
+                        type="hidden"
+                        v-model="applicationForm.profileCvId"
+                        value="online_cv"
+                      />
+                    </div>
+                    <div v-else class="text-muted mt-2">
+                      Bạn chưa có CV online trong hồ sơ. Vui lòng tải lên CV mới
+                      hoặc chọn tùy chọn tải lên CV.
+                    </div>
                     <div
                       v-if="applicationForm.errors.profileCvId"
-                      class="invalid-feedback"
+                      class="invalid-feedback d-block"
                     >
                       {{ applicationForm.errors.profileCvId }}
-                    </div>
-                    <div v-if="!profileCvs.length" class="text-muted mt-2">
-                      Không có CV nào trong hồ sơ. Vui lòng tải lên CV mới.
                     </div>
                   </div>
 
@@ -616,11 +630,20 @@ export default {
 
     const applicationForm = ref({
       introduction: "",
-      cvOption: "", // "upload" or "profile"
+      cvOption: "",
       cvFile: null,
       profileCvId: "",
-      previewCvUrl: "", // Lưu URL tạm thời để xem CV
+      previewCvUrl: "",
       errors: {},
+    });
+
+    // Computed property to check if user is a candidate
+    const isCandidate = computed(() => {
+      return (
+        authStore.isAuthenticated &&
+        authStore.user &&
+        !!authStore.user.Candidates
+      );
     });
 
     const isJobSaved = computed(
@@ -630,13 +653,16 @@ export default {
     );
 
     const checkLoginStatus = () => {
-      console.log("authStore:", {
-        isAuthenticated: authStore.isAuthenticated,
-        user: authStore.user,
-      });
       if (!authStore.isAuthenticated || !authStore.user) {
         toast.error("Vui lòng đăng nhập để ứng tuyển", {
+          autoClose: 3000,
           onClick: () => router.push("/login"),
+        });
+        return false;
+      }
+      if (!authStore.user.Candidates) {
+        toast.error("Chỉ ứng viên mới có thể ứng tuyển", {
+          autoClose: 3000,
         });
         return false;
       }
@@ -644,7 +670,6 @@ export default {
     };
 
     const openApplyModal = () => {
-      console.log("checkLoginStatus:", checkLoginStatus());
       if (!checkLoginStatus()) return;
 
       // Reset form
@@ -657,13 +682,11 @@ export default {
         errors: {},
       };
 
-      // Mở modal
+      // Open modal
       const modalElement = document.getElementById("applyJobModal");
-      console.log("modalElement:", modalElement);
       if (modalElement) {
         try {
           const modal = new Modal(modalElement);
-          console.log("Modal instance:", modal);
           modal.show();
         } catch (error) {
           console.error("Lỗi khi khởi tạo modal:", error);
@@ -699,9 +722,9 @@ export default {
       }
       if (
         applicationForm.value.cvOption === "profile" &&
-        !applicationForm.value.profileCvId
+        !profileCvs.value.length
       ) {
-        applicationForm.value.errors.profileCvId = "Vui lòng chọn một CV";
+        applicationForm.value.errors.profileCvId = "Bạn chưa có CV online";
         isValid = false;
       }
 
@@ -709,7 +732,6 @@ export default {
         return;
       }
 
-      // Giả lập gửi form
       applyLoading.value = true;
       try {
         const formData = {
@@ -717,11 +739,16 @@ export default {
           candidateId: authStore.user.Candidates.id,
           coverLetter: applicationForm.value.introduction,
           cvOption: applicationForm.value.cvOption,
-          cvUpload: applicationForm.value.cvFile,
         };
-        console.log("Form data:", formData);
 
-        // TODO: Gọi API gửi ứng tuyển ở đây
+        // Handle CV based on option
+        if (applicationForm.value.cvOption === "upload") {
+          formData.cvUpload = applicationForm.value.cvFile;
+        } else if (applicationForm.value.cvOption === "profile") {
+          formData.cvUrl = profileCvs.value[0]?.url;
+        }
+
+        // Call apply job API
         await applyToJobApi(formData);
 
         toast.success("Ứng tuyển thành công!");
@@ -789,8 +816,6 @@ export default {
         relatedJobs.value = Array.isArray(response.data.jobsRelateds)
           ? response.data.jobsRelateds
           : [];
-
-        console.log(relatedJobs);
       } catch (err) {
         error.value = err.message || "Có lỗi xảy ra khi tải dữ liệu";
         toast.error(error.value);
@@ -800,17 +825,45 @@ export default {
     };
 
     const fetchProfileCvs = async () => {
-      if (!authStore.isAuthenticated || !authStore.candidateId) return;
+      console.log("authStore.isAuthenticated:", authStore.isAuthenticated);
+      console.log("authStore.user:", authStore.user);
+      console.log("authStore.user.Candidates:", authStore.user?.Candidates);
+
+      if (!authStore.isAuthenticated || !authStore.user?.Candidates) {
+        console.log("Không có thông tin người dùng hoặc chưa đăng nhập");
+        profileCvs.value = [];
+        toast.info(
+          "Bạn chưa có CV online trong hồ sơ. Vui lòng tải lên CV mới."
+        );
+        return;
+      }
 
       try {
-        // Giả lập danh sách CV (thay bằng API thực khi có)
-        profileCvs.value = [
-          { id: 1, name: "CV Java Developer", updatedAt: "2025-04-01" },
-          { id: 2, name: "CV Full Stack", updatedAt: "2025-03-15" },
-        ];
+        if (authStore.user.Candidates.cvUrl) {
+          const baseUrl = "http://localhost:5001/uploads/";
+          const cvUrl = `${baseUrl}${authStore.user.Candidates.cvUrl}`;
+          console.log("cvUrl:", cvUrl);
+
+          profileCvs.value = [
+            {
+              id: "online_cv",
+              name: "CV Online",
+              updatedAt:
+                authStore.user.Candidates.updatedAt || new Date().toISOString(),
+              url: cvUrl,
+            },
+          ];
+        } else {
+          console.log("Không tìm thấy cvUrl trong Candidates");
+          profileCvs.value = [];
+          toast.info(
+            "Bạn chưa có CV online trong hồ sơ. Vui lòng tải lên CV mới."
+          );
+        }
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách CV:", error);
+        console.error("Lỗi khi lấy thông tin CV:", error);
         profileCvs.value = [];
+        toast.error("Lỗi khi lấy thông tin CV");
       }
     };
 
@@ -854,8 +907,18 @@ export default {
     };
 
     const toggleSaveJob = async (jobId) => {
-      if (!authStore.isAuthenticated || !authStore.user.Candidates.id) {
-        toast.error("Bạn hãy đăng nhập để lưu công việc");
+      if (!authStore.isAuthenticated || !authStore.user) {
+        toast.error("Bạn hãy đăng nhập để lưu công việc", {
+          autoClose: 3000,
+          onClick: () => router.push("/login"),
+        });
+        return;
+      }
+
+      if (!authStore.user.Candidates) {
+        toast.error("Chỉ ứng viên mới có thể lưu công việc", {
+          autoClose: 3000,
+        });
         return;
       }
 
@@ -864,12 +927,13 @@ export default {
           await saveJobStore.delJob(jobId);
         } else {
           await saveJobStore.saveJobs({
-            candidateId: authStore.candidateId,
+            candidateId: authStore.user.Candidates.id,
             jobId,
           });
         }
       } catch (err) {
         console.error("Lỗi khi thao tác với công việc đã lưu:", err);
+        toast.error("Lỗi khi lưu công việc");
       }
     };
 
@@ -908,7 +972,7 @@ export default {
 
     onMounted(async () => {
       try {
-        if (authStore.isAuthenticated && authStore.candidateId) {
+        if (authStore.isAuthenticated && authStore.user?.Candidates) {
           await Promise.all([
             saveJobStore.fetchSaveJobs(1, saveJobStore.pageSize),
             fetchProfileCvs(),
@@ -934,6 +998,7 @@ export default {
       profileCvs,
       applicationForm,
       isJobSaved,
+      isCandidate,
       checkLoginStatus,
       formatDate,
       formatPostedAt,
@@ -949,7 +1014,9 @@ export default {
   },
 };
 </script>
+
 <style scoped>
+/* Existing styles remain unchanged */
 @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap");
 
 .job-detail {
@@ -1288,13 +1355,13 @@ export default {
   box-shadow: 0 4px 14px rgba(49, 130, 206, 0.4);
 }
 
-.apply-button:hover {
+.apply-button:hover:not(:disabled) {
   background: #2b6cb0;
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(49, 130, 206, 0.5);
 }
 
-.apply-button:active {
+.apply-button:active:not(:disabled) {
   transform: translateY(-1px);
 }
 

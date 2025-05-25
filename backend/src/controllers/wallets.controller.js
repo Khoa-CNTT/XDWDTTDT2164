@@ -80,6 +80,42 @@ class WalletsController {
   }
 
   /**
+   * Nạp tiền vào tài khoản với Vnpay
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async depositToWalletWithVnpay(req, res) {
+    try {
+      const { id } = req.user;
+      const { amount } = req.body;
+      const result = await walletsService.depositToWalleWithVnPay(amount, id);
+      return resSuccess(res, null, result);
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
+
+  /**
+   * Callback khi thanh toán thành công Vnpay
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async callbackVnpay(req, res) {
+    try {
+      const result = await walletsService.callbackVnpay(req.query, res);
+      if (result.status === "Thành công") {
+        return res.redirect(
+          "http://localhost:5173/employer-dashboard/employer-recharge"
+        );
+      }
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
+
+  /**
    * Lấy ra ví người dùng
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -143,6 +179,22 @@ class WalletsController {
         startDate,
         endDate,
       });
+      return resSuccess(res, null, data);
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
+
+  /**
+   * Lây ra biểu đồ phân bổ doanh thu
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getPaymentChart(req, res) {
+    try {
+      const { period } = req.query;
+      const data = await walletsService.getPaymentChart(period);
       return resSuccess(res, null, data);
     } catch (error) {
       return resError(res, error);
