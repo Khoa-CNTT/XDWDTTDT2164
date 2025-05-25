@@ -45,10 +45,10 @@
         <div v-else class="row">
           <div
             class="col-lg-4 col-md-6 mb-4"
-            v-for="(category, index) in categories"
-            :key="index"
+            v-for="category in categories"
+            :key="category.id"
           >
-            <div class="category-card">
+            <div class="category-card" @click="goToCategory(category.id)">
               <img
                 :src="`https://res.cloudinary.com/dh1i7su2f/image/upload/${category.categoryImage}`"
                 alt=""
@@ -83,10 +83,10 @@
         <div v-else class="row">
           <div
             class="col-lg-4 col-md-6 mb-4"
-            v-for="(job, index) in displayedJobs"
-            :key="index"
+            v-for="job in displayedJobs"
+            :key="job.id"
           >
-            <div class="job-card">
+            <div class="job-card" @click="goToJobDetail(job.jobSlug)">
               <div class="job-info">
                 <img
                   alt="Logo công ty"
@@ -274,6 +274,17 @@ export default {
     showMore() {
       this.visibleJobs = this.jobs.length;
     },
+    goToCategory(categoryId) {
+      this.$router.push({
+        path: "/list",
+        query: { categoryId },
+      });
+    },
+    goToJobDetail(jobSlug) {
+      this.$router.push({
+        path: `/job/${jobSlug}`,
+      });
+    },
   },
 };
 </script>
@@ -289,7 +300,7 @@ export default {
 /* Banner Section */
 .banner-section {
   background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-  padding: 60px 10;
+  padding: 60px 10px;
 }
 
 .banner-title {
@@ -393,6 +404,8 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer; /* Indicate clickability */
+  min-height: 100px; /* Ensure consistent height */
 }
 
 .category-card:hover {
@@ -405,6 +418,11 @@ export default {
   font-weight: 600;
   color: #333333;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .category-jobs {
@@ -451,6 +469,11 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer; /* Indicate clickability */
+  min-height: 200px; /* Ensure consistent height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .job-card:hover {
@@ -477,9 +500,24 @@ export default {
   font-weight: 600;
   color: #333333;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.job-meta,
+.job-meta {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin: 5px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .job-time {
   font-size: 0.85rem;
   color: #6c757d;
@@ -565,14 +603,21 @@ export default {
   }
 
   .job-card,
-  .category-card,
-  .testimonial-card {
+  .category-card {
     padding: 15px;
   }
 
   .job-logo {
     width: 50px;
     height: 50px;
+  }
+
+  .category-card {
+    min-height: 90px;
+  }
+
+  .job-card {
+    min-height: 180px;
   }
 }
 
@@ -607,16 +652,22 @@ export default {
   }
 
   .job-title,
-  .category-name,
-  .testimonial-title {
+  .category-name {
     font-size: 1.1rem;
   }
 
   .job-meta,
   .job-time,
-  .category-jobs,
-  .testimonial-content {
+  .category-jobs {
     font-size: 0.8rem;
+  }
+
+  .category-card {
+    min-height: 80px;
+  }
+
+  .job-card {
+    min-height: 160px;
   }
 }
 
@@ -630,14 +681,21 @@ export default {
   }
 
   .job-card,
-  .category-card,
-  .testimonial-card {
+  .category-card {
     padding: 10px;
   }
 
   .job-logo {
     width: 40px;
     height: 40px;
+  }
+
+  .category-card {
+    min-height: 70px;
+  }
+
+  .job-card {
+    min-height: 140px;
   }
 
   .cta-image {

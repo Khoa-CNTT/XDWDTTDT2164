@@ -4,10 +4,10 @@ const crypto = require("crypto");
 const moment = require("moment");
 const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
-const db = require("../models");
+const { fn, col, literal, Op } = require("sequelize");
+const db = require("../models"); // Giả sử bạn có file models
 const { caculatePromotionAmount } = require("../libs/helper");
 const dotenv = require("dotenv").config();
-const { Op } = require("sequelize");
 const { Parser } = require("json2csv");
 const dayjs = require("dayjs");
 const {
@@ -653,9 +653,6 @@ class WalletsService {
    */
   async getPaymentTime({ period = "month", startDate, endDate }) {
     try {
-      const { fn, col, literal, Op } = require("sequelize");
-      const db = require("../models"); // Giả sử bạn có file models
-
       const periodFormats = {
         day: "%Y-%m-%d",
         month: "%Y-%m",
@@ -801,6 +798,83 @@ class WalletsService {
     const csv = json2csvParser.parse(payments);
 
     return "\uFEFF" + csv;
+  }
+
+  /**
+   * biểu đồ phân bổ doanh thu
+   * @returns {Promise<Array>}
+   */
+  async getPaymentChart(period) {
+    const weekdayMap = {
+      0: "Chủ Nhật",
+      1: "Thứ Hai",
+      2: "Thứ Ba",
+      3: "Thứ Tư",
+      4: "Thứ Năm",
+      5: "Thứ Sáu",
+      6: "Thứ Bảy",
+    };
+
+    let format;
+
+    switch (period) {
+      case "day":
+        format = "%Y-%m-%d";
+        break;
+      case "month":
+        format = "%Y-%m";
+        break;
+      case "year":
+        format = "%Y";
+        break;
+      case "weekday":
+        format = "%w"; // weekday (0 = Sunday, 1 = Monday, ...)
+        break;
+      default:
+        throw new Error("Invalid period type");
+    }
+
+    const payments = await db.Payments.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("created_at"), format), "period"],
+        [
+          fn(
+            "SUM",
+            literal(
+              `CASE WHEN transaction_type = 'Nạp tiền' THEN amount ELSE 0 END`
+            )
+          ),
+          "walletTopUp",
+        ],
+        [
+          fn(
+            "SUM",
+            literal(
+              `CASE WHEN transaction_type = 'Thanh toán' THEN amount ELSE 0 END`
+            )
+          ),
+          "payment",
+        ],
+        [
+          fn(
+            "SUM",
+            literal(
+              `CASE WHEN transaction_type = 'Hoàn tiền' THEN amount ELSE 0 END`
+            )
+          ),
+          "refund",
+        ],
+      ],
+      group: [fn("DATE_FORMAT", col("created_at"), format)],
+      raw: true,
+    });
+
+    return payments.map((item) => ({
+      label: period === "weekday" ? weekdayMap[item.period] : item.period,
+      walletTopUp: parseFloat(item.walletTopUp),
+      payment: parseFloat(item.payment),
+      refund: parseFloat(item.refund),
+    }));
   }
 }
 

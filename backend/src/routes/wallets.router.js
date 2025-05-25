@@ -164,4 +164,6 @@ router.get(
   walletsController.exportPaymentToCsv
 );
 
+router.get("/get-payments-chart", walletsController.getPaymentChart);
+
 module.exports = router;

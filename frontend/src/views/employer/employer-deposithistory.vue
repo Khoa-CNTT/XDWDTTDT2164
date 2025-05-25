@@ -82,7 +82,7 @@
 
             <!-- Pagination -->
             <div
-              v-if="walletStore.historyDeposits?.length"
+              v-if="walletStore.historyDeposits?.length >= 8"
               class="d-flex justify-content-center mt-4"
             >
               <nav>

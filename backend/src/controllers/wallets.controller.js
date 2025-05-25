@@ -79,6 +79,12 @@ class WalletsController {
     }
   }
 
+  /**
+   * Nạp tiền vào tài khoản với Vnpay
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
   async depositToWalletWithVnpay(req, res) {
     try {
       const { id } = req.user;
@@ -90,6 +96,12 @@ class WalletsController {
     }
   }
 
+  /**
+   * Callback khi thanh toán thành công Vnpay
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
   async callbackVnpay(req, res) {
     try {
       const result = await walletsService.callbackVnpay(req.query, res);
@@ -167,6 +179,22 @@ class WalletsController {
         startDate,
         endDate,
       });
+      return resSuccess(res, null, data);
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
+
+  /**
+   * Lây ra biểu đồ phân bổ doanh thu
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} - Response object
+   */
+  async getPaymentChart(req, res) {
+    try {
+      const { period } = req.query;
+      const data = await walletsService.getPaymentChart(period);
       return resSuccess(res, null, data);
     } catch (error) {
       return resError(res, error);

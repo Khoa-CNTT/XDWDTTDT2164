@@ -48,3 +48,20 @@ export const getJobApplyApi = async (candidateId, page, limit) => {
 
   return response.data;
 };
+
+/**
+ * Đánh giá ứng viên
+ * @param {string} reviewCandidate
+ * @param {string} applyJobId
+ * @returns {Promise<void>}
+ */
+export const employerReviewApi = async (applicationId, reviewCandidate) => {
+  const response = await api.put(
+    `api/apply-jobs/review-candidate/${applicationId}`,
+    {
+      reviewCandidate,
+    }
+  );
+
+  return response.data;
+};
