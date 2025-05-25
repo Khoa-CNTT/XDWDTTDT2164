@@ -91,3 +91,14 @@ export const getPaymentTimeApi = async () => {
   const response = await api.get("/api/wallets/get-payments-time");
   return response.data;
 };
+
+/**
+ * Phân bổ doanh thu
+ * @returns {Promise<void>}
+ */
+export const getPaymentChartApi = async (period) => {
+  const response = await api.get("/api/wallets/get-payments-chart", {
+    params: { period },
+  });
+  return response.data;
+};

@@ -14,7 +14,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="mb-0">Danh sách công việc của tôi</h5>
           <router-link
-            to="/employer-dashboard/create-job"
+            to="/employer-dashboard/employer-newjob"
             class="btn btn-secondary"
           >
             <i class="fas fa-plus me-2"></i>Thêm mới bài đăng

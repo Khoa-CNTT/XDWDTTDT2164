@@ -336,8 +336,8 @@ export default {
       const img = new Image();
       img.src = URL.createObjectURL(file);
       img.onload = () => {
-        if (img.width <= 100 || img.height <= 100) {
-          this.error = "Kích thước ảnh tối thiểu là 330x300";
+        if (img.width < 100 || img.height < 100) {
+          this.error = `Kích thước ảnh quá nhỏ (${img.width}x${img.height}). Tối thiểu là 100x100.`;
           URL.revokeObjectURL(img.src);
           return;
         }

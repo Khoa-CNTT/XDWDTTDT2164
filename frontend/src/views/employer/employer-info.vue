@@ -172,7 +172,7 @@ export default {
   setup() {
     const userStore = useUserStore();
     const authStore = useAuthStore();
-    return { userStore, authStore }; // Trả về cả userStore và authStore
+    return { userStore, authStore };
   },
   data() {
     return {
@@ -196,16 +196,27 @@ export default {
     },
     async fetchEmployerInfo() {
       try {
-        // Kiểm tra authStore.user và authStore.user.Employers
-        if (!this.authStore.user || !this.authStore.user.Employers) {
-          throw new Error(
-            "Không thể truy cập thông tin người dùng hoặc nhà tuyển dụng"
+        // Retry logic to wait for authStore.user to be populated
+        const maxRetries = 3;
+        let retries = 0;
+        let employerId = null;
+
+        while (retries < maxRetries) {
+          if (this.authStore.user && this.authStore.user.Employers) {
+            employerId = this.authStore.user.Employers.id;
+            break;
+          }
+          console.log(
+            `Retry ${retries + 1}/${maxRetries}: authStore.user not ready`
           );
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s
+          retries++;
         }
 
-        const employerId = this.authStore.user.Employers.id;
         if (!employerId) {
-          throw new Error("Không tìm thấy ID nhà tuyển dụng");
+          throw new Error(
+            "Không thể truy cập thông tin người dùng hoặc nhà tuyển dụng sau nhiều lần thử"
+          );
         }
 
         console.log("Đang lấy thông tin nhà tuyển dụng với ID:", employerId);
@@ -227,6 +238,7 @@ export default {
           }
         } else {
           console.warn("Không tìm thấy dữ liệu nhà tuyển dụng trong userStore");
+          toast.error("Không tìm thấy thông tin công ty. Vui lòng thử lại!");
         }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin nhà tuyển dụng:", error);
@@ -295,6 +307,19 @@ export default {
       } finally {
         this.isSubmitting = false;
       }
+    },
+  },
+  watch: {
+    // Watch authStore.user for changes and refetch if Employers data becomes available
+    "authStore.user": {
+      handler(newUser) {
+        if (newUser && newUser.Employers && !this.userStore.employer) {
+          console.log("authStore.user updated, refetching employer info");
+          this.fetchEmployerInfo();
+        }
+      },
+      deep: true,
+      immediate: true,
     },
   },
   mounted() {

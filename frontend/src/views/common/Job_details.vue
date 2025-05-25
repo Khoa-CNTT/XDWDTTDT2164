@@ -234,7 +234,17 @@
               <button
                 class="apply-button"
                 @click="openApplyModal"
-                :disabled="saveJobStore.isLoading || applyLoading"
+                :disabled="
+                  saveJobStore.isLoading ||
+                  applyLoading ||
+                  !isCandidate ||
+                  !authStore.isAuthenticated
+                "
+                :title="
+                  isCandidate
+                    ? 'Ứng tuyển ngay cho công việc'
+                    : 'Chỉ ứng viên mới có thể ứng tuyển'
+                "
                 aria-label="Ứng tuyển ngay cho công việc"
               >
                 <i class="fas fa-paper-plane me-2"></i>Ứng tuyển ngay
@@ -523,7 +533,6 @@
                   </div>
 
                   <!-- Profile CV Selection -->
-                  <!-- Profile CV Selection -->
                   <div
                     v-if="applicationForm.cvOption === 'profile'"
                     class="mb-3"
@@ -543,7 +552,6 @@
                           <i class="fa-solid fa-eye me-1"></i>Xem CV
                         </a>
                       </div>
-                      <!-- Ẩn profileCvId vì chỉ có một CV -->
                       <input
                         type="hidden"
                         v-model="applicationForm.profileCvId"
@@ -622,11 +630,20 @@ export default {
 
     const applicationForm = ref({
       introduction: "",
-      cvOption: "", // "upload" or "profile"
+      cvOption: "",
       cvFile: null,
       profileCvId: "",
-      previewCvUrl: "", // Lưu URL tạm thời để xem CV
+      previewCvUrl: "",
       errors: {},
+    });
+
+    // Computed property to check if user is a candidate
+    const isCandidate = computed(() => {
+      return (
+        authStore.isAuthenticated &&
+        authStore.user &&
+        !!authStore.user.Candidates
+      );
     });
 
     const isJobSaved = computed(
@@ -638,7 +655,14 @@ export default {
     const checkLoginStatus = () => {
       if (!authStore.isAuthenticated || !authStore.user) {
         toast.error("Vui lòng đăng nhập để ứng tuyển", {
+          autoClose: 3000,
           onClick: () => router.push("/login"),
+        });
+        return false;
+      }
+      if (!authStore.user.Candidates) {
+        toast.error("Chỉ ứng viên mới có thể ứng tuyển", {
+          autoClose: 3000,
         });
         return false;
       }
@@ -658,7 +682,7 @@ export default {
         errors: {},
       };
 
-      // Mở modal
+      // Open modal
       const modalElement = document.getElementById("applyJobModal");
       if (modalElement) {
         try {
@@ -717,14 +741,14 @@ export default {
           cvOption: applicationForm.value.cvOption,
         };
 
-        // Xử lý CV theo tùy chọn
+        // Handle CV based on option
         if (applicationForm.value.cvOption === "upload") {
           formData.cvUpload = applicationForm.value.cvFile;
         } else if (applicationForm.value.cvOption === "profile") {
-          formData.cvUrl = profileCvs.value[0]?.url; // Lấy URL của CV online
+          formData.cvUrl = profileCvs.value[0]?.url;
         }
 
-        // Gọi API ứng tuyển
+        // Call apply job API
         await applyToJobApi(formData);
 
         toast.success("Ứng tuyển thành công!");
@@ -815,9 +839,7 @@ export default {
       }
 
       try {
-        // Kiểm tra xem có cvUrl trong authStore.user.Candidates hay không
         if (authStore.user.Candidates.cvUrl) {
-          // Ghép với base URL của dịch vụ lưu trữ
           const baseUrl = "http://localhost:5001/uploads/";
           const cvUrl = `${baseUrl}${authStore.user.Candidates.cvUrl}`;
           console.log("cvUrl:", cvUrl);
@@ -885,8 +907,18 @@ export default {
     };
 
     const toggleSaveJob = async (jobId) => {
-      if (!authStore.isAuthenticated || !authStore.user.Candidates.id) {
-        toast.error("Bạn hãy đăng nhập để lưu công việc");
+      if (!authStore.isAuthenticated || !authStore.user) {
+        toast.error("Bạn hãy đăng nhập để lưu công việc", {
+          autoClose: 3000,
+          onClick: () => router.push("/login"),
+        });
+        return;
+      }
+
+      if (!authStore.user.Candidates) {
+        toast.error("Chỉ ứng viên mới có thể lưu công việc", {
+          autoClose: 3000,
+        });
         return;
       }
 
@@ -895,12 +927,13 @@ export default {
           await saveJobStore.delJob(jobId);
         } else {
           await saveJobStore.saveJobs({
-            candidateId: authStore.candidateId,
+            candidateId: authStore.user.Candidates.id,
             jobId,
           });
         }
       } catch (err) {
         console.error("Lỗi khi thao tác với công việc đã lưu:", err);
+        toast.error("Lỗi khi lưu công việc");
       }
     };
 
@@ -939,7 +972,7 @@ export default {
 
     onMounted(async () => {
       try {
-        if (authStore.isAuthenticated && authStore.user) {
+        if (authStore.isAuthenticated && authStore.user?.Candidates) {
           await Promise.all([
             saveJobStore.fetchSaveJobs(1, saveJobStore.pageSize),
             fetchProfileCvs(),
@@ -965,6 +998,7 @@ export default {
       profileCvs,
       applicationForm,
       isJobSaved,
+      isCandidate,
       checkLoginStatus,
       formatDate,
       formatPostedAt,
@@ -980,7 +1014,9 @@ export default {
   },
 };
 </script>
+
 <style scoped>
+/* Existing styles remain unchanged */
 @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap");
 
 .job-detail {
@@ -1319,13 +1355,13 @@ export default {
   box-shadow: 0 4px 14px rgba(49, 130, 206, 0.4);
 }
 
-.apply-button:hover {
+.apply-button:hover:not(:disabled) {
   background: #2b6cb0;
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(49, 130, 206, 0.5);
 }
 
-.apply-button:active {
+.apply-button:active:not(:disabled) {
   transform: translateY(-1px);
 }
 

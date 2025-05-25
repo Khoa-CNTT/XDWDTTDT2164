@@ -157,7 +157,7 @@
 
               <!-- Job Card -->
               <div v-for="job in jobStore.jobs" :key="job.id">
-                <div class="job-card">
+                <div class="job-card" @click="goToJobDetail(job.jobSlug)">
                   <div class="job-content">
                     <img
                       :src="getCompanyLogo(job.Employers.companyLogo)"
@@ -169,6 +169,7 @@
                       <router-link
                         :to="`/job/${job.jobSlug}`"
                         class="job-title"
+                        @click.stop
                         >{{ job.jobName }}</router-link
                       >
                       <div class="job-tags">
@@ -204,7 +205,7 @@
                           (savedJob) => savedJob.jobId === job.id
                         ) && authStore.isAuthenticated,
                     }"
-                    @click="toggleSaveJob(job.id)"
+                    @click.stop="toggleSaveJob(job.id)"
                     :disabled="job.isSaving"
                   >
                     <i
@@ -410,6 +411,13 @@ export default {
         return;
       }
 
+      if (authStore.user.role !== "candidate") {
+        toast.error("Chỉ ứng viên mới có thể lưu công việc", {
+          autoClose: 3000,
+        });
+        return;
+      }
+
       const job = jobStore.jobs.find((j) => j.id === jobId);
       if (!job) {
         console.error("Job not found:", jobId);
@@ -432,7 +440,6 @@ export default {
             candidateId: authStore.candidateId,
             jobId,
           });
-          toast.success("Đã lưu công việc", { autoClose: 3000 });
         }
       } catch (error) {
         console.error("Toggle save job failed:", error);
@@ -449,6 +456,10 @@ export default {
       filters.value.page = page;
       updateQueryParams();
       fetchJobs();
+    };
+
+    const goToJobDetail = (jobSlug) => {
+      router.push(`/job/${jobSlug}`);
     };
 
     const paginationPages = computed(() => {
@@ -504,7 +515,7 @@ export default {
 
     onMounted(async () => {
       await fetchFilterData();
-      if (authStore.isAuthenticated) {
+      if (authStore.isAuthenticated && authStore.user.Candidates) {
         await saveJobStore.fetchSaveJobs();
       }
     });
@@ -527,6 +538,7 @@ export default {
       rankStore,
       experienceStore,
       salaryStore,
+      goToJobDetail,
     };
   },
 };
@@ -534,6 +546,10 @@ export default {
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
 
 .job-list {
   font-family: "Roboto", sans-serif;
@@ -657,13 +673,17 @@ export default {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   margin-bottom: 20px;
   transition: all 0.3s ease;
   border: 1px solid transparent;
+  cursor: pointer;
+  height: 160px; /* Fixed height for consistency */
+  overflow: hidden;
+  width: 100%;
 }
 
 .job-card:hover {
@@ -674,34 +694,42 @@ export default {
 
 .job-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
+  overflow: hidden;
 }
 
 .job-logo {
-  width: 70px;
-  height: 70px;
-  border-radius: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
   object-fit: cover;
-  margin-right: 20px;
+  margin-right: 16px;
   border: 1px solid #e2e8f0;
-  padding: 5px;
+  padding: 4px;
   background: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .job-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .job-title {
   font-family: "Montserrat", sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1e293b;
   text-decoration: none;
-  margin-bottom: 12px;
-  display: block;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s ease;
 }
 
@@ -712,37 +740,50 @@ export default {
 .job-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
 }
 
 .job-tags .tag {
   background: #f8fafc;
   color: #64748b;
-  padding: 7px 12px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
   border: 1px solid #e2e8f0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Prevent tags from stretching too wide */
 }
 
 .job-tags .tag i {
-  margin-right: 6px;
+  margin-right: 5px;
   color: #94a3b8;
 }
 
 .job-badges {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .badge {
-  padding: 7px 14px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .badge-type {
@@ -754,15 +795,21 @@ export default {
   background: transparent;
   border: 2px solid #e2e8f0;
   color: #64748b;
-  padding: 10px 18px;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .save-button:hover {
@@ -783,7 +830,7 @@ export default {
 }
 
 .save-button i {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* Pagination */
@@ -845,8 +892,27 @@ export default {
   }
 
   .job-logo {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .job-card {
+    height: 140px;
+  }
+
+  .job-title {
+    font-size: 1rem;
+  }
+
+  .job-tags .tag,
+  .badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .save-button {
+    font-size: 0.85rem;
+    padding: 6px 14px;
   }
 }
 
@@ -874,11 +940,28 @@ export default {
   .job-card {
     flex-direction: column;
     align-items: flex-start;
+    height: 220px;
+  }
+
+  .job-content {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
   }
 
   .save-button {
-    margin-top: 20px;
+    margin-top: 12px;
     align-self: flex-end;
+  }
+
+  .job-title {
+    font-size: 0.95rem;
+  }
+
+  .job-tags .tag,
+  .badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
   }
 }
 
@@ -905,27 +988,38 @@ export default {
   }
 
   .job-logo {
-    margin-bottom: 15px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
     margin-right: 0;
   }
 
   .job-tags {
-    gap: 8px;
+    gap: 6px;
   }
 
-  .job-tags .tag {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
-
+  .job-tags .tag,
   .badge {
-    padding: 5px 10px;
+    padding: 4px 6px;
+    font-size: 0.65rem;
+  }
+
+  .save-button {
+    padding: 6px 12px;
     font-size: 0.8rem;
   }
 
   .page-link {
     padding: 8px 12px;
     font-size: 0.85rem;
+  }
+
+  .job-card {
+    height: 240px;
+  }
+
+  .job-title {
+    font-size: 0.9rem;
   }
 }
 

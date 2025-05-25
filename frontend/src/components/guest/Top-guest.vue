@@ -226,7 +226,7 @@ export default {
       ) {
         return this.authStore.user.Employers.companyName || "Nhà tuyển dụng";
       }
-      return "Admin";
+      return "Người dùng";
     },
     userAvatar() {
       if (!this.authStore.isAuthenticated || !this.authStore.user) {
