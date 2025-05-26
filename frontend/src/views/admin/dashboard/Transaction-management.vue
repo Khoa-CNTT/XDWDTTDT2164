@@ -12,12 +12,12 @@
       </div>
     </div>
 
-    <!-- Thông báo lỗi -->
+    <!-- Error Alert -->
     <div v-if="error" class="alert alert-danger mt-3" role="alert">
       {{ error }}
     </div>
 
-    <!-- Card doanh thu -->
+    <!-- Revenue Cards -->
     <div class="row mb-4">
       <div class="col-lg-3 col-md-6">
         <div class="card">
@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <!-- Biểu đồ doanh thu -->
+    <!-- Revenue Charts -->
     <div class="row">
       <div class="col-lg-7 col-md-12">
         <div class="card p-3">
@@ -168,7 +168,7 @@
       </div>
     </div>
 
-    <!-- Bảng giao dịch -->
+    <!-- Transactions Table -->
     <div class="card mt-5">
       <div v-if="paymentStore.isLoading" class="text-center py-5">
         <i class="fas fa-spinner fa-spin"></i> Đang tải danh sách giao dịch...
@@ -201,11 +201,7 @@
               style="cursor: pointer"
             >
               <td>
-                {{
-                  (paymentStore.currentPage - 1) * paymentStore.pageSize +
-                  index +
-                  1
-                }}
+                {{ index + 1 }}
               </td>
               <td>{{ transaction.transactionId }}</td>
               <td>{{ transaction.Users?.Employers?.companyName || "N/A" }}</td>
@@ -229,13 +225,19 @@
           </tbody>
         </table>
 
-        <!-- Pagination (only show if totalItems >= 8) -->
+        <!-- Pagination -->
         <nav
           v-if="paymentStore.totalItems >= 8 && paymentStore.totalPages > 1"
           aria-label="Page navigation"
           class="p-3"
         >
           <ul class="pagination justify-content-center mb-0">
+            <li
+              class="page-item"
+              :class="{ disabled: paymentStore.currentPage === 1 }"
+            >
+              <button class="page-link" @click="goToPage(1)">Đầu</button>
+            </li>
             <li
               class="page-item"
               :class="{ disabled: paymentStore.currentPage === 1 }"
@@ -257,11 +259,13 @@
               }"
             >
               <button
+                v-if="page !== '...'"
                 class="page-link"
-                @click="page !== '...' && goToPage(page)"
+                @click="goToPage(page)"
               >
                 {{ page }}
               </button>
+              <span v-else class="page-link">...</span>
             </li>
             <li
               class="page-item"
@@ -276,12 +280,25 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </li>
+            <li
+              class="page-item"
+              :class="{
+                disabled: paymentStore.currentPage === paymentStore.totalPages,
+              }"
+            >
+              <button
+                class="page-link"
+                @click="goToPage(paymentStore.totalPages)"
+              >
+                Cuối
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
     </div>
 
-    <!-- Modal for transaction details -->
+    <!-- Transaction Details Modal -->
     <div class="modal fade" id="update-modal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -351,9 +368,8 @@ import {
 } from "@/apis/wallet";
 import { getPaymentOverview } from "@/apis/dashboard";
 import { Modal } from "bootstrap";
+import { toast } from "vue3-toastify";
 
-// Register Chart.js components
-console.log("Chart.js version:", Chart.version);
 Chart.register(...registerables);
 
 export default {
@@ -361,11 +377,10 @@ export default {
   setup() {
     const paymentStore = useWalletStore();
 
-    // Tính toán các trang hiển thị trong phân trang
     const paginationPages = computed(() => {
       const totalPages = paymentStore.totalPages;
       const currentPage = paymentStore.currentPage;
-      const maxPagesToShow = 5; // Số trang tối đa hiển thị
+      const maxPagesToShow = 5;
       const pages = [];
 
       if (totalPages <= maxPagesToShow) {
@@ -373,25 +388,31 @@ export default {
           pages.push(i);
         }
       } else {
-        const startPage = Math.max(
-          1,
+        pages.push(1);
+        let startPage = Math.max(
+          2,
           currentPage - Math.floor(maxPagesToShow / 2)
         );
-        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+        let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 2);
 
-        if (startPage > 1) {
-          pages.push(1);
-          if (startPage > 2) pages.push("...");
+        if (endPage >= totalPages - 1) {
+          startPage = Math.max(2, totalPages - maxPagesToShow + 2);
+          endPage = totalPages - 1;
+        }
+
+        if (startPage > 2) {
+          pages.push("...");
         }
 
         for (let i = startPage; i <= endPage; i++) {
           pages.push(i);
         }
 
-        if (endPage < totalPages) {
-          if (endPage < totalPages - 1) pages.push("...");
-          pages.push(totalPages);
+        if (endPage < totalPages - 1) {
+          pages.push("...");
         }
+
+        pages.push(totalPages);
       }
 
       return pages;
@@ -498,6 +519,7 @@ export default {
         this.error = null;
       } catch (err) {
         this.error = "Không thể tải dữ liệu doanh thu. Vui lòng thử lại.";
+        toast.error(this.error);
         console.error("Lỗi khi lấy dữ liệu doanh thu:", err);
       }
     },
@@ -528,6 +550,7 @@ export default {
         this.revenueChartError = `Không thể tải dữ liệu biểu đồ: ${
           err.message || "Lỗi không xác định"
         }`;
+        toast.error(this.revenueChartError);
         console.error("Lỗi khi lấy dữ liệu biểu đồ:", err);
       } finally {
         this.revenueChartLoading = false;
@@ -543,7 +566,6 @@ export default {
         const response = await getPaymentChartApi(this.selectedPieFilter);
         const apiData = response.data || [];
 
-        // Aggregate data
         const aggregatedData = {
           walletTopUp: 0,
           payment: 0,
@@ -556,9 +578,6 @@ export default {
           aggregatedData.refund += Number(item.refund) || 0;
         });
 
-        console.log("Aggregated data:", aggregatedData);
-
-        // Create pie chart dataset
         this.pieChartData = {
           labels: ["Thanh toán bài đăng", "Nạp ví", "Hoàn tiền"],
           datasets: [
@@ -582,12 +601,11 @@ export default {
             },
           ],
         };
-
-        console.log("pieChartData:", this.pieChartData);
       } catch (err) {
         this.pieChartError = `Không thể tải dữ liệu biểu đồ: ${
           err.message || "Lỗi không xác định"
         }`;
+        toast.error(this.pieChartError);
         console.error("Lỗi khi lấy dữ liệu biểu đồ phân bổ:", err);
       } finally {
         this.pieChartLoading = false;
@@ -606,9 +624,11 @@ export default {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
+        toast.success("Xuất file CSV thành công!");
       } catch (error) {
         console.error("Lỗi khi xuất file CSV:", error);
         this.error = "Không thể xuất file CSV. Vui lòng thử lại.";
+        toast.error(this.error);
       }
     },
 
@@ -624,7 +644,15 @@ export default {
         page <= this.paymentStore.totalPages &&
         page !== this.paymentStore.currentPage
       ) {
-        await this.paymentStore.fetchPayments(page, this.paymentStore.pageSize);
+        try {
+          await this.paymentStore.fetchPayments(
+            page,
+            this.paymentStore.pageSize
+          );
+        } catch (error) {
+          toast.error("Lỗi khi tải trang giao dịch!");
+          console.error("Lỗi khi chuyển trang:", error);
+        }
       }
     },
 
@@ -772,30 +800,21 @@ export default {
         });
       } catch (error) {
         console.error("Lỗi khi vẽ biểu đồ doanh thu:", error);
+        toast.error("Lỗi khi tạo biểu đồ doanh thu!");
       }
     },
 
     updatePieChart() {
-      console.log("updatePieChart called");
-      console.log("pieChartCanvas ref:", this.$refs.pieChartCanvas);
-      console.log("pieChartData:", this.pieChartData);
-
       if (this.pieChartInstance) {
         this.pieChartInstance.destroy();
       }
 
       if (!this.$refs.pieChartCanvas || !this.pieChartData) {
-        console.warn("Canvas or data missing, cannot render pie chart");
         return;
       }
 
       try {
         const ctx = this.$refs.pieChartCanvas.getContext("2d");
-        console.log("Canvas dimensions:", {
-          width: this.$refs.pieChartCanvas.width,
-          height: this.$refs.pieChartCanvas.height,
-          clientWidth: this.$refs.pieChartCanvas.parentNode.clientWidth,
-        });
         this.$refs.pieChartCanvas.width =
           this.$refs.pieChartCanvas.parentNode.clientWidth;
         this.$refs.pieChartCanvas.height = 350;
@@ -852,9 +871,9 @@ export default {
             cutout: "50%",
           },
         });
-        console.log("Pie chart initialized:", this.pieChartInstance);
       } catch (error) {
         console.error("Error initializing pie chart:", error);
+        toast.error("Lỗi khi tạo biểu đồ phân bổ doanh thu!");
       }
     },
   },
@@ -870,7 +889,6 @@ export default {
 </script>
 
 <style scoped>
-/* Main Container */
 .transaction-management {
   padding: 24px;
   max-width: 100%;
@@ -879,7 +897,6 @@ export default {
   font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Header */
 h2 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -922,7 +939,6 @@ h2:after {
   font-size: 0.8rem;
 }
 
-/* Alert */
 .alert-danger {
   background: #f8d7da;
   border: 1px solid #f5c2c7;
@@ -932,13 +948,11 @@ h2:after {
   color: #842029;
 }
 
-/* Header Layout */
 .d-flex.justify-content-between {
   margin-bottom: 20px;
   align-items: center;
 }
 
-/* Buttons */
 .btn {
   border-radius: 4px;
   font-weight: 500;
@@ -1001,7 +1015,6 @@ h2:after {
   border-radius: 4px;
 }
 
-/* Revenue Cards */
 .row.mb-4 {
   margin-bottom: 20px !important;
 }
@@ -1048,7 +1061,6 @@ h2:after {
   color: #dc3545;
 }
 
-/* Chart Cards */
 .card.p-3 {
   padding: 1rem !important;
 }
@@ -1094,7 +1106,6 @@ canvas {
   max-height: 350px !important;
 }
 
-/* Table */
 .card.mt-5 {
   margin-top: 1.5rem !important;
 }
@@ -1131,7 +1142,6 @@ canvas {
   background: #f8f9fa;
 }
 
-/* Badges */
 .badge {
   padding: 0.35em 0.65em;
   border-radius: 50rem;
@@ -1151,7 +1161,6 @@ canvas {
   color: #842029 !important;
 }
 
-/* Pagination */
 .pagination {
   margin-top: 0;
 }
@@ -1165,6 +1174,8 @@ canvas {
   border: 1px solid #dee2e6;
   transition: all 0.2s ease;
   cursor: pointer;
+  min-width: 40px;
+  text-align: center;
 }
 
 .page-item.active .page-link {
@@ -1185,7 +1196,6 @@ canvas {
   background: #f8f9fa;
 }
 
-/* Loading & Error States */
 .text-center.py-5 {
   padding: 2rem 0;
   color: #6c757d;
@@ -1212,7 +1222,6 @@ canvas {
   color: #dc3545;
 }
 
-/* Modal */
 .modal-dialog {
   max-width: 500px;
 }
@@ -1274,7 +1283,6 @@ canvas {
   background: #5c636a;
 }
 
-/* Equal height columns */
 .row {
   --bs-gutter-x: 1.5rem;
   --bs-gutter-y: 0;
@@ -1298,7 +1306,6 @@ canvas {
   margin-bottom: 1rem;
 }
 
-/* Responsive */
 @media (min-width: 992px) {
   .col-lg-3 {
     flex: 0 0 auto;

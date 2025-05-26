@@ -74,10 +74,12 @@
                 <span
                   :class="[
                     'status-badge',
-                    job.rating === 'Phù hợp' ? 'approved' : 'not-approved',
+                    job.employerReview === 'Phù hợp'
+                      ? 'approved'
+                      : 'not-approved',
                   ]"
                 >
-                  {{ job.rating || "Chưa đánh giá" }}
+                  {{ job.employerReview || "Chưa đánh giá" }}
                 </span>
               </td>
               <td class="action-buttons">

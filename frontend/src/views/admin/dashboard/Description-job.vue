@@ -149,7 +149,7 @@
         </button>
         <button
           class="btn btn-outline-danger"
-          @click="rejectJob"
+          @click="showRejectModal"
           :disabled="jobStore.isLoading"
         >
           <i class="fas fa-times me-1"></i>Từ chối
@@ -165,6 +165,79 @@
     <!-- Empty state -->
     <div v-else class="text-center mt-5">
       <i class="fas fa-exclamation-triangle me-2"></i>Không có dữ liệu bài đăng.
+    </div>
+
+    <!-- Rejection Modal -->
+    <div
+      v-if="showModal"
+      class="modal fade show d-block"
+      tabindex="-1"
+      style="background-color: rgba(0, 0, 0, 0.5)"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+              Xác nhận từ chối bài đăng
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="hideRejectModal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-3">
+              Bạn có chắc chắn muốn từ chối bài đăng này không?
+            </p>
+            <div class="mb-3">
+              <label for="rejectionReason" class="form-label">
+                <i class="fas fa-edit me-1"></i>
+                Lý do từ chối <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="rejectionReason"
+                v-model="rejectionReason"
+                class="form-control"
+                rows="4"
+                placeholder="Vui lòng nhập lý do từ chối bài đăng này..."
+                :class="{
+                  'is-invalid': showValidationError && !rejectionReason.trim(),
+                }"
+              ></textarea>
+              <div
+                v-if="showValidationError && !rejectionReason.trim()"
+                class="invalid-feedback"
+              >
+                Vui lòng nhập lý do từ chối
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="hideRejectModal"
+              :disabled="jobStore.isLoading"
+            >
+              <i class="fas fa-times me-1"></i>Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              @click="confirmRejectJob"
+              :disabled="jobStore.isLoading"
+            >
+              <i class="fas fa-ban me-1"></i>
+              <span v-if="jobStore.isLoading">
+                <i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...
+              </span>
+              <span v-else>Từ chối bài đăng</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -183,6 +256,13 @@ export default {
     const route = useRoute();
     const router = useRouter();
     return { jobStore, route, router };
+  },
+  data() {
+    return {
+      showModal: false,
+      rejectionReason: "",
+      showValidationError: false,
+    };
   },
   computed: {
     plainDescription() {
@@ -241,15 +321,40 @@ export default {
         toast.error("Lỗi khi duyệt bài đăng: " + error.message);
       }
     },
-    async rejectJob() {
-      if (!confirm("Xác nhận từ chối bài đăng này?")) return;
+    showRejectModal() {
+      this.showModal = true;
+      this.rejectionReason = "";
+      this.showValidationError = false;
+    },
+    hideRejectModal() {
+      this.showModal = false;
+      this.rejectionReason = "";
+      this.showValidationError = false;
+    },
+    async confirmRejectJob() {
+      // Validate rejection reason
+      if (!this.rejectionReason.trim()) {
+        this.showValidationError = true;
+        return;
+      }
+
       try {
-        await verifyJobApi(this.route.params.jobId, "Đã bị kiểm duyệt");
+        // You can pass the rejection reason to your API if needed
+        await verifyJobApi(
+          this.route.params.jobId,
+          "Đã bị kiểm duyệt",
+          this.rejectionReason
+        );
         toast.success("Bài đăng đã bị từ chối.");
+        this.hideRejectModal();
         this.router.push("/admin-dashboard/post-management");
       } catch (error) {
         toast.error("Lỗi khi từ chối bài đăng: " + error.message);
       }
+    },
+    // Legacy method - keep for backward compatibility
+    async rejectJob() {
+      this.showRejectModal();
     },
   },
   async mounted() {
@@ -493,6 +598,115 @@ hr {
   align-items: center;
 }
 
+/* Modal styles */
+.modal {
+  z-index: 1050;
+}
+
+.modal-dialog {
+  max-width: 500px;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-body p {
+  color: #495057;
+  margin-bottom: 1rem;
+}
+
+.modal-body .form-label {
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.modal-body .form-control {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-body .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+  outline: none;
+}
+
+.modal-body .form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.modal-body .invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+
+.modal-footer .btn {
+  margin-left: 0.5rem;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+.btn-danger {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-danger:disabled {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .description-job {
@@ -520,6 +734,11 @@ hr {
   .job-requirements .row {
     flex-direction: column;
   }
+
+  .modal-dialog {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
 }
 
 @media (max-width: 576px) {
@@ -541,6 +760,16 @@ hr {
   .btn {
     width: 100%;
     margin-bottom: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-footer .btn:last-child {
+    margin-bottom: 0;
   }
 }
 </style>

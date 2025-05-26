@@ -109,7 +109,7 @@
                         @click="openRejectModal(job.id)"
                         :disabled="jobStore.isLoading"
                       >
-                        Từ chối
+                        Hủy
                       </button>
                     </div>
                   </td>
@@ -175,7 +175,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Từ chối bài đăng</h5>
+            <h5 class="modal-title">Hủy bài đăng</h5>
             <button
               type="button"
               class="btn-close"
@@ -185,15 +185,15 @@
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="rejectReason" class="form-label"
-                >Lý do từ chối:</label
+              <label for="rejectionReason" class="form-label"
+                >Lý do hủy bài đăng:</label
               >
               <textarea
-                id="rejectReason"
-                v-model="rejectReason"
+                id="rejectionReason"
+                v-model="rejectionReason"
                 class="form-control"
                 rows="4"
-                placeholder="Nhập lý do từ chối..."
+                placeholder="Nhập lý do hủy bài đăng..."
                 required
               ></textarea>
             </div>
@@ -210,9 +210,9 @@
               type="button"
               class="btn btn-danger"
               @click="confirmRejectJob"
-              :disabled="!rejectReason.trim() || jobStore.isLoading"
+              :disabled="!rejectionReason.trim() || jobStore.isLoading"
             >
-              Từ chối
+              Hủy bài đăng
             </button>
           </div>
         </div>
@@ -235,8 +235,45 @@ export default {
     return {
       showRejectModal: false,
       rejectJobId: null,
-      rejectReason: "",
+      rejectionReason: "",
     };
+  },
+  computed: {
+    paginationPages() {
+      const totalPages = this.jobStore.totalPages;
+      const currentPage = this.jobStore.currentPage;
+      const pages = [];
+
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        if (currentPage <= 4) {
+          for (let i = 1; i <= 5; i++) {
+            pages.push(i);
+          }
+          pages.push("...");
+          pages.push(totalPages);
+        } else if (currentPage >= totalPages - 3) {
+          pages.push(1);
+          pages.push("...");
+          for (let i = totalPages - 4; i <= totalPages; i++) {
+            pages.push(i);
+          }
+        } else {
+          pages.push(1);
+          pages.push("...");
+          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pages.push(i);
+          }
+          pages.push("...");
+          pages.push(totalPages);
+        }
+      }
+
+      return pages;
+    },
   },
   methods: {
     async fetchJobs(page = 1) {
@@ -276,27 +313,27 @@ export default {
     },
     openRejectModal(jobId) {
       this.rejectJobId = jobId;
-      this.rejectReason = "";
+      this.rejectionReason = "";
       this.showRejectModal = true;
     },
     closeRejectModal() {
       this.showRejectModal = false;
       this.rejectJobId = null;
-      this.rejectReason = "";
+      this.rejectionReason = "";
     },
     async confirmRejectJob() {
-      if (!this.rejectReason.trim()) {
-        toast.error("Vui lòng nhập lý do từ chối!");
+      if (!this.rejectionReason.trim()) {
+        toast.error("Vui lòng nhập lý do hủy bài đăng!");
         return;
       }
       try {
-        await this.jobStore.rejectJob(this.rejectJobId, this.rejectReason);
-        toast.success("Từ chối bài đăng thành công!");
+        await this.jobStore.rejectJob(this.rejectJobId, this.rejectionReason);
+        toast.success("Hủy bài đăng thành công!");
         await this.fetchJobs(this.jobStore.currentPage);
         this.closeRejectModal();
       } catch (error) {
-        console.error("Lỗi khi từ chối bài đăng:", error);
-        toast.error("Lỗi khi từ chối bài đăng!");
+        console.error("Lỗi khi hủy bài đăng:", error);
+        toast.error("Lỗi khi hủy bài đăng!");
       }
     },
   },

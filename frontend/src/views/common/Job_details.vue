@@ -185,7 +185,7 @@
                       {{ job.Employers?.companyName || "N/A" }}
                     </h5>
                     <router-link
-                      :to="`/company/${job.Employers?.id}`"
+                      :to="`/company/${job.Employers?.companySlug}`"
                       class="company-link"
                     >
                       <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>Xem

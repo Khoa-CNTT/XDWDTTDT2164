@@ -2,26 +2,26 @@
   <div class="company-management">
     <h2>Danh Sách Công Ty</h2>
     <router-link to="/" class="mb-3 d-inline-block">
-      Quay trở lại trang chủ?</router-link
-    >
+      Quay trở lại trang chủ?
+    </router-link>
     <div class="card mt-5">
       <div class="card-header">
         <h5 class="title-header">Danh Sách Công Ty</h5>
       </div>
       <div class="card-body">
-        <!-- Trạng thái loading -->
+        <!-- Loading state -->
         <div v-if="userStore.isLoading" class="text-center">
           <i class="fas fa-spinner fa-spin"></i> Đang tải danh sách công ty...
         </div>
-        <!-- Trạng thái lỗi -->
+        <!-- Error state -->
         <div v-else-if="userStore.error" class="text-center text-danger">
           {{ userStore.error }}
         </div>
-        <!-- Không có công ty -->
+        <!-- Empty state -->
         <div v-else-if="userStore.employers.length === 0" class="text-center">
           Không có công ty nào.
         </div>
-        <!-- Hiển thị danh sách công ty -->
+        <!-- Company list -->
         <div v-else>
           <table class="table table-bordered table-hover">
             <thead>
@@ -61,6 +61,7 @@
                 </td>
                 <td>
                   <span
+                    style="color: white"
                     :class="[
                       'badge',
                       {
@@ -75,7 +76,7 @@
                 </td>
                 <td>{{ formatDate(employer.createdAt) }}</td>
                 <td>
-                  <!-- Hiển thị nút duyệt và từ chối khi trạng thái là "Chờ kiểm duyệt" -->
+                  <!-- Action buttons for pending approval -->
                   <div
                     v-if="employer.isApproved === 'Chờ kiểm duyệt'"
                     class="action-buttons"
@@ -101,25 +102,52 @@
             </tbody>
           </table>
 
-          <!-- Phân trang -->
-          <nav v-if="userStore.totalPages > 1" aria-label="Page navigation">
+          <!-- Pagination -->
+          <nav
+            v-if="userStore.totalItems >= 8 && userStore.totalPages > 1"
+            aria-label="Page navigation"
+          >
             <ul class="pagination justify-content-center">
               <li
                 class="page-item"
                 :class="{ disabled: userStore.currentPage === 1 }"
               >
+                <button class="page-link" @click="goToPage(1)">Đầu</button>
+              </li>
+              <li
+                class="page-item"
+                :class="{ disabled: userStore.currentPage === 1 }"
+              >
                 <button class="page-link" @click="previousPage">
-                  Trang trước
+                  <i class="fas fa-chevron-left"></i>
                 </button>
               </li>
               <li
-                v-for="page in userStore.totalPages"
+                v-for="page in paginationPages"
                 :key="page"
                 class="page-item"
-                :class="{ active: userStore.currentPage === page }"
+                :class="{
+                  active: userStore.currentPage === page,
+                  disabled: page === '...',
+                }"
               >
-                <button class="page-link" @click="goToPage(page)">
+                <button
+                  v-if="page !== '...'"
+                  class="page-link"
+                  @click="goToPage(page)"
+                >
                   {{ page }}
+                </button>
+                <span v-else class="page-link">...</span>
+              </li>
+              <li
+                class="page-item"
+                :class="{
+                  disabled: userStore.currentPage === userStore.totalPages,
+                }"
+              >
+                <button class="page-link" @click="nextPage">
+                  <i class="fas fa-chevron-right"></i>
                 </button>
               </li>
               <li
@@ -128,7 +156,12 @@
                   disabled: userStore.currentPage === userStore.totalPages,
                 }"
               >
-                <button class="page-link" @click="nextPage">Trang sau</button>
+                <button
+                  class="page-link"
+                  @click="goToPage(userStore.totalPages)"
+                >
+                  Cuối
+                </button>
               </li>
             </ul>
           </nav>
@@ -136,7 +169,7 @@
       </div>
     </div>
 
-    <!-- Modal xác nhận -->
+    <!-- Confirmation Modal -->
     <div
       class="modal fade"
       id="confirmModal"
@@ -183,15 +216,14 @@
 </template>
 
 <script>
-import { useJobStore } from "@stores/useJobStore";
 import { useUserStore } from "@stores/useUserStore";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Modal } from "bootstrap";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "CompanyManagement",
   setup() {
-    const jobStore = useJobStore();
     const userStore = useUserStore();
     const isProcessing = ref(false);
     const confirmModal = ref(null);
@@ -203,7 +235,6 @@ export default {
     const pendingCompanyId = ref(null);
 
     return {
-      jobStore,
       userStore,
       isProcessing,
       confirmModal,
@@ -215,18 +246,65 @@ export default {
       pendingCompanyId,
     };
   },
+  computed: {
+    paginationPages() {
+      const currentPage = this.userStore.currentPage;
+      const totalPages = this.userStore.totalPages;
+      const maxPagesToShow = 5;
+      const pages = [];
+
+      if (totalPages <= maxPagesToShow) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        let startPage = Math.max(
+          2,
+          currentPage - Math.floor(maxPagesToShow / 2)
+        );
+        let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 2);
+
+        if (endPage >= totalPages - 1) {
+          startPage = Math.max(2, totalPages - maxPagesToShow + 2);
+          endPage = totalPages - 1;
+        }
+
+        if (startPage > 2) {
+          pages.push("...");
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          pages.push(i);
+        }
+
+        if (endPage < totalPages - 1) {
+          pages.push("...");
+        }
+
+        pages.push(totalPages);
+      }
+
+      return pages;
+    },
+  },
   methods: {
     async fetchEmployers(page = 1) {
       try {
         await this.userStore.fetchEmployers(page, this.userStore.pageSize);
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách nhà tuyển dụng:", error);
+        console.error("Lỗi khi lấy danh sách công ty:", error);
+        toast.error("Lỗi khi tải danh sách công ty!");
       }
     },
     formatDate(date) {
       if (!date) return "N/A";
-      const d = new Date(date);
-      return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+      try {
+        const d = new Date(date);
+        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+      } catch {
+        return "N/A";
+      }
     },
     previousPage() {
       if (this.userStore.currentPage > 1) {
@@ -239,16 +317,18 @@ export default {
       }
     },
     goToPage(page) {
-      if (page >= 1 && page <= this.userStore.totalPages) {
+      if (
+        page >= 1 &&
+        page <= this.userStore.totalPages &&
+        page !== this.userStore.currentPage
+      ) {
         this.fetchEmployers(page);
       }
     },
-
-    // Hiển thị modal xác nhận duyệt công ty
     approveCompany(companyId) {
       this.modalTitle = "Xác nhận duyệt";
       this.modalMessage = "Bạn có chắc chắn muốn duyệt công ty này?";
-      this.modalActionBtnText = "Đã được duyệt";
+      this.modalActionBtnText = "Duyệt";
       this.modalActionBtnClass = "btn-success";
       this.pendingAction = "Đã kiểm duyệt";
       this.pendingCompanyId = companyId;
@@ -256,12 +336,10 @@ export default {
       const modal = new Modal(this.confirmModal);
       modal.show();
     },
-
-    // Hiển thị modal xác nhận từ chối công ty
     rejectCompany(companyId) {
       this.modalTitle = "Xác nhận từ chối";
       this.modalMessage = "Bạn có chắc chắn muốn từ chối công ty này?";
-      this.modalActionBtnText = "Đã bị từ chối";
+      this.modalActionBtnText = "Từ chối";
       this.modalActionBtnClass = "btn-danger";
       this.pendingAction = "Đã từ chối";
       this.pendingCompanyId = companyId;
@@ -269,20 +347,15 @@ export default {
       const modal = new Modal(this.confirmModal);
       modal.show();
     },
-
-    // Xử lý hành động xác nhận từ modal
     async confirmAction() {
-      // Kiểm tra giá trị trước khi gọi API
       if (!this.pendingAction || !this.pendingCompanyId) {
-        this.$toast.error("Không xác định được hành động hoặc ID công ty.");
-        this.isProcessing = false;
+        toast.error("Không xác định được hành động hoặc ID công ty.");
         return;
       }
 
       this.isProcessing = true;
 
       try {
-        // Xác định data là true (duyệt) hoặc false (từ chối)
         const data =
           this.pendingAction === "Đã kiểm duyệt"
             ? { status: true }
@@ -294,38 +367,38 @@ export default {
         );
 
         if (response && response.status === "success") {
-          // Làm mới danh sách sau khi duyệt/từ chối
-          this.fetchEmployers(this.userStore.currentPage);
+          toast.success(
+            `Công ty đã được ${
+              this.pendingAction === "Đã kiểm duyệt" ? "duyệt" : "từ chối"
+            } thành công!`
+          );
+          await this.fetchEmployers(this.userStore.currentPage);
         } else {
           throw new Error("Phản hồi từ API không hợp lệ");
         }
 
-        // Đóng modal
         const modal = Modal.getInstance(this.confirmModal);
         modal.hide();
       } catch (error) {
         console.error(
           `Lỗi khi ${
-            this.pendingAction === "approve" ? "duyệt" : "từ chối"
+            this.pendingAction === "Đã kiểm duyệt" ? "duyệt" : "từ chối"
           } công ty:`,
           error
         );
-        this.$toast.error(
-          `Có lỗi xảy ra: ${error.message || "Không thể xử lý yêu cầu"}`
-        );
+        toast.error(`Lỗi: ${error.message || "Không thể xử lý yêu cầu"}`);
       } finally {
         this.isProcessing = false;
       }
     },
   },
   mounted() {
-    this.fetchEmployers(); // Gọi API khi component được mount
+    this.fetchEmployers();
   },
 };
 </script>
 
 <style scoped>
-/* General container */
 .company-management {
   padding: 30px;
   max-width: 100%;
@@ -334,7 +407,6 @@ export default {
   min-height: 100vh;
 }
 
-/* Header */
 h2 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -364,7 +436,6 @@ h2 {
   font-size: 0.9rem;
 }
 
-/* Card */
 .card {
   border: none;
   border-radius: 12px;
@@ -387,12 +458,10 @@ h2 {
   margin: 0;
 }
 
-/* Card body */
 .card-body {
   padding: 25px;
 }
 
-/* Loading and empty states */
 .text-center {
   padding: 30px;
   color: #64748b;
@@ -409,7 +478,6 @@ h2 {
   padding: 30px;
 }
 
-/* Table */
 .table-responsive {
   overflow-x: auto;
 }
@@ -446,7 +514,6 @@ h2 {
   color: #334155;
 }
 
-/* Badges */
 .badge {
   font-size: 0.85rem;
   padding: 6px 12px;
@@ -469,7 +536,6 @@ h2 {
   color: #92400e;
 }
 
-/* Pagination */
 .pagination {
   margin-top: 30px;
 }
@@ -482,7 +548,8 @@ h2 {
   color: #475569;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
-  cursor: pointer;
+  min-width: 40px;
+  text-align: center;
 }
 
 .page-item.active .page-link {
@@ -502,7 +569,6 @@ h2 {
   color: #94a3b8;
 }
 
-/* Action buttons */
 .action-buttons {
   display: flex;
   justify-content: center;
@@ -541,7 +607,6 @@ h2 {
   cursor: not-allowed;
 }
 
-/* Responsive */
 @media (max-width: 992px) {
   .action-buttons {
     flex-direction: column;

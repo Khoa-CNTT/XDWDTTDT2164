@@ -144,7 +144,7 @@
               viên hàng đầu. Đọc đánh giá và hơn 600.000 công ty trên toàn thế
               giới
             </p>
-            <button class="cta-button">Bắt đầu</button>
+            <router-link to="/list" class="cta-button">Bắt đầu</router-link>
           </div>
         </div>
       </div>
@@ -300,7 +300,7 @@ export default {
 /* Banner Section */
 .banner-section {
   background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-  padding: 60px 10px;
+  padding: 0px 10px;
 }
 
 .banner-title {
