@@ -742,7 +742,12 @@ class WalletsService {
         offset,
       });
 
-    return { totalPayments, payments, page, limit };
+    return {
+      totalPayments: Math.ceil(totalPayments / limit),
+      payments,
+      page,
+      limit,
+    };
   }
 
   /**

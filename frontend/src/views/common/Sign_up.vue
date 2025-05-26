@@ -8,14 +8,22 @@
           alt="Login Background"
         />
         <div class="overlay-gradient"></div>
-        <img src="@/assets/logo/logo-2.svg" class="logo-overlay" alt="Logo" />
+        <router-link to="/" class="logo-link">
+          <img src="@/assets/logo/logo-2.svg" class="logo-overlay" alt="Logo" />
+        </router-link>
       </div>
     </div>
     <div class="col-lg-7 col-md-12">
       <div class="form-center">
         <div class="form-content">
           <div class="d-lg-none text-center mb-4">
-            <img src="@/assets/logo/logo.svg" alt="Logo" class="mobile-logo" />
+            <router-link to="/" class="logo-link">
+              <img
+                src="@/assets/logo/logo.svg"
+                alt="Logo"
+                class="mobile-logo"
+              />
+            </router-link>
           </div>
 
           <h2 class="title-text mb-4 text-center">Tạo Tài Khoản</h2>
@@ -389,16 +397,33 @@ export default {
   );
 }
 
-.logo-overlay {
-  width: 150px;
+/* Logo link styling */
+.logo-link {
   position: absolute;
   top: 30px;
   left: 30px;
+  display: inline-block;
+  transition: transform 0.3s ease;
+  text-decoration: none;
+}
+
+.logo-link:hover {
+  transform: scale(1.05);
+}
+
+.logo-overlay {
+  width: 150px;
   filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.3));
   transition: transform 0.3s ease;
 }
 
-.logo-overlay:hover {
+.mobile-logo {
+  width: 130px;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.mobile-logo:hover {
   transform: scale(1.05);
 }
 
@@ -424,16 +449,6 @@ export default {
 
 .form-content:hover {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-}
-
-.mobile-logo {
-  width: 130px;
-  margin-bottom: 10px;
-  transition: transform 0.3s ease;
-}
-
-.mobile-logo:hover {
-  transform: scale(1.05);
 }
 
 /* Title styling */
@@ -653,6 +668,11 @@ export default {
     box-shadow: none;
     padding: 1.5rem 1rem;
     margin: 20px 0;
+  }
+
+  .logo-link {
+    position: static;
+    display: inline-block;
   }
 }
 

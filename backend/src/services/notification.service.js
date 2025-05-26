@@ -18,6 +18,20 @@ class NotificationsService {
 
     return notifications;
   }
+
+  /**
+   * Lấy ra danh sách thông báo của nhà tuyển dụng
+   * @param {string} userId
+   * @returns {Promise<Notification>} - Trả về danh sách thông báo
+   */
+  async getNotificationsForEmployer(userId) {
+    const notifications = await db.Notifications.findAll({
+      where: { userId },
+      order: [["createdAt", "DESC"]],
+    });
+
+    return notifications;
+  }
 }
 
 module.exports = new NotificationsService();

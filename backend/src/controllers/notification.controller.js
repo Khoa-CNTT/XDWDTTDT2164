@@ -20,6 +20,22 @@ class NotificationController {
       return resError(res, error);
     }
   }
+
+  /**
+   * Lấy ra danh sách thông báo của nhà tuyển dụng
+   * @param {Object} req - Request
+   * @param {Object} res - Response
+   * @returns {Promise<Object>} - Danh sách thông báo
+   */
+  async getNotificationsForEmployer(req, res) {
+    try {
+      const { id } = req.user;
+      const result = await notificationService.getNotificationsForEmployer(id);
+      return resSuccess(res, null, result);
+    } catch (error) {
+      return resError(res, error);
+    }
+  }
 }
 
 module.exports = new NotificationController();

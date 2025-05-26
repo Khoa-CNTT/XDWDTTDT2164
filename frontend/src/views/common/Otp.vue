@@ -7,12 +7,10 @@
           class="login-image"
           alt="Login Background"
         />
-        <img
-          src="@/assets/logo/logo-2.svg"
-          class="logo-overlay"
-          alt="Logo"
-          style="width: 150px; position: absolute; top: 20px; left: 20px"
-        />
+        <div class="overlay-gradient"></div>
+        <router-link to="/" class="logo-link">
+          <img src="@/assets/logo/logo-2.svg" class="logo-overlay" alt="Logo" />
+        </router-link>
       </div>
     </div>
     <div class="col-lg-7 col-md-12">

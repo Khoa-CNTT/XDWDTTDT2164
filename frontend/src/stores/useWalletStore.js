@@ -105,9 +105,9 @@ export const useWalletStore = defineStore("wallet", {
           throw new Error("Dữ liệu danh sách giao dịch không hợp lệ");
         }
         this.payments = response.data.payments;
-        this.currentPage = response.data.page;
-        this.pageSize = response.data.limit;
-        this.totalPages = response.data.totalPayments;
+        this.currentPage = response.page;
+        this.pageSize = response.limit;
+        this.totalPages = response.totalPayments;
       } catch (error) {
         this.handleError(error, "Lỗi khi lấy danh sách giao dịch");
         throw error;
