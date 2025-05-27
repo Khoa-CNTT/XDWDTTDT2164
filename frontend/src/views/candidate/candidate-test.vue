@@ -299,7 +299,7 @@ export default {
 
         if (!authStore.user.Candidates) {
           toast.error("Bạn cần tạo hồ sơ trước!");
-          router.push("/");
+          router.push("/create-candidate");
           return;
         }
 
