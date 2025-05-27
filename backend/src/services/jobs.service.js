@@ -308,6 +308,7 @@ class JobsService {
     const { count: totalJobs, rows: jobs } = await db.Jobs.findAndCountAll({
       where: {
         isVisible: true,
+        deletedAt: null,
       },
       include: [
         {
@@ -344,6 +345,7 @@ class JobsService {
     const { count: totalJobs, rows: jobs } = await db.Jobs.findAndCountAll({
       where: {
         employerId,
+        deletedAt: null,
       },
       include: [
         {
@@ -456,7 +458,7 @@ class JobsService {
    */
   async getJobDetailForEmployer(id) {
     const job = await db.Jobs.findOne({
-      where: { id },
+      where: { id, deletedAt: null },
       include: [
         {
           model: db.Categories,
@@ -624,6 +626,7 @@ class JobsService {
           numberOfRecruits: jobData.numberOfRecruits,
           rank: jobData.rank,
           address: jobData.address,
+          isApproved: "Chờ kiểm duyệt",
         },
         { transaction }
       );
@@ -765,6 +768,7 @@ class JobsService {
         currency: "VND",
         paymentDate: new Date(),
         jobId: job.id,
+        status: "Thành công",
       },
       { transaction }
     );
@@ -806,6 +810,9 @@ class JobsService {
 
         if (job.rejectionCount >= 3) {
           await this.handleRefund(job, transaction);
+
+          // xóa ảo bài đăng
+          job.deletedAt = new Date();
         }
       }
 

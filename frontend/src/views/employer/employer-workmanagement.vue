@@ -3,9 +3,9 @@
     <!-- Header -->
     <div class="mb-4">
       <h4 class="mb-1">Quản lý công việc!</h4>
-      <router-link to="/" class="text-decoration-none text-muted small"
-        >Trở lại trang chủ?</router-link
-      >
+      <router-link to="/" class="text-decoration-none text-muted small">
+        Trở lại trang chủ?
+      </router-link>
     </div>
 
     <!-- Jobs List -->
@@ -21,19 +21,19 @@
           </router-link>
         </div>
 
-        <!-- Trạng thái loading -->
+        <!-- Loading state -->
         <div v-if="jobStore.isLoading" class="text-center">
           <i class="fas fa-spinner fa-spin"></i> Đang tải danh sách công việc...
         </div>
-        <!-- Trạng thái lỗi -->
+        <!-- Error state -->
         <div v-else-if="jobStore.error" class="text-center text-danger">
           {{ jobStore.error }}
         </div>
-        <!-- Không có công việc -->
+        <!-- Empty state -->
         <div v-else-if="jobStore.jobs.length === 0" class="text-center">
           Không có công việc nào.
         </div>
-        <!-- Hiển thị danh sách công việc -->
+        <!-- Job list -->
         <div v-else class="table-responsive">
           <table class="table table-striped table-hover">
             <thead class="bg-light">
@@ -70,7 +70,7 @@
                           {{ job.jobName || "N/A" }}
                         </div>
                         <router-link
-                          v-if="job.isVisible === false"
+                          v-if="job.isApprove === 'Chưa thanh toán'"
                           :to="`/employer-dashboard/employer-job-payment/${job.id}`"
                           class="badge bg-warning text-dark small"
                         >
@@ -93,9 +93,9 @@
                   </div>
                 </td>
                 <td>
-                  <a href="#" class="text-primary text-decoration-underline">{{
-                    job.Users?.fullName || "N/A"
-                  }}</a>
+                  <a href="#" class="text-primary text-decoration-underline">
+                    {{ job.Users?.fullName || "N/A" }}
+                  </a>
                 </td>
                 <td class="text-muted small">
                   <div>{{ formatDate(job.createdAt) }}</div>
@@ -105,10 +105,16 @@
                   <span
                     :class="[
                       'badge rounded-pill px-3',
-                      job.isVisible ? 'bg-success' : 'bg-danger',
+                      job.isApproved === 'Đã được duyệt'
+                        ? 'bg-success'
+                        : 'bg-danger',
                     ]"
                   >
-                    {{ job.isVisible ? "Hoạt động" : "Không hoạt động" }}
+                    {{
+                      job.isApproved === "Đã được duyệt"
+                        ? "Hoạt động"
+                        : "Không hoạt động"
+                    }}
                   </span>
                 </td>
                 <td>
@@ -135,25 +141,52 @@
             </tbody>
           </table>
 
-          <!-- Phân trang -->
-          <nav v-if="jobStore.totalPages > 1" aria-label="Page navigation">
+          <!-- Pagination -->
+          <nav
+            v-if="jobStore.totalItems > 8 && jobStore.totalPages > 1"
+            aria-label="Page navigation"
+          >
             <ul class="pagination justify-content-center">
               <li
                 class="page-item"
                 :class="{ disabled: jobStore.currentPage === 1 }"
               >
+                <button class="page-link" @click="goToPage(1)">Đầu</button>
+              </li>
+              <li
+                class="page-item"
+                :class="{ disabled: jobStore.currentPage === 1 }"
+              >
                 <button class="page-link" @click="previousPage">
-                  Trang trước
+                  <i class="fas fa-chevron-left"></i>
                 </button>
               </li>
               <li
-                v-for="page in jobStore.totalPages"
+                v-for="page in paginationPages"
                 :key="page"
                 class="page-item"
-                :class="{ active: jobStore.currentPage === page }"
+                :class="{
+                  active: jobStore.currentPage === page,
+                  disabled: page === '...',
+                }"
               >
-                <button class="page-link" @click="goToPage(page)">
+                <button
+                  v-if="page !== '...'"
+                  class="page-link"
+                  @click="goToPage(page)"
+                >
                   {{ page }}
+                </button>
+                <span v-else class="page-link">...</span>
+              </li>
+              <li
+                class="page-item"
+                :class="{
+                  disabled: jobStore.currentPage === jobStore.totalPages,
+                }"
+              >
+                <button class="page-link" @click="nextPage">
+                  <i class="fas fa-chevron-right"></i>
                 </button>
               </li>
               <li
@@ -162,7 +195,12 @@
                   disabled: jobStore.currentPage === jobStore.totalPages,
                 }"
               >
-                <button class="page-link" @click="nextPage">Trang sau</button>
+                <button
+                  class="page-link"
+                  @click="goToPage(jobStore.totalPages)"
+                >
+                  Cuối
+                </button>
               </li>
             </ul>
           </nav>
@@ -175,6 +213,7 @@
 <script>
 import { useJobStore } from "@stores/useJobStore";
 import { useAuthStore } from "@stores/useAuthStore";
+import { toast } from "vue3-toastify";
 
 export default {
   name: "JobManagement",
@@ -183,14 +222,59 @@ export default {
     const authStore = useAuthStore();
     return { jobStore, authStore };
   },
+  computed: {
+    paginationPages() {
+      const currentPage = this.jobStore.currentPage;
+      const totalPages = this.jobStore.totalPages;
+      const maxPagesToShow = 5;
+      const pages = [];
+
+      if (totalPages <= maxPagesToShow) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        let startPage = Math.max(
+          2,
+          currentPage - Math.floor(maxPagesToShow / 2)
+        );
+        let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 2);
+
+        if (endPage >= totalPages - 1) {
+          startPage = Math.max(2, totalPages - maxPagesToShow + 2);
+          endPage = totalPages - 1;
+        }
+
+        if (startPage > 2) {
+          pages.push("...");
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          pages.push(i);
+        }
+
+        if (endPage < totalPages - 1) {
+          pages.push("...");
+        }
+
+        pages.push(totalPages);
+      }
+
+      return pages;
+    },
+  },
   methods: {
     getImageUrl(imagePath) {
-      if (!imagePath) return "https://via.placeholder.com/150"; // Ảnh mặc định nếu không có ảnh
+      if (!imagePath) return "https://via.placeholder.com/150";
       return `https://res.cloudinary.com/dh1i7su2f/image/upload/${imagePath}`;
     },
     async fetchJobs(page = 1) {
       try {
-        const employerId = this.authStore.user.Employers.id;
+        const employerId = this.authStore.user?.Employers?.id;
+        if (!employerId) {
+          throw new Error("Không tìm thấy thông tin nhà tuyển dụng");
+        }
         await this.jobStore.fetchJobsForEmployer(
           page,
           this.jobStore.pageSize,
@@ -198,12 +282,17 @@ export default {
         );
       } catch (error) {
         console.error("Lỗi khi lấy danh sách công việc:", error);
+        toast.error("Lỗi khi tải danh sách công việc!");
       }
     },
     formatDate(date) {
       if (!date) return "N/A";
-      const d = new Date(date);
-      return `${d.getDate()} Tháng ${d.getMonth() + 1}, ${d.getFullYear()}`;
+      try {
+        const d = new Date(date);
+        return `${d.getDate()} Tháng ${d.getMonth() + 1}, ${d.getFullYear()}`;
+      } catch {
+        return "N/A";
+      }
     },
     previousPage() {
       if (this.jobStore.currentPage > 1) {
@@ -216,25 +305,29 @@ export default {
       }
     },
     goToPage(page) {
-      if (page >= 1 && page <= this.jobStore.totalPages) {
+      if (
+        page >= 1 &&
+        page <= this.jobStore.totalPages &&
+        page !== this.jobStore.currentPage
+      ) {
         this.fetchJobs(page);
       }
     },
     async deleteJob(jobId) {
       if (confirm("Bạn có chắc chắn muốn xóa công việc này?")) {
         try {
-          // Gọi API để xóa công việc (chưa triển khai)
-          console.log("Xóa công việc:", jobId);
-          // Sau khi xóa thành công, làm mới danh sách
+          await this.jobStore.deleteJob(jobId);
+          toast.success("Xóa công việc thành công!");
           await this.fetchJobs(this.jobStore.currentPage);
         } catch (error) {
           console.error("Lỗi khi xóa công việc:", error);
+          toast.error("Lỗi khi xóa công việc!");
         }
       }
     },
   },
   mounted() {
-    this.fetchJobs(); // Gọi API khi component được mount
+    this.fetchJobs();
   },
 };
 </script>
@@ -390,6 +483,8 @@ h5 {
   border: 1px solid #e5e7eb;
   transition: all 0.15s ease-in-out;
   padding: 0.5rem 1rem;
+  min-width: 40px;
+  text-align: center;
 }
 
 .page-item .page-link:hover {

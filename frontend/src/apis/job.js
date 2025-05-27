@@ -89,8 +89,11 @@ export const updateJobApi = async (id, data) => {
  * @param {string} status
  * @returns {Promise<void>}
  */
-export const verifyJobApi = async (id, status) => {
-  const response = await api.put(`/api/jobs/${id}/verify`, { status });
+export const verifyJobApi = async (id, status, rejectionReason) => {
+  const response = await api.put(`/api/jobs/${id}/verify`, {
+    status,
+    rejectionReason,
+  });
   return response.data;
 };
 

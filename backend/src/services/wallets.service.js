@@ -56,7 +56,7 @@ class WalletsService {
       description: `Superio - Nạp tiền vào tài khoản #${transID}`,
       bank_code: "",
       callback_url:
-        "https://6ab9-116-105-174-248.ngrok-free.app/api/wallets/callback-zalopay",
+        "https://634a-116-98-48-3.ngrok-free.app/api/wallets/callback-zalopay",
     };
 
     // appid|app_trans_id|appuser|amount|apptime|embeddata|item
@@ -258,7 +258,7 @@ class WalletsService {
     var orderInfo = "Nạp tiền vào tài khoản";
     var redirectUrl = `${process.env.CLIENT_URL}/employer-dashboard/employer-recharge`;
     var ipnUrl =
-      "https://6ab9-116-105-174-248.ngrok-free.app/api/wallets/callback-momo";
+      "https://634a-116-98-48-3.ngrok-free.app/api/wallets/callback-momo";
     var requestType = "payWithMethod";
     var extraData = ""; //pass empty value if your merchant does not have stores
 
@@ -742,7 +742,13 @@ class WalletsService {
         offset,
       });
 
-    return { totalPayments, payments, page, limit };
+    return {
+      totalItems: totalPayments,
+      totalPayments: Math.ceil(totalPayments / limit),
+      payments,
+      page,
+      limit,
+    };
   }
 
   /**

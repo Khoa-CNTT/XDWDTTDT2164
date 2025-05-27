@@ -8,7 +8,9 @@
           alt="Login Background"
         />
         <div class="overlay-gradient"></div>
-        <img src="@/assets/logo/logo-2.svg" class="logo-overlay" alt="Logo" />
+        <router-link to="/" class="logo-link">
+          <img src="@/assets/logo/logo-2.svg" class="logo-overlay" alt="Logo" />
+        </router-link>
       </div>
     </div>
     <div class="col-lg-7 col-md-12">

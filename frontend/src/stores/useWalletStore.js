@@ -17,6 +17,7 @@ export const useWalletStore = defineStore("wallet", {
     isLoading: false,
     error: null,
     totalPages: 0,
+    totalItems: 0,
     currentPage: 1,
     pageSize: 8,
     historyDeposits: [],
@@ -83,7 +84,7 @@ export const useWalletStore = defineStore("wallet", {
       this.resetError();
       try {
         const response = await getWalletApi();
-        if (!response || !response.data) {
+        if (!response) {
           throw new Error("Dữ liệu ví không hợp lệ");
         }
         this.wallet = response.data;
@@ -105,9 +106,10 @@ export const useWalletStore = defineStore("wallet", {
           throw new Error("Dữ liệu danh sách giao dịch không hợp lệ");
         }
         this.payments = response.data.payments;
-        this.currentPage = response.data.page;
-        this.pageSize = response.data.limit;
-        this.totalPages = response.data.totalPayments;
+        this.currentPage = response.page;
+        this.pageSize = response.limit;
+        this.totalPages = response.totalPayments;
+        this.totalItems = response.totalItems;
       } catch (error) {
         this.handleError(error, "Lỗi khi lấy danh sách giao dịch");
         throw error;

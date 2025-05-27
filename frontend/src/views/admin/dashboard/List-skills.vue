@@ -2,8 +2,8 @@
   <div class="list-skills">
     <h2>Danh Sách Kỹ Năng</h2>
     <router-link to="/" class="mb-3 d-inline-block">
-      Quay trở lại trang chủ?</router-link
-    >
+      Quay trở lại trang chủ?
+    </router-link>
     <div class="card mt-5">
       <div class="card-header d-flex justify-content-between">
         <h5 class="title-header mt-2">Danh Sách Kỹ Năng</h5>
@@ -37,11 +37,17 @@
               </tr>
             </thead>
             <tbody class="text-center align-middle">
-              <tr v-for="(skill, index) in paginatedSkills" :key="skill.id">
-                <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+              <tr v-for="(skill, index) in skillStore.skills" :key="skill.id">
+                <td>
+                  {{
+                    (skillStore.currentPage - 1) * skillStore.pageSize +
+                    index +
+                    1
+                  }}
+                </td>
                 <td>{{ skill.skillName }}</td>
                 <td>{{ skill.skillSlug || "N/A" }}</td>
-                <td>{{ skill.Categories.categoryName || "N/A" }}</td>
+                <td>{{ skill.Categories?.categoryName || "N/A" }}</td>
                 <td>
                   <span
                     :class="[
@@ -76,26 +82,37 @@
           </table>
 
           <!-- Phân trang -->
-          <nav v-if="totalPages > 1" aria-label="Page navigation">
+          <nav v-if="skillStore.totalPages > 1" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <li
+                class="page-item"
+                :class="{ disabled: skillStore.currentPage === 1 }"
+              >
                 <button class="page-link" @click="previousPage">
                   Trang trước
                 </button>
               </li>
               <li
-                v-for="page in totalPages"
+                v-for="page in paginationRange"
                 :key="page"
                 class="page-item"
-                :class="{ active: currentPage === page }"
+                :class="{
+                  active: skillStore.currentPage === page,
+                  disabled: page === '...',
+                }"
               >
-                <button class="page-link" @click="goToPage(page)">
+                <button
+                  class="page-link"
+                  @click="page !== '...' && goToPage(page)"
+                >
                   {{ page }}
                 </button>
               </li>
               <li
                 class="page-item"
-                :class="{ disabled: currentPage === totalPages }"
+                :class="{
+                  disabled: skillStore.currentPage === skillStore.totalPages,
+                }"
               >
                 <button class="page-link" @click="nextPage">Trang sau</button>
               </li>
@@ -300,9 +317,7 @@ export default {
         skillName: "",
         categoryId: "",
       },
-      categories: [], // Danh sách danh mục công việc
-      currentPage: 1, // Trang hiện tại
-      itemsPerPage: 8, // Số phần tử mỗi trang
+      categories: [],
       errors: {
         skillName: "",
         categoryId: "",
@@ -312,19 +327,43 @@ export default {
     };
   },
   computed: {
-    // Tính tổng số trang
-    totalPages() {
-      return Math.ceil(this.skillStore.skills.length / this.itemsPerPage);
-    },
-    // Lấy danh sách kỹ năng cho trang hiện tại
-    paginatedSkills() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.skillStore.skills.slice(start, end);
+    paginationRange() {
+      const total = this.skillStore.totalPages;
+      const current = this.skillStore.currentPage;
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+      let l;
+
+      range.push(1);
+      if (total <= 1) return range;
+
+      for (
+        let i = Math.max(2, current - delta);
+        i <= Math.min(total - 1, current + delta);
+        i++
+      ) {
+        range.push(i);
+      }
+
+      if (total > 1) range.push(total);
+
+      for (let i of range) {
+        if (l) {
+          if (i - l === 2) {
+            rangeWithDots.push(l + 1);
+          } else if (i - l !== 1) {
+            rangeWithDots.push("...");
+          }
+        }
+        rangeWithDots.push(i);
+        l = i;
+      }
+
+      return rangeWithDots;
     },
   },
   methods: {
-    // Lấy danh sách danh mục
     async fetchCategories() {
       try {
         await this.categoryStore.fetchCategories();
@@ -332,37 +371,37 @@ export default {
       } catch (error) {
         console.error("Lỗi khi lấy danh sách danh mục:", error);
         this.categories = [];
+        toast.error("Lỗi khi lấy danh sách danh mục!");
       }
     },
 
-    // Lấy danh sách kỹ năng
-    async fetchSkills() {
+    async fetchSkills(page = 1) {
       try {
-        await this.skillStore.fetchSkills();
-        this.currentPage = 1;
+        await this.skillStore.fetchSkills(page, this.skillStore.pageSize);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách kỹ năng:", error);
+        toast.error("Lỗi khi lấy danh sách kỹ năng!");
       }
     },
 
-    // Phân trang
     previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    goToPage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
+      if (this.skillStore.currentPage > 1) {
+        this.fetchSkills(this.skillStore.currentPage - 1);
       }
     },
 
-    // Xử lý validation và thêm mới
+    nextPage() {
+      if (this.skillStore.currentPage < this.skillStore.totalPages) {
+        this.fetchSkills(this.skillStore.currentPage + 1);
+      }
+    },
+
+    goToPage(page) {
+      if (page >= 1 && page <= this.skillStore.totalPages) {
+        this.fetchSkills(page);
+      }
+    },
+
     validateNewSkill() {
       this.clearErrors();
       let isValid = true;
@@ -379,9 +418,11 @@ export default {
 
       return isValid;
     },
+
     clearError(field) {
       this.errors[field] = "";
     },
+
     clearErrors() {
       this.errors = {
         skillName: "",
@@ -390,10 +431,9 @@ export default {
         updateCategoryId: "",
       };
     },
+
     async addNewSkill() {
-      if (!this.validateNewSkill()) {
-        return;
-      }
+      if (!this.validateNewSkill()) return;
 
       const skillData = {
         skillName: this.newSkill.skillName,
@@ -403,41 +443,25 @@ export default {
       try {
         await this.skillStore.addNewSkill(skillData);
         this.resetForm();
+        await this.fetchSkills(this.skillStore.currentPage); // Tải lại trang hiện tại
 
         const modalElement = document.getElementById("add-modal");
-        if (typeof bootstrap !== "undefined" && modalElement) {
+        if (modalElement) {
           const modal =
             bootstrap.Modal.getInstance(modalElement) ||
             bootstrap.Modal.getOrCreateInstance(modalElement);
-          if (modal) {
-            modal.hide();
-          } else {
-            modalElement.classList.remove("show");
-            modalElement.setAttribute("aria-hidden", "true");
-            modalElement.removeAttribute("aria-modal");
-            const backdrop = document.querySelector(".modal-backdrop");
-            if (backdrop) backdrop.remove();
-          }
-        } else {
-          modalElement.classList.remove("show");
-          modalElement.setAttribute("aria-hidden", "true");
-          modalElement.removeAttribute("aria-modal");
-          const backdrop = document.querySelector(".modal-backdrop");
-          if (backdrop) backdrop.remove();
+          modal.hide();
         }
       } catch (error) {
         console.error("Lỗi khi thêm mới kỹ năng:", error);
       }
     },
+
     resetForm() {
-      this.newSkill = {
-        skillName: "",
-        categoryId: "",
-      };
+      this.newSkill = { skillName: "", categoryId: "" };
       this.clearErrors();
     },
 
-    // Xử lý validation và cập nhật
     validateUpdateSkill() {
       this.clearErrors();
       let isValid = true;
@@ -454,10 +478,9 @@ export default {
 
       return isValid;
     },
+
     async updateSkillDetails() {
-      if (!this.validateUpdateSkill()) {
-        return;
-      }
+      if (!this.validateUpdateSkill()) return;
 
       const skillData = {
         skillName: this.updateSkill.skillName,
@@ -467,42 +490,26 @@ export default {
       try {
         await this.skillStore.updateSkill(this.updateSkill.id, skillData);
         this.resetUpdateForm();
+        await this.fetchSkills(this.skillStore.currentPage); // Tải lại trang hiện tại
 
         const modalElement = document.getElementById("update-modal");
-        if (typeof bootstrap !== "undefined" && modalElement) {
+        if (modalElement) {
           const modal =
             bootstrap.Modal.getInstance(modalElement) ||
             bootstrap.Modal.getOrCreateInstance(modalElement);
-          if (modal) {
-            modal.hide();
-          } else {
-            modalElement.classList.remove("show");
-            modalElement.setAttribute("aria-hidden", "true");
-            modalElement.removeAttribute("aria-modal");
-            const backdrop = document.querySelector(".modal-backdrop");
-            if (backdrop) backdrop.remove();
-          }
-        } else {
-          modalElement.classList.remove("show");
-          modalElement.setAttribute("aria-hidden", "true");
-          modalElement.removeAttribute("aria-modal");
-          const backdrop = document.querySelector(".modal-backdrop");
-          if (backdrop) backdrop.remove();
+          modal.hide();
         }
       } catch (error) {
         console.error("Lỗi khi cập nhật kỹ năng:", error);
+        toast.error("Lỗi khi cập nhật kỹ năng!");
       }
     },
+
     resetUpdateForm() {
-      this.updateSkill = {
-        id: null,
-        skillName: "",
-        categoryId: "",
-      };
+      this.updateSkill = { id: null, skillName: "", categoryId: "" };
       this.clearErrors();
     },
 
-    // Xử lý load dữ liệu để cập nhật
     loadSkillForUpdate(skill) {
       this.updateSkill = {
         id: skill.id,
@@ -511,18 +518,23 @@ export default {
       };
     },
 
-    // Xử lý xóa
     async deleteSkill(id) {
-      if (!confirm("Bạn có chắc chắn muốn xóa kỹ năng này?")) {
-        return;
-      }
+      if (!confirm("Bạn có chắc chắn muốn xóa kỹ năng này?")) return;
+
       try {
         await this.skillStore.deleteSkill(id);
-        toast.success("Xóa kỹ năng thành công!");
-        this.currentPage = 1;
+        // Nếu danh sách rỗng sau khi xóa, chuyển về trang trước hoặc trang 1
+        if (
+          this.skillStore.skills.length === 1 &&
+          this.skillStore.currentPage > 1
+        ) {
+          await this.fetchSkills(this.skillStore.currentPage - 1);
+        } else {
+          await this.fetchSkills(this.skillStore.currentPage);
+        }
       } catch (error) {
         console.error("Lỗi khi xóa kỹ năng:", error);
-        toast.error("Lỗi khi xóa kỹ năng. Vui lòng thử lại!");
+        toast.error("Lỗi khi xóa kỹ năng!");
       }
     },
   },

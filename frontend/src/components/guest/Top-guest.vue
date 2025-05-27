@@ -34,18 +34,18 @@
           </li>
           <li class="nav-item">
             <router-link class="nav-link" aria-current="page" to="/list-company"
-              >Công Ty
-            </router-link>
+              >Công Ty</router-link
+            >
           </li>
           <li class="nav-item">
             <router-link class="nav-link" aria-current="page" to="/about"
-              >Giới Thiệu
-            </router-link>
+              >Giới Thiệu</router-link
+            >
           </li>
           <li class="nav-item">
             <router-link class="nav-link" aria-current="page" to="/conditions"
-              >Điều Khoản
-            </router-link>
+              >Điều Khoản</router-link
+            >
           </li>
         </ul>
 
@@ -58,6 +58,89 @@
 
         <!-- Logged in user view -->
         <div class="user-menu-container" v-else>
+          <!-- Notification Bell - Only for Employers -->
+          <div
+            v-if="authStore.user?.role === 'employer'"
+            class="notification-container"
+            @click="toggleNotifications"
+          >
+            <div class="notification-bell">
+              <i class="fas fa-bell"></i>
+              <span
+                v-if="notificationStore.unreadCount > 0"
+                class="notification-badge"
+              >
+                {{
+                  notificationStore.unreadCount > 99
+                    ? "99+"
+                    : notificationStore.unreadCount
+                }}
+              </span>
+            </div>
+
+            <!-- Notification Dropdown -->
+            <div
+              class="notification-dropdown"
+              :class="{ 'show-notifications': showNotifications }"
+            >
+              <div class="notification-header">
+                <h4>Thông báo</h4>
+                <button
+                  v-if="notificationStore.unreadCount > 0"
+                  @click="markAllAsRead"
+                  class="mark-all-read-btn"
+                >
+                  Đánh dấu tất cả đã đọc
+                </button>
+              </div>
+
+              <div class="notification-list">
+                <div
+                  v-if="notificationStore.isLoading"
+                  class="notification-loading"
+                >
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <span>Đang tải thông báo...</span>
+                </div>
+
+                <div
+                  v-else-if="notificationStore.notifications.length === 0"
+                  class="no-notifications"
+                >
+                  <i class="far fa-bell"></i>
+                  <span>Không có thông báo nào</span>
+                </div>
+
+                <div v-else>
+                  <div
+                    v-for="notification in notificationStore.notifications"
+                    :key="notification.id"
+                    class="notification-item"
+                    :class="{ unread: !notification.isRead }"
+                    @click="handleNotificationClick(notification)"
+                  >
+                    <div class="notification-icon">
+                      <i :class="getNotificationIcon(notification.type)"></i>
+                    </div>
+                    <div class="notification-content">
+                      <h5>{{ notification.title }}</h5>
+                      <p>{{ notification.message }}</p>
+                      <span class="notification-time">{{
+                        formatTime(notification.createdAt)
+                      }}</span>
+                    </div>
+                    <div
+                      class="notification-status"
+                      v-if="!notification.isRead"
+                    >
+                      <div class="unread-dot"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="user-menu-trigger" @click="toggleUserMenu">
             <div class="user-avatar">
               <img
@@ -78,7 +161,7 @@
 
           <div class="user-dropdown" :class="{ 'show-dropdown': isMenuOpen }">
             <div class="dropdown-header">
-              <div class="user-avatar">
+              <div class="dropdown-avatar">
                 <img
                   v-if="userAvatar"
                   :src="getCompanyLogo(userAvatar)"
@@ -117,7 +200,7 @@
                 </li>
                 <li class="dropdown-item">
                   <router-link to="/candidate-dashboard/candidate-password">
-                    <i class="fas fa-clipboard-list"></i>
+                    <i class="fas fa-lock"></i>
                     <span>Thay đổi mật khẩu</span>
                   </router-link>
                 </li>
@@ -160,6 +243,12 @@
                   </router-link>
                 </li>
                 <li class="dropdown-item">
+                  <router-link to="/employer-dashboard/notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Thông báo</span>
+                  </router-link>
+                </li>
+                <li class="dropdown-item">
                   <router-link to="/employer-dashboard/employer-password">
                     <i class="fa-solid fa-lock"></i>
                     <span>Thay đổi mật khẩu</span>
@@ -191,6 +280,7 @@
 
 <script>
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
 
@@ -198,14 +288,17 @@ export default {
   data() {
     return {
       isMenuOpen: false,
+      showNotifications: false,
     };
   },
   setup() {
     const authStore = useAuthStore();
+    const notificationStore = useNotificationStore();
     const router = useRouter();
 
     return {
       authStore,
+      notificationStore,
       router,
     };
   },
@@ -264,25 +357,130 @@ export default {
       }
       return name.substring(0, 2).toUpperCase();
     },
+    notifications() {
+      return this.notificationStore.notifications;
+    },
+    unreadNotificationsCount() {
+      return this.notificationStore.unreadCount;
+    },
   },
   methods: {
     toggleUserMenu() {
       this.isMenuOpen = !this.isMenuOpen;
+      if (this.isMenuOpen) {
+        this.showNotifications = false;
+      }
+    },
+    toggleNotifications() {
+      this.showNotifications = !this.showNotifications;
+      if (this.showNotifications) {
+        this.isMenuOpen = false;
+        if (this.authStore.user?.role === "employer") {
+          this.fetchNotifications();
+        }
+      }
+    },
+    async fetchNotifications() {
+      try {
+        await this.notificationStore.fetchNotificationsForEmployer();
+      } catch (error) {
+        console.error("Lỗi khi lấy thông báo:", error);
+        toast.error("Lỗi khi tải thông báo!");
+      }
+    },
+    async markAllAsRead() {
+      try {
+        await this.notificationStore.markAllAsRead();
+        toast.success("Đã đánh dấu tất cả thông báo là đã đọc");
+      } catch (error) {
+        console.error("Lỗi khi đánh dấu tất cả thông báo:", error);
+        toast.error("Lỗi khi đánh dấu thông báo");
+      }
+    },
+    async handleNotificationClick(notification) {
+      try {
+        if (!notification.isRead) {
+          await this.notificationStore.markAsRead(notification.id);
+        }
+        this.navigateBasedOnNotification(notification);
+        this.showNotifications = false;
+      } catch (error) {
+        console.error("Lỗi khi xử lý thông báo:", error);
+        toast.error("Lỗi khi xử lý thông báo!");
+      }
+    },
+    navigateBasedOnNotification(notification) {
+      switch (notification.type) {
+        case "job_application":
+          this.router.push("/employer-dashboard/applications");
+          break;
+        case "payment_success":
+          this.router.push("/employer-dashboard/employer-deposithistory");
+          break;
+        case "job_expired":
+          this.router.push("/employer-dashboard/employer-workmanagement");
+          break;
+        case "job_approved":
+        case "job_rejected":
+          this.router.push(
+            `/employer-dashboard/description-job/${notification.jobId}`
+          );
+          break;
+        case "system":
+        default:
+          this.router.push("/employer-dashboard/notifications");
+      }
+    },
+    getNotificationIcon(type) {
+      const iconMap = {
+        job_application: "fas fa-user-plus text-blue-500",
+        payment_success: "fas fa-check-circle text-green-500",
+        payment_failed: "fas fa-exclamation-circle text-red-500",
+        job_expired: "fas fa-clock text-orange-500",
+        job_approved: "fas fa-thumbs-up text-green-500",
+        job_rejected: "fas fa-thumbs-down text-red-500",
+        system: "fas fa-cog text-gray-500",
+        default: "fas fa-bell text-blue-500",
+      };
+      return iconMap[type] || iconMap.default;
+    },
+    formatTime(timestamp) {
+      const now = new Date();
+      const time = new Date(timestamp);
+      const diff = now - time;
+
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return "Vừa xong";
+      if (minutes < 60) return `${minutes} phút trước`;
+      if (hours < 24) return `${hours} giờ trước`;
+      if (days < 7) return `${days} ngày trước`;
+
+      return time.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
     },
     async logout() {
       try {
         await this.authStore.logout();
         this.isMenuOpen = false;
+        this.showNotifications = false;
         this.router.push("/");
+        toast.success("Đăng xuất thành công!");
       } catch (error) {
-        toast.error("Lỗi khi đăng xuất");
         console.error("Lỗi khi đăng xuất:", error);
+        toast.error("Lỗi khi đăng xuất!");
       }
     },
     closeMenuOnOutsideClick(event) {
       const userMenu = this.$el.querySelector(".user-menu-container");
-      if (userMenu && !userMenu.contains(event.target) && this.isMenuOpen) {
+      if (userMenu && !userMenu.contains(event.target)) {
         this.isMenuOpen = false;
+        this.showNotifications = false;
       }
     },
     getCompanyLogo(logo) {
@@ -290,8 +488,24 @@ export default {
       return `https://res.cloudinary.com/dh1i7su2f/image/upload/${logo}`;
     },
   },
+  watch: {
+    "authStore.isAuthenticated"(newVal) {
+      if (newVal && this.authStore.user?.role === "employer") {
+        this.fetchNotifications();
+      } else {
+        this.notificationStore.clearNotifications();
+        this.showNotifications = false;
+      }
+    },
+  },
   mounted() {
     document.addEventListener("click", this.closeMenuOnOutsideClick);
+    if (
+      this.authStore.isAuthenticated &&
+      this.authStore.user?.role === "employer"
+    ) {
+      this.fetchNotifications();
+    }
   },
   beforeUnmount() {
     document.removeEventListener("click", this.closeMenuOnOutsideClick);
@@ -299,11 +513,11 @@ export default {
 };
 </script>
 
-<style>
-/* Navbar styling */
+<style scoped>
+/* Same styles as provided, no changes needed */
 .navbar {
   background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10Preparpx rgba(0, 0, 0, 0.05);
   padding: 0;
   position: sticky;
   top: 0;
@@ -328,7 +542,6 @@ export default {
   transform: scale(1.05);
 }
 
-/* Navigation links */
 .navbar-nav {
   display: flex;
   gap: 1.5rem;
@@ -372,7 +585,6 @@ export default {
   font-weight: 600;
 }
 
-/* Auth buttons - Non-logged in state */
 .auth-buttons {
   display: flex;
   align-items: center;
@@ -396,11 +608,224 @@ export default {
   box-shadow: 0 4px 10px rgba(74, 108, 247, 0.2);
 }
 
-/* User menu - Logged in state */
 .user-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Notification Styles */
+.notification-container {
   position: relative;
 }
 
+.notification-bell {
+  position: relative;
+  background-color: #f8f9ff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-bell:hover {
+  background-color: #4a6cf7;
+  color: white;
+}
+
+.notification-bell i {
+  font-size: 18px;
+  color: #4a6cf7;
+  transition: color 0.3s ease;
+}
+
+.notification-bell:hover i {
+  color: white;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 380px;
+  max-height: 500px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 35px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1002;
+  overflow: hidden;
+}
+
+.show-notifications {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.notification-header {
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.mark-all-read-btn {
+  background: none;
+  border: none;
+  color: #4a6cf7;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.mark-all-read-btn:hover {
+  background-color: #f0f4ff;
+}
+
+.notification-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.notification-loading,
+.no-notifications {
+  padding: 40px 20px;
+  text-align: center;
+  color: #777;
+}
+
+.notification-loading i {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #4a6cf7;
+}
+
+.no-notifications i {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #ddd;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 15px 20px;
+  border-bottom: 1px solid #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.notification-item:hover {
+  background-color: #f8f9ff;
+}
+
+.notification-item.unread {
+  background-color: #f0f4ff;
+}
+
+.notification-item.unread:hover {
+  background-color: #e8f0ff;
+}
+
+.notification-icon {
+  margin-right: 12px;
+  margin-top: 2px;
+}
+
+.notification-icon i {
+  font-size: 20px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-content h5 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+}
+
+.notification-content p {
+  margin: 0 0 5px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: #999;
+}
+
+.notification-status {
+  margin-left: 10px;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #4a6cf7;
+  border-radius: 50%;
+}
+
+.notification-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.view-all-link {
+  color: #4a6cf7;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+  color: #3a5cdb;
+}
+
+/* User Menu Styles */
 .user-menu-trigger {
   display: flex;
   align-items: center;
@@ -463,7 +888,6 @@ export default {
   transform: rotate(180deg);
 }
 
-/* User dropdown menu */
 .user-dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -574,6 +998,57 @@ export default {
   color: #e74c3c;
 }
 
+/* Custom scrollbar for notification list */
+.notification-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Notification animations */
+@keyframes notificationPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.notification-bell:hover {
+  animation: notificationPulse 0.6s ease-in-out;
+}
+
+.notification-badge {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 991px) {
   .navbar-container {
@@ -601,9 +1076,43 @@ export default {
     padding: 10px;
   }
 
+  .user-menu-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .notification-container {
+    order: 2;
+    margin-top: 10px;
+  }
+
+  .notification-bell {
+    width: 100%;
+    border-radius: 6px;
+    height: 45px;
+    justify-content: flex-start;
+    padding-left: 15px;
+  }
+
+  .notification-bell::after {
+    content: "Thông báo";
+    margin-left: 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .notification-dropdown {
+    width: 100%;
+    position: static;
+    margin-top: 10px;
+    box-shadow: none;
+    border: 1px solid #eee;
+  }
+
   .user-menu-trigger {
     width: 100%;
     justify-content: space-between;
+    order: 1;
   }
 
   .user-dropdown {
@@ -613,5 +1122,56 @@ export default {
     box-shadow: none;
     border: 1px solid #eee;
   }
+}
+
+@media (max-width: 576px) {
+  .notification-dropdown {
+    width: calc(100vw - 40px);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .notification-item {
+    padding: 12px 15px;
+  }
+
+  .notification-content h5 {
+    font-size: 13px;
+  }
+
+  .notification-content p {
+    font-size: 12px;
+  }
+}
+
+/* Notification type specific colors */
+.text-blue-500 {
+  color: #3b82f6;
+}
+.text-green-500 {
+  color: #10b981;
+}
+.text-red-500 {
+  color: #ef4444;
+}
+.text-orange-500 {
+  color: #f97316;
+}
+.text-gray-500 {
+  color: #6b7280;
+}
+
+/* Loading animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
 }
 </style>

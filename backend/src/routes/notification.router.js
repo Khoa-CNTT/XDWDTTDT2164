@@ -22,4 +22,19 @@ router.get(
   notificationController.getNotifications
 );
 
+/**
+ * @route GET /notifications/employer
+ * @desc Lấy ra danh sách thông báo cho nhà tuyển dụng
+ * @access Private
+ * @middleware protectedRoute: Kiểm tra xác thực người dùng
+ * @middleware authorizedRoute: Kiểm tra quyền truy cập
+ * @controller notificationController.getNotificationsForEmployer: Lấy ra danh sách thông báo
+ */
+router.get(
+  "/employer",
+  protectedRoute,
+  authorizedRoute("employer"),
+  notificationController.getNotificationsForEmployer
+);
+
 module.exports = router;
