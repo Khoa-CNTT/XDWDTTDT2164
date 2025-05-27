@@ -96,22 +96,6 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-phone me-2 text-primary"></i>Số điện thoại
-                  <span class="required">*</span>
-                </label>
-                <input
-                  type="tel"
-                  class="form-control"
-                  placeholder="Nhập số điện thoại"
-                  v-model="form.phone"
-                  required
-                />
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="form-label">
                   <i class="fas fa-globe me-2 text-primary"></i>Website
                 </label>
                 <input
@@ -166,25 +150,6 @@
                   <i class="fas fa-spinner fa-spin me-1"></i> Đang tải danh sách
                   lĩnh vực...
                 </div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="fas fa-map-marker-alt me-2 text-primary"></i>Thành
-                  phố
-                </label>
-                <select class="form-select" v-model="form.companyCity">
-                  <option value="" disabled selected>Chọn thành phố</option>
-                  <option value="Hà Nội">Hà Nội</option>
-                  <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                  <option value="Đà Nẵng">Đà Nẵng</option>
-                  <option value="Hải Phòng">Hải Phòng</option>
-                  <option value="Cần Thơ">Cần Thơ</option>
-                  <option value="Huế">Huế</option>
-                  <option value="Other">Khác</option>
-                </select>
               </div>
             </div>
 
@@ -288,11 +253,9 @@ export default {
       form: {
         companyName: "",
         companyTaxCode: "",
-        phone: "",
         website: "",
         companySize: "",
         companyIndustry: "",
-        companyCity: "",
         companyDescription: "",
         companyAddress: "",
         companyLogo: null,
@@ -381,14 +344,6 @@ export default {
         return false;
       }
 
-      if (!this.form.phone) {
-        this.error = "Vui lòng nhập số điện thoại";
-        return false;
-      } else if (!/^\d{10,11}$/.test(this.form.phone)) {
-        this.error = "Số điện thoại không hợp lệ";
-        return false;
-      }
-
       if (!this.form.companyIndustry) {
         this.error = "Vui lòng chọn lĩnh vực hoạt động";
         return false;
@@ -420,11 +375,9 @@ export default {
       const formData = new FormData();
       formData.append("companyName", this.form.companyName);
       formData.append("companyTaxCode", this.form.companyTaxCode);
-      formData.append("phone", this.form.phone);
       formData.append("companyWebsite", this.form.website || "");
       formData.append("companySize", this.form.companySize || "");
       formData.append("industry", this.form.companyIndustry || "");
-      formData.append("companyCity", this.form.companyCity || "");
       formData.append("companyDescription", this.form.companyDescription);
       formData.append("companyAddress", this.form.companyAddress);
       if (this.form.companyLogo) {
@@ -441,18 +394,18 @@ export default {
           this.form = {
             companyName: "",
             companyTaxCode: "",
-            phone: "",
             website: "",
             companySize: "",
             companyIndustry: "",
-            companyCity: "",
             companyDescription: "",
             companyAddress: "",
             companyLogo: null,
           };
           this.previewLogo = null;
           toast.success("Hồ sơ công ty đã được tạo thành công!");
-          this.router.push("/employer-dashboard/employer-info");
+          this.router.push("/employer-dashboard/employer-info").then(() => {
+            this.router.go(0);
+          });
         }, 3000);
       } catch (err) {
         this.error =
@@ -466,11 +419,9 @@ export default {
       this.form = {
         companyName: "",
         companyTaxCode: "",
-        phone: "",
         website: "",
         companySize: "",
         companyIndustry: "",
-        companyCity: "",
         companyDescription: "",
         companyAddress: "",
         companyLogo: null,

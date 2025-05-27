@@ -2,6 +2,7 @@ const { default: slugify } = require("slugify");
 const db = require("../models");
 const ApiError = require("../libs/apiError");
 const { StatusCode } = require("../libs/enum");
+const { where } = require("sequelize");
 
 /**
  * Service xử lý logic nghiệp vụ liên quan đến skills
@@ -67,6 +68,7 @@ class SkillsService {
     const offset = (page - 1) * limit;
 
     const { count, rows } = await db.Skills.findAndCountAll({
+      where: { deletedAt: null },
       include: [
         {
           model: db.Categories,

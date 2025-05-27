@@ -28,71 +28,81 @@
             </div>
           </div>
 
-          <!-- Biểu đồ bài đăng -->
-          <div class="card mt-4 p-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5>Số lượng bài đăng theo thời gian</h5>
-              <div class="d-flex gap-2 align-items-center">
-                <div v-if="showDatePickers" class="d-flex gap-2">
-                  <input
-                    type="date"
-                    v-model="startDate"
-                    class="form-control form-control-sm"
-                    style="width: 140px"
-                    @change="debouncedFetchPostData"
-                  />
-                  <input
-                    type="date"
-                    v-model="endDate"
-                    class="form-control form-control-sm"
-                    style="width: 140px"
-                    @change="debouncedFetchPostData"
-                  />
+          <!-- Biểu đồ bài đăng - Improved -->
+          <div class="chart-container mt-4">
+            <div class="chart-header">
+              <div class="chart-title">
+                <h5>
+                  <i class="fas fa-chart-bar chart-icon"></i>
+                  Số lượng bài đăng theo thời gian
+                </h5>
+              </div>
+              <div class="chart-controls">
+                <div v-if="showDatePickers" class="date-range-picker">
+                  <div class="date-input-group">
+                    <label>Từ ngày:</label>
+                    <input
+                      type="date"
+                      v-model="startDate"
+                      class="date-input"
+                      @change="debouncedFetchPostData"
+                    />
+                  </div>
+                  <div class="date-input-group">
+                    <label>Đến ngày:</label>
+                    <input
+                      type="date"
+                      v-model="endDate"
+                      class="date-input"
+                      @change="debouncedFetchPostData"
+                    />
+                  </div>
                 </div>
-                <select
-                  v-model="selectedPostFilter"
-                  @change="debouncedFetchPostData"
-                  class="form-select"
-                  style="width: 120px"
-                >
-                  <option value="day">Theo ngày</option>
-                  <option value="month">Theo tháng</option>
-                  <option value="year">Theo năm</option>
-                  <option value="weekday">Theo thứ</option>
-                </select>
-                <button
-                  @click="toggleDatePickers"
-                  class="btn btn-sm"
-                  :class="
-                    showDatePickers ? 'btn-danger' : 'btn-outline-primary'
-                  "
-                >
-                  <i
-                    class="fas"
-                    :class="showDatePickers ? 'fa-times' : 'fa-calendar'"
-                  ></i>
-                </button>
+                <div class="control-buttons">
+                  <select
+                    v-model="selectedPostFilter"
+                    @change="debouncedFetchPostData"
+                    class="filter-select"
+                  >
+                    <option value="day">Theo ngày</option>
+                    <option value="month">Theo tháng</option>
+                    <option value="year">Theo năm</option>
+                    <option value="weekday">Theo thứ</option>
+                  </select>
+                  <button
+                    @click="toggleDatePickers"
+                    class="date-toggle-btn"
+                    :class="{ active: showDatePickers }"
+                  >
+                    <i
+                      class="fas"
+                      :class="showDatePickers ? 'fa-times' : 'fa-calendar'"
+                    ></i>
+                    <span v-if="!showDatePickers">Tùy chỉnh</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div v-if="postChartLoading" class="text-center py-5">
-              <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+            <div class="chart-content">
+              <div v-if="postChartLoading" class="chart-loading">
+                <div class="loading-spinner">
+                  <div class="spinner"></div>
+                  <p>Đang tải dữ liệu...</p>
+                </div>
+              </div>
+              <div v-else-if="postChartError" class="chart-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>{{ postChartError }}</p>
+              </div>
+              <div v-else-if="jobsData.length === 0" class="chart-empty">
+                <i class="fas fa-info-circle"></i>
+                <p>Không có dữ liệu trong khoảng thời gian này</p>
+              </div>
+              <div v-else class="chart-wrapper">
+                <canvas ref="postChartCanvas" class="chart-canvas"></canvas>
+              </div>
             </div>
-            <div
-              v-else-if="postChartError"
-              class="text-center py-5 text-danger"
-            >
-              <i class="fas fa-exclamation-triangle"></i> {{ postChartError }}
-            </div>
-            <div v-else-if="jobsData.length === 0" class="text-center py-5">
-              <i class="fas fa-info-circle"></i> Không có dữ liệu trong khoảng
-              thời gian này
-            </div>
-            <canvas
-              v-else
-              ref="postChartCanvas"
-              style="min-height: 300px"
-            ></canvas>
           </div>
         </div>
         <div class="col-lg-5 col-md-12">
@@ -316,39 +326,71 @@ export default {
               {
                 label: "Số lượng bài đăng",
                 data,
-                backgroundColor: data.map((count) =>
+                backgroundColor: data.map((count, index) => {
+                  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                  if (count === maxCount) {
+                    gradient.addColorStop(0, "rgba(75, 192, 192, 0.9)");
+                    gradient.addColorStop(1, "rgba(75, 192, 192, 0.3)");
+                  } else {
+                    gradient.addColorStop(0, "rgba(54, 162, 235, 0.8)");
+                    gradient.addColorStop(1, "rgba(54, 162, 235, 0.2)");
+                  }
+                  return gradient;
+                }),
+                borderColor: data.map((count) =>
                   count === maxCount
-                    ? "rgba(54, 162, 235, 1)"
-                    : "rgba(54, 162, 235, 0.7)"
+                    ? "rgba(75, 192, 192, 1)"
+                    : "rgba(54, 162, 235, 1)"
                 ),
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 1,
-                borderRadius: 5,
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
               },
             ],
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: "index",
+            },
             scales: {
               y: {
                 beginAtZero: true,
                 ticks: {
                   stepSize: Math.max(1, Math.ceil(maxCount / 10)),
                   precision: 0,
+                  color: "#6B7280",
+                  font: {
+                    size: 12,
+                    family: "Inter, sans-serif",
+                  },
                 },
                 title: {
                   display: true,
                   text: "Số lượng bài đăng",
+                  color: "#374151",
                   font: {
                     size: 14,
+                    weight: "600",
+                    family: "Inter, sans-serif",
                   },
+                },
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                  drawBorder: false,
                 },
               },
               x: {
                 ticks: {
                   maxRotation: 45,
                   minRotation: 45,
+                  color: "#6B7280",
+                  font: {
+                    size: 12,
+                    family: "Inter, sans-serif",
+                  },
                 },
                 title: {
                   display: true,
@@ -356,9 +398,15 @@ export default {
                     this.selectedPostFilter === "weekday"
                       ? "Thứ trong tuần"
                       : "Thời gian",
+                  color: "#374151",
                   font: {
                     size: 14,
+                    weight: "600",
+                    family: "Inter, sans-serif",
                   },
+                },
+                grid: {
+                  display: false,
                 },
               },
             },
@@ -366,13 +414,43 @@ export default {
               legend: {
                 display: true,
                 position: "top",
-              },
-              tooltip: {
-                callbacks: {
-                  title: (tooltipItems) => tooltipItems[0].label,
-                  label: (context) => `Số lượng: ${context.raw}`,
+                labels: {
+                  color: "#374151",
+                  font: {
+                    size: 13,
+                    weight: "500",
+                    family: "Inter, sans-serif",
+                  },
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 20,
                 },
               },
+              tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.8)",
+                titleColor: "#fff",
+                bodyColor: "#fff",
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                borderWidth: 1,
+                cornerRadius: 8,
+                titleFont: {
+                  size: 14,
+                  weight: "600",
+                  family: "Inter, sans-serif",
+                },
+                bodyFont: {
+                  size: 13,
+                  family: "Inter, sans-serif",
+                },
+                callbacks: {
+                  title: (tooltipItems) => tooltipItems[0].label,
+                  label: (context) => `Số lượng: ${context.raw} bài đăng`,
+                },
+              },
+            },
+            animation: {
+              duration: 800,
+              easing: "easeInOutQuart",
             },
           },
         });
@@ -389,6 +467,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 /* Tổng thể */
 .admin-starter {
@@ -454,57 +533,239 @@ a.mb-3.d-inline-block:hover {
   color: #28a745;
 }
 
-/* Biểu đồ */
-.card.mt-4 {
+/* ===== IMPROVED CHART STYLES ===== */
+.chart-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.chart-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.form-control-sm,
-.form-select {
-  border-radius: 8px;
-  font-size: 0.9rem;
+.chart-title {
+  flex: 1;
+  min-width: 250px;
+}
+
+.chart-title h5 {
+  color: white;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-icon {
+  background: rgba(255, 255, 255, 0.2);
   padding: 0.5rem;
-  border: 1px solid #e0e0e0;
-  transition: border-color 0.3s ease;
-}
-
-.form-control-sm:focus,
-.form-select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-  outline: none;
-}
-
-.btn-sm {
   border-radius: 8px;
-  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
+.chart-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.date-range-picker {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.date-input-group label {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.date-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
   font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 140px;
 }
 
-.btn-outline-primary {
-  border-color: #007bff;
-  color: #007bff;
+.date-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.8);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
-.btn-outline-primary:hover {
-  background-color: #007bff;
-  color: #fff;
+.control-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
-.btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
+.filter-select {
+  padding: 0.6rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
 }
 
-.btn-danger:hover {
-  background-color: #c82333;
-  border-color: #c82333;
+.filter-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.8);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
-/* Canvas biểu đồ */
-canvas {
-  max-height: 350px !important;
+.date-toggle-btn {
+  padding: 0.6rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.date-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.date-toggle-btn.active {
+  background: rgba(220, 53, 69, 0.9);
+  border-color: rgba(220, 53, 69, 0.5);
+}
+
+.date-toggle-btn.active:hover {
+  background: rgba(200, 35, 51, 0.9);
+}
+
+.chart-content {
+  padding: 2rem;
+  min-height: 400px;
+  position: relative;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 350px;
+  width: 100%;
+}
+
+.chart-canvas {
   width: 100% !important;
+  height: 100% !important;
+  border-radius: 8px;
+}
+
+/* Loading States */
+.chart-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.chart-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #dc3545;
+  text-align: center;
+}
+
+.chart-error i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.chart-empty i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
 /* Thông báo */
@@ -561,23 +822,65 @@ canvas {
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .chart-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chart-controls {
+    align-items: stretch;
+  }
+
+  .date-range-picker {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .control-buttons {
+    justify-content: stretch;
+  }
+
+  .filter-select,
+  .date-toggle-btn {
+    flex: 1;
+  }
+}
+
 @media (max-width: 992px) {
   .row.text-center .col-4 {
     margin-bottom: 1.5rem;
   }
 
-  .card.mt-4 {
+  .chart-container {
     margin-top: 1.5rem;
   }
 
-  .d-flex.gap-2 {
-    flex-wrap: wrap;
+  .chart-header {
+    padding: 1rem;
   }
 
-  .form-control-sm,
-  .form-select {
-    width: 100% !important;
-    margin-bottom: 0.75rem;
+  .chart-content {
+    padding: 1rem;
+  }
+
+  .chart-wrapper {
+    height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .date-range-picker {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .control-buttons {
+    flex-direction: column;
+  }
+
+  .date-input {
+    width: 100%;
   }
 }
 
@@ -596,6 +899,14 @@ canvas {
 
   .card-header h3 {
     font-size: 1.25rem;
+  }
+
+  .chart-title h5 {
+    font-size: 1.1rem;
+  }
+
+  .chart-content {
+    padding: 0.75rem;
   }
 }
 </style>
